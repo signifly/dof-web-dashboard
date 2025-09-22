@@ -9,25 +9,97 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      // Add your table types here when you have a Supabase schema
-      // Example:
-      // users: {
-      //   Row: {
-      //     id: string
-      //     email: string
-      //     created_at: string
-      //   }
-      //   Insert: {
-      //     id?: string
-      //     email: string
-      //     created_at?: string
-      //   }
-      //   Update: {
-      //     id?: string
-      //     email?: string
-      //     created_at?: string
-      //   }
-      // }
+      performance_metrics: {
+        Row: {
+          id: string
+          session_id: string
+          timestamp: string
+          fps: number
+          memory_usage: number
+          cpu_usage: number
+          load_time: number
+          screen_name: string
+          device_model: string
+          platform: string
+          app_version: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          timestamp: string
+          fps: number
+          memory_usage: number
+          cpu_usage: number
+          load_time: number
+          screen_name: string
+          device_model: string
+          platform: string
+          app_version: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          timestamp?: string
+          fps?: number
+          memory_usage?: number
+          cpu_usage?: number
+          load_time?: number
+          screen_name?: string
+          device_model?: string
+          platform?: string
+          app_version?: string
+          created_at?: string
+        }
+      }
+      performance_sessions: {
+        Row: {
+          id: string
+          user_id: string | null
+          device_id: string
+          start_time: string
+          end_time: string | null
+          duration: number | null
+          total_metrics: number
+          avg_fps: number | null
+          avg_memory: number | null
+          avg_cpu: number | null
+          platform: string
+          app_version: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          device_id: string
+          start_time: string
+          end_time?: string | null
+          duration?: number | null
+          total_metrics?: number
+          avg_fps?: number | null
+          avg_memory?: number | null
+          avg_cpu?: number | null
+          platform: string
+          app_version: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          device_id?: string
+          start_time?: string
+          end_time?: string | null
+          duration?: number | null
+          total_metrics?: number
+          avg_fps?: number | null
+          avg_memory?: number | null
+          avg_cpu?: number | null
+          platform?: string
+          app_version?: string
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
