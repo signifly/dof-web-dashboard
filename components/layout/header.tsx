@@ -10,17 +10,18 @@ const navigationItems = [
   {
     name: "Dashboard",
     href: "/dashboard",
-    icon: "📊",
   },
   {
     name: "Metrics",
     href: "/metrics",
-    icon: "📈",
   },
   {
     name: "Devices",
     href: "/devices",
-    icon: "📱",
+  },
+  {
+    name: "Analytics",
+    href: "/analytics",
   },
 ]
 
@@ -47,9 +48,7 @@ export function Header({ title = "Dashboard" }: HeaderProps) {
                 <Button
                   variant={pathname === item.href ? "default" : "ghost"}
                   size="sm"
-                  className="space-x-2"
                 >
-                  <span>{item.icon}</span>
                   <span>{item.name}</span>
                 </Button>
               </Link>
@@ -63,9 +62,9 @@ export function Header({ title = "Dashboard" }: HeaderProps) {
                 <Button
                   variant={pathname === item.href ? "default" : "ghost"}
                   size="sm"
-                  className="px-2"
+                  className="text-xs"
                 >
-                  <span>{item.icon}</span>
+                  <span>{item.name}</span>
                 </Button>
               </Link>
             ))}
@@ -73,9 +72,7 @@ export function Header({ title = "Dashboard" }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="text-sm text-muted-foreground">
-            Local Dashboard
-          </div>
+          {/* Right side content if needed */}
         </div>
       </div>
     </Card>

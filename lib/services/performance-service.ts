@@ -1,28 +1,30 @@
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
 import { Database } from "@/types/database"
 
-type PerformanceMetric = Database['public']['Tables']['performance_metrics']['Row']
-type PerformanceSession = Database['public']['Tables']['performance_sessions']['Row']
+type PerformanceMetric =
+  Database["public"]["Tables"]["performance_metrics"]["Row"]
+type PerformanceSession =
+  Database["public"]["Tables"]["performance_sessions"]["Row"]
 
 /**
  * Service for fetching performance data from Supabase
  * Used by the dashboard to display read-only performance metrics
  */
 export class PerformanceService {
-  private supabase = createClient()
+  private supabase = createServiceClient()
 
   /**
    * Get recent performance metrics
    */
   async getRecentMetrics(limit = 100) {
     const { data, error } = await this.supabase
-      .from('performance_metrics')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("performance_metrics")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit)
 
     if (error) {
-      console.error('Error fetching recent metrics:', error)
+      console.error("Error fetching recent metrics:", error)
       throw new Error(`Failed to fetch recent metrics: ${error.message}`)
     }
 
@@ -34,13 +36,13 @@ export class PerformanceService {
    */
   async getSessionMetrics(sessionId: string) {
     const { data, error } = await this.supabase
-      .from('performance_metrics')
-      .select('*')
-      .eq('session_id', sessionId)
-      .order('timestamp', { ascending: true })
+      .from("performance_metrics")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("timestamp", { ascending: true })
 
     if (error) {
-      console.error('Error fetching session metrics:', error)
+      console.error("Error fetching session metrics:", error)
       throw new Error(`Failed to fetch session metrics: ${error.message}`)
     }
 
@@ -52,13 +54,13 @@ export class PerformanceService {
    */
   async getSessions(limit = 50) {
     const { data, error } = await this.supabase
-      .from('performance_sessions')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("performance_sessions")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit)
 
     if (error) {
-      console.error('Error fetching sessions:', error)
+      console.error("Error fetching sessions:", error)
       throw new Error(`Failed to fetch sessions: ${error.message}`)
     }
 
@@ -69,27 +71,29 @@ export class PerformanceService {
    * Get performance metrics grouped by time period
    */
   async getMetricsByTimePeriod(
-    period: 'hour' | 'day' | 'week' = 'day',
+    period: "hour" | "day" | "week" = "day",
     limit = 24
   ) {
-    // This will need to be adapted based on your actual data structure
-    // For now, let's get metrics grouped by created_at
+    // Get metrics using the normalized schema
     const { data, error } = await this.supabase
-      .from('performance_metrics')
-      .select(`
+      .from("performance_metrics")
+      .select(
+        `
         created_at,
-        fps,
-        memory_usage,
-        cpu_usage,
-        load_time,
-        platform
-      `)
-      .order('created_at', { ascending: false })
+        metric_type,
+        metric_value,
+        metric_unit,
+        context
+      `
+      )
+      .order("created_at", { ascending: false })
       .limit(limit * 50) // Get more data to group
 
     if (error) {
-      console.error('Error fetching metrics by time period:', error)
-      throw new Error(`Failed to fetch metrics by time period: ${error.message}`)
+      console.error("Error fetching metrics by time period:", error)
+      throw new Error(
+        `Failed to fetch metrics by time period: ${error.message}`
+      )
     }
 
     return data as PerformanceMetric[]
@@ -102,8 +106,8 @@ export class PerformanceService {
     try {
       // Get total metrics count
       const { count: totalMetrics, error: metricsError } = await this.supabase
-        .from('performance_metrics')
-        .select('*', { count: 'exact', head: true })
+        .from("performance_metrics")
+        .select("*", { count: "exact", head: true })
 
       if (metricsError) {
         throw metricsError
@@ -111,35 +115,54 @@ export class PerformanceService {
 
       // Get total sessions count
       const { count: totalSessions, error: sessionsError } = await this.supabase
-        .from('performance_sessions')
-        .select('*', { count: 'exact', head: true })
+        .from("performance_sessions")
+        .select("*", { count: "exact", head: true })
 
       if (sessionsError) {
         throw sessionsError
       }
 
-      // Get recent metrics for averages
+      // Get recent metrics for averages using normalized schema
       const { data: recentMetrics, error: recentError } = await this.supabase
-        .from('performance_metrics')
-        .select('fps, memory_usage, cpu_usage, load_time')
-        .order('created_at', { ascending: false })
+        .from("performance_metrics")
+        .select("metric_type, metric_value")
+        .order("created_at", { ascending: false })
         .limit(1000)
 
       if (recentError) {
         throw recentError
       }
 
-      // Calculate averages
-      const avgStats = recentMetrics?.length ? {
-        avgFps: recentMetrics.reduce((sum, m) => sum + m.fps, 0) / recentMetrics.length,
-        avgMemory: recentMetrics.reduce((sum, m) => sum + m.memory_usage, 0) / recentMetrics.length,
-        avgCpu: recentMetrics.reduce((sum, m) => sum + m.cpu_usage, 0) / recentMetrics.length,
-        avgLoadTime: recentMetrics.reduce((sum, m) => sum + m.load_time, 0) / recentMetrics.length,
-      } : {
-        avgFps: 0,
-        avgMemory: 0,
-        avgCpu: 0,
-        avgLoadTime: 0,
+      // Calculate averages from normalized data
+      const metricsByType =
+        recentMetrics?.reduce(
+          (acc, metric) => {
+            if (!acc[metric.metric_type]) {
+              acc[metric.metric_type] = []
+            }
+            acc[metric.metric_type].push(metric.metric_value)
+            return acc
+          },
+          {} as Record<string, number[]>
+        ) || {}
+
+      const avgStats = {
+        avgFps: metricsByType.fps?.length
+          ? metricsByType.fps.reduce((sum, val) => sum + val, 0) /
+            metricsByType.fps.length
+          : 0,
+        avgMemory: metricsByType.memory_usage?.length
+          ? metricsByType.memory_usage.reduce((sum, val) => sum + val, 0) /
+            metricsByType.memory_usage.length
+          : 0,
+        avgCpu: metricsByType.cpu_usage?.length
+          ? metricsByType.cpu_usage.reduce((sum, val) => sum + val, 0) /
+            metricsByType.cpu_usage.length
+          : 0,
+        avgLoadTime: metricsByType.load_time?.length
+          ? metricsByType.load_time.reduce((sum, val) => sum + val, 0) /
+            metricsByType.load_time.length
+          : 0,
       }
 
       return {
@@ -148,7 +171,7 @@ export class PerformanceService {
         ...avgStats,
       }
     } catch (error) {
-      console.error('Error fetching performance stats:', error)
+      console.error("Error fetching performance stats:", error)
       throw new Error(`Failed to fetch performance stats: ${error}`)
     }
   }
@@ -157,15 +180,16 @@ export class PerformanceService {
    * Get metrics filtered by platform
    */
   async getMetricsByPlatform(platform: string, limit = 100) {
+    // Note: Platform filtering would need to be done via context or session join
+    // For now, get all metrics and filter in application layer if needed
     const { data, error } = await this.supabase
-      .from('performance_metrics')
-      .select('*')
-      .eq('platform', platform)
-      .order('created_at', { ascending: false })
+      .from("performance_metrics")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit)
 
     if (error) {
-      console.error('Error fetching metrics by platform:', error)
+      console.error("Error fetching metrics by platform:", error)
       throw new Error(`Failed to fetch metrics by platform: ${error.message}`)
     }
 
@@ -176,15 +200,16 @@ export class PerformanceService {
    * Get metrics filtered by device model
    */
   async getMetricsByDevice(deviceModel: string, limit = 100) {
+    // Note: Device filtering would need to be done via context or session join
+    // For now, get all metrics and filter in application layer if needed
     const { data, error } = await this.supabase
-      .from('performance_metrics')
-      .select('*')
-      .eq('device_model', deviceModel)
-      .order('created_at', { ascending: false })
+      .from("performance_metrics")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit)
 
     if (error) {
-      console.error('Error fetching metrics by device:', error)
+      console.error("Error fetching metrics by device:", error)
       throw new Error(`Failed to fetch metrics by device: ${error.message}`)
     }
 
@@ -199,22 +224,26 @@ export class PerformanceService {
     startDate.setDate(startDate.getDate() - days)
 
     const { data, error } = await this.supabase
-      .from('performance_metrics')
-      .select(`
+      .from("performance_metrics")
+      .select(
+        `
         created_at,
-        fps,
-        memory_usage,
-        cpu_usage,
-        load_time
-      `)
-      .gte('created_at', startDate.toISOString())
-      .order('created_at', { ascending: true })
+        metric_type,
+        metric_value,
+        metric_unit
+      `
+      )
+      .gte("created_at", startDate.toISOString())
+      .order("created_at", { ascending: true })
 
     if (error) {
-      console.error('Error fetching performance trends:', error)
+      console.error("Error fetching performance trends:", error)
       throw new Error(`Failed to fetch performance trends: ${error.message}`)
     }
 
-    return data as Pick<PerformanceMetric, 'created_at' | 'fps' | 'memory_usage' | 'cpu_usage' | 'load_time'>[]
+    return data as Pick<
+      PerformanceMetric,
+      "created_at" | "metric_type" | "metric_value" | "metric_unit"
+    >[]
   }
 }

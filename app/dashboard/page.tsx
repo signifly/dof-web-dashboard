@@ -1,122 +1,113 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PerformanceSummaryCards } from "@/components/performance/performance-summary-cards"
+import { PlatformBreakdown } from "@/components/performance/platform-breakdown"
+import { RecentSessions } from "@/components/performance/recent-sessions"
+import { PerformanceChart } from "@/components/charts/performance-chart"
+import { PerformanceTiers } from "@/components/analytics/performance-tiers"
+import { FpsDistribution } from "@/components/analytics/fps-distribution"
+import { MemoryPressure } from "@/components/analytics/memory-pressure"
+import { RegressionDetection } from "@/components/analytics/regression-detection"
+import {
+  getPerformanceSummary,
+  getPerformanceTrends,
+} from "@/lib/performance-data"
 
 export const dynamic = "force-dynamic"
 
-export default function DashboardPage() {
-  return (
-    <DashboardLayout title="Dashboard">
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Devices
-              </CardTitle>
-              <span className="text-2xl">📱</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
-              <p className="text-xs text-muted-foreground">
-                +10% from last month
-              </p>
-            </CardContent>
-          </Card>
+export default async function DashboardPage() {
+  try {
+    const [summary, trends] = await Promise.all([
+      getPerformanceSummary(),
+      getPerformanceTrends(50),
+    ])
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Alerts
-              </CardTitle>
-              <span className="text-2xl">🔔</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">23</div>
-              <p className="text-xs text-muted-foreground">
-                -5% from last month
-              </p>
-            </CardContent>
-          </Card>
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="space-y-6">
+          <PerformanceSummaryCards data={summary} />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Avg Performance
-              </CardTitle>
-              <span className="text-2xl">📈</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">89%</div>
-              <p className="text-xs text-muted-foreground">
-                +2% from last month
-              </p>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="col-span-4 space-y-4">
+              <PerformanceChart
+                data={trends}
+                title="FPS Performance Trends"
+                metric="fps"
+                unit=" FPS"
+                height="h-64"
+              />
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Uptime</CardTitle>
-              <span className="text-2xl">⚡</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">99.8%</div>
-              <p className="text-xs text-muted-foreground">
-                +0.1% from last month
-              </p>
-            </CardContent>
-          </Card>
+            <div className="col-span-3">
+              <RecentSessions sessions={summary.recentActivity} />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <PlatformBreakdown data={summary.platformBreakdown} />
+
+            <PerformanceChart
+              data={trends}
+              title="Memory Usage Trends"
+              metric="memory_usage"
+              unit=" MB"
+              height="h-48"
+            />
+          </div>
+
+          {/* Enhanced Analytics Section */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <PerformanceTiers
+              tiers={summary.performanceTiers}
+              totalMetrics={summary.totalMetrics}
+            />
+
+            <FpsDistribution
+              distribution={summary.fpsDistribution}
+              totalFpsMetrics={summary.fpsDistribution.reduce(
+                (sum, item) => sum + item.count,
+                0
+              )}
+            />
+
+            <MemoryPressure
+              pressureLevels={summary.memoryPressure}
+              totalMemoryMetrics={summary.memoryPressure.reduce(
+                (sum, item) => sum + item.count,
+                0
+              )}
+            />
+          </div>
+
+          {/* Regression Detection Section */}
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">
+              Performance Regression Detection
+            </h2>
+            <RegressionDetection performanceData={trends} />
+          </div>
         </div>
+      </DashboardLayout>
+    )
+  } catch (error) {
+    console.error("Error loading dashboard data:", error)
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Performance Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-                Performance charts will be displayed here
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Alerts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <span className="mr-2">🔴</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">High CPU Usage</p>
-                    <p className="text-xs text-muted-foreground">
-                      Server-01 • 2 minutes ago
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <span className="mr-2">🟡</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Memory Warning</p>
-                    <p className="text-xs text-muted-foreground">
-                      Server-02 • 5 minutes ago
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <span className="mr-2">🟢</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Service Restored</p>
-                    <p className="text-xs text-muted-foreground">
-                      Database • 10 minutes ago
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Unable to load performance data
+            </h2>
+            <p className="text-gray-600">
+              Make sure your database is connected and contains performance
+              data.
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Error: {error instanceof Error ? error.message : "Unknown error"}
+            </p>
+          </div>
         </div>
-      </div>
-    </DashboardLayout>
-  )
+      </DashboardLayout>
+    )
+  }
 }

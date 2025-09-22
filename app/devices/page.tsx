@@ -1,176 +1,183 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { DeviceProfiling } from "@/components/analytics/device-profiling"
+import {
+  getPerformanceSummary,
+  getRecentSessions,
+} from "@/lib/performance-data"
 
 export const dynamic = "force-dynamic"
 
-const devices = [
-  {
-    id: "device-001",
-    name: "Production Server",
-    type: "Server",
-    status: "online",
-    lastSeen: "2 minutes ago",
-    performance: "Good",
-  },
-  {
-    id: "device-002",
-    name: "Development Server",
-    type: "Server",
-    status: "online",
-    lastSeen: "5 minutes ago",
-    performance: "Excellent",
-  },
-  {
-    id: "device-003",
-    name: "Database Server",
-    type: "Database",
-    status: "warning",
-    lastSeen: "1 minute ago",
-    performance: "Fair",
-  },
-  {
-    id: "device-004",
-    name: "Load Balancer",
-    type: "Network",
-    status: "offline",
-    lastSeen: "1 hour ago",
-    performance: "Poor",
-  },
-]
+export default async function DevicesPage() {
+  try {
+    const [summary, sessions] = await Promise.all([
+      getPerformanceSummary(),
+      getRecentSessions(50),
+    ])
 
-function getStatusIcon(status: string) {
-  switch (status) {
-    case "online":
-      return "🟢"
-    case "warning":
-      return "🟡"
-    case "offline":
-      return "🔴"
-    default:
-      return "⚪"
-  }
-}
+    // Group sessions by device
+    const deviceMap = new Map()
+    sessions.forEach(session => {
+      const deviceId = session.anonymous_user_id
+      if (!deviceMap.has(deviceId)) {
+        deviceMap.set(deviceId, {
+          deviceId,
+          platform: session.device_type,
+          appVersion: session.app_version,
+          sessions: [],
+          totalSessions: 0,
+          avgFps: 0,
+          avgMemory: 0,
+          avgCpu: 0,
+          lastSeen: session.created_at,
+        })
+      }
 
-export default function DevicesPage() {
-  return (
-    <DashboardLayout title="Device Management">
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">
-              Device Management
+      const device = deviceMap.get(deviceId)
+      device.sessions.push(session)
+      device.totalSessions++
+
+      // Note: Individual session metrics are now stored in performance_metrics table
+      // We'll show 0 for now since we need to aggregate from the metrics table
+
+      // Update last seen
+      if (new Date(session.created_at) > new Date(device.lastSeen)) {
+        device.lastSeen = session.created_at
+      }
+    })
+
+    // Calculate final averages and risk assessment
+    const devices = Array.from(deviceMap.values()).map(device => {
+      const avgFps =
+        device.totalSessions > 0 ? device.avgFps / device.totalSessions : 0
+      const avgMemory =
+        device.totalSessions > 0 ? device.avgMemory / device.totalSessions : 0
+      const avgCpu =
+        device.totalSessions > 0 ? device.avgCpu / device.totalSessions : 0
+
+      // Calculate risk level based on performance metrics
+      let riskLevel: "low" | "medium" | "high" = "low"
+
+      if (avgFps < 20 || avgMemory > 800 || device.totalSessions < 2) {
+        riskLevel = "high"
+      } else if (avgFps < 45 || avgMemory > 400 || device.totalSessions < 5) {
+        riskLevel = "medium"
+      }
+
+      return {
+        ...device,
+        avgFps,
+        avgMemory,
+        avgCpu,
+        avgLoadTime: 0, // TODO: Calculate from metrics if available
+        riskLevel,
+      }
+    })
+
+    return (
+      <DashboardLayout title="Devices">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">
+                Device Management
+              </h2>
+              <p className="text-muted-foreground">
+                Monitor performance across all devices and platforms.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Devices
+                </CardTitle>
+                
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{summary.deviceCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  Unique devices monitored
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Platforms</CardTitle>
+                <span className="text-2xl">🖥️</span>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {summary.platformBreakdown.length}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Different platforms
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Active Sessions
+                </CardTitle>
+                
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {summary.totalSessions}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Total monitoring sessions
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Avg Performance
+                </CardTitle>
+                
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {summary.avgFps.toFixed(1)} FPS
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Overall performance
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <DeviceProfiling devices={devices} />
+        </div>
+      </DashboardLayout>
+    )
+  } catch (error) {
+    console.error("Error loading devices data:", error)
+
+    return (
+      <DashboardLayout title="Devices">
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Unable to load device data
             </h2>
-            <p className="text-muted-foreground">
-              Monitor and manage all connected devices and services.
+            <p className="text-gray-600">
+              Make sure your database is connected and contains performance
+              data.
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Error: {error instanceof Error ? error.message : "Unknown error"}
             </p>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline">Add Device</Button>
-            <Button>Refresh</Button>
-          </div>
         </div>
-
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Devices
-              </CardTitle>
-              <span className="text-2xl">📱</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{devices.length}</div>
-              <p className="text-xs text-muted-foreground">Active devices</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Online</CardTitle>
-              <span className="text-2xl">🟢</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {devices.filter(d => d.status === "online").length}
-              </div>
-              <p className="text-xs text-muted-foreground">Healthy devices</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Warnings</CardTitle>
-              <span className="text-2xl">🟡</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {devices.filter(d => d.status === "warning").length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Devices with issues
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Offline</CardTitle>
-              <span className="text-2xl">🔴</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {devices.filter(d => d.status === "offline").length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Disconnected devices
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Device List</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {devices.map(device => (
-                <div
-                  key={device.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="flex items-center space-x-4">
-                    <span className="text-2xl">
-                      {getStatusIcon(device.status)}
-                    </span>
-                    <div>
-                      <h4 className="font-semibold">{device.name}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {device.type} • ID: {device.id}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{device.performance}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Last seen: {device.lastSeen}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Configure
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
-  )
+      </DashboardLayout>
+    )
+  }
 }

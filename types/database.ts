@@ -12,91 +12,64 @@ export interface Database {
       performance_metrics: {
         Row: {
           id: string
-          session_id: string
+          session_id: string | null
+          metric_type: string
+          metric_value: number
+          metric_unit: string
+          context: Json | null
           timestamp: string
-          fps: number
-          memory_usage: number
-          cpu_usage: number
-          load_time: number
-          screen_name: string
-          device_model: string
-          platform: string
-          app_version: string
           created_at: string
         }
         Insert: {
           id?: string
-          session_id: string
-          timestamp: string
-          fps: number
-          memory_usage: number
-          cpu_usage: number
-          load_time: number
-          screen_name: string
-          device_model: string
-          platform: string
-          app_version: string
+          session_id?: string | null
+          metric_type: string
+          metric_value: number
+          metric_unit: string
+          context?: Json | null
+          timestamp?: string
           created_at?: string
         }
         Update: {
           id?: string
-          session_id?: string
+          session_id?: string | null
+          metric_type?: string
+          metric_value?: number
+          metric_unit?: string
+          context?: Json | null
           timestamp?: string
-          fps?: number
-          memory_usage?: number
-          cpu_usage?: number
-          load_time?: number
-          screen_name?: string
-          device_model?: string
-          platform?: string
-          app_version?: string
           created_at?: string
         }
       }
       performance_sessions: {
         Row: {
           id: string
-          user_id: string | null
-          device_id: string
-          start_time: string
-          end_time: string | null
-          duration: number | null
-          total_metrics: number
-          avg_fps: number | null
-          avg_memory: number | null
-          avg_cpu: number | null
-          platform: string
+          anonymous_user_id: string
+          session_start: string
+          session_end: string | null
           app_version: string
+          device_type: string
+          os_version: string
           created_at: string
         }
         Insert: {
           id?: string
-          user_id?: string | null
-          device_id: string
-          start_time: string
-          end_time?: string | null
-          duration?: number | null
-          total_metrics?: number
-          avg_fps?: number | null
-          avg_memory?: number | null
-          avg_cpu?: number | null
-          platform: string
+          anonymous_user_id: string
+          session_start?: string
+          session_end?: string | null
           app_version: string
+          device_type: string
+          os_version: string
           created_at?: string
         }
         Update: {
           id?: string
-          user_id?: string | null
-          device_id?: string
-          start_time?: string
-          end_time?: string | null
-          duration?: number | null
-          total_metrics?: number
-          avg_fps?: number | null
-          avg_memory?: number | null
-          avg_cpu?: number | null
-          platform?: string
+          anonymous_user_id?: string
+          session_start?: string
+          session_end?: string | null
           app_version?: string
+          device_type?: string
+          os_version?: string
           created_at?: string
         }
       }
