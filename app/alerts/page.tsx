@@ -1,78 +1,80 @@
+/**
+ * Enhanced Alerts Page with Real-time Supabase Integration
+ * Replaces static data with dynamic alerting system
+ */
+
+"use client"
+
+import { useState } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
-export const dynamic = "force-dynamic"
-
-const alerts = [
-  {
-    id: "alert-001",
-    title: "High CPU Usage",
-    description: "CPU usage exceeded 90% threshold",
-    severity: "critical",
-    timestamp: "2024-01-15 14:30:00",
-    source: "Production Server",
-    status: "active",
-  },
-  {
-    id: "alert-002",
-    title: "Memory Warning",
-    description: "Memory usage reached 85% capacity",
-    severity: "warning",
-    timestamp: "2024-01-15 14:25:00",
-    source: "Database Server",
-    status: "active",
-  },
-  {
-    id: "alert-003",
-    title: "Service Restored",
-    description: "Database connection restored successfully",
-    severity: "info",
-    timestamp: "2024-01-15 14:20:00",
-    source: "Database",
-    status: "resolved",
-  },
-  {
-    id: "alert-004",
-    title: "Disk Space Low",
-    description: "Available disk space below 10%",
-    severity: "warning",
-    timestamp: "2024-01-15 14:15:00",
-    source: "File Server",
-    status: "active",
-  },
-]
-
-function getSeverityIcon(severity: string) {
-  switch (severity) {
-    case "critical":
-      return "🔴"
-    case "warning":
-      return "🟡"
-    case "info":
-      return "🔵"
-    default:
-      return "⚪"
-  }
-}
-
-function getSeverityColor(severity: string) {
-  switch (severity) {
-    case "critical":
-      return "text-red-600"
-    case "warning":
-      return "text-yellow-600"
-    case "info":
-      return "text-blue-600"
-    default:
-      return "text-gray-600"
-  }
-}
+import { AlertBanner } from "@/components/alerts/alert-banner"
+import { AlertList } from "@/components/alerts/alert-list"
+import { AlertStatsCards } from "@/components/alerts/alert-stats"
+import { useAlerts } from "@/hooks/use-alerts"
+import { AlertInstance, AlertFilters } from "@/types/alerts"
+import { Badge } from "@/components/ui/badge"
+import { Settings, Plus, Filter } from "lucide-react"
 
 export default function AlertsPage() {
+  const [filters, setFilters] = useState<AlertFilters>({})
+  const [selectedAlert, setSelectedAlert] = useState<AlertInstance | null>(null)
+
+  const { alerts, loading, error, acknowledgeAlert, resolveAlert, refetch } =
+    useAlerts(filters)
+
+  // Get active alerts for banner display
+  const activeAlerts = alerts.filter(alert => alert.status === "active")
+  const criticalAlerts = activeAlerts.filter(
+    alert => alert.severity === "critical"
+  )
+
+  const handleAcknowledgeAlert = async (alertId: string) => {
+    try {
+      await acknowledgeAlert(alertId)
+    } catch (error) {
+      console.error("Failed to acknowledge alert:", error)
+    }
+  }
+
+  const handleResolveAlert = async (alertId: string) => {
+    try {
+      await resolveAlert(alertId)
+    } catch (error) {
+      console.error("Failed to resolve alert:", error)
+    }
+  }
+
+  const handleFilterChange = (newFilters: Partial<AlertFilters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }))
+  }
+
+  const handleViewDetails = (alert: AlertInstance) => {
+    setSelectedAlert(alert)
+    // TODO: Open alert details modal
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout title="Alert Management">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-red-600 mb-2">
+              Error Loading Alerts
+            </h3>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={refetch}>Try Again</Button>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   return (
     <DashboardLayout title="Alert Management">
       <div className="space-y-6">
+        {/* Header */}
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">
@@ -83,167 +85,191 @@ export default function AlertsPage() {
             </p>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline">Configure Rules</Button>
-            <Button variant="outline">View All</Button>
-            <Button>Mark All Read</Button>
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+            <Button variant="outline" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Configure
+            </Button>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              New Alert Rule
+            </Button>
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
+        {/* Critical Alert Banners */}
+        {criticalAlerts.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-red-600 flex items-center">
+              Critical Alerts Requiring Immediate Attention
+              <Badge variant="destructive" className="ml-2">
+                {criticalAlerts.length}
+              </Badge>
+            </h3>
+            {criticalAlerts.slice(0, 3).map(alert => (
+              <AlertBanner
+                key={alert.id}
+                alert={alert}
+                onAcknowledge={() => handleAcknowledgeAlert(alert.id)}
+                onResolve={() => handleResolveAlert(alert.id)}
+              />
+            ))}
+            {criticalAlerts.length > 3 && (
+              <div className="text-sm text-muted-foreground">
+                + {criticalAlerts.length - 3} more critical alerts
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Alert Statistics */}
+        <AlertStatsCards alerts={alerts} />
+
+        {/* Quick Actions */}
+        {activeAlerts.length > 0 && (
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Alerts
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Quick Actions
+                <Badge variant="outline">{activeAlerts.length} active</Badge>
               </CardTitle>
-              <span className="text-2xl">🔔</span>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{alerts.length}</div>
-              <p className="text-xs text-muted-foreground">Last 24 hours</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Critical</CardTitle>
-              <span className="text-2xl">🔴</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {alerts.filter(a => a.severity === "critical").length}
+              <div className="flex space-x-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Acknowledge all active alerts
+                    activeAlerts.forEach(alert =>
+                      handleAcknowledgeAlert(alert.id)
+                    )
+                  }}
+                  disabled={loading}
+                >
+                  Acknowledge All Active
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    // Mark all acknowledged as resolved
+                    alerts
+                      .filter(a => a.status === "acknowledged")
+                      .forEach(alert => handleResolveAlert(alert.id))
+                  }}
+                  disabled={loading}
+                >
+                  Resolve All Acknowledged
+                </Button>
+                <Button variant="outline" onClick={refetch} disabled={loading}>
+                  Refresh
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Require immediate attention
-              </p>
             </CardContent>
           </Card>
+        )}
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Warnings</CardTitle>
-              <span className="text-2xl">🟡</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {alerts.filter(a => a.severity === "warning").length}
-              </div>
-              <p className="text-xs text-muted-foreground">Monitor closely</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Resolved</CardTitle>
-              <span className="text-2xl">✅</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {alerts.filter(a => a.status === "resolved").length}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Successfully handled
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
+        {/* Alert List */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Alerts</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              Recent Alerts
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant={
+                    filters.status?.includes("active") ? "default" : "outline"
+                  }
+                  size="sm"
+                  onClick={() =>
+                    handleFilterChange({
+                      status: filters.status?.includes("active")
+                        ? []
+                        : ["active"],
+                    })
+                  }
+                >
+                  Active Only
+                </Button>
+                <Button
+                  variant={
+                    filters.severity?.includes("critical")
+                      ? "default"
+                      : "outline"
+                  }
+                  size="sm"
+                  onClick={() =>
+                    handleFilterChange({
+                      severity: filters.severity?.includes("critical")
+                        ? []
+                        : ["critical"],
+                    })
+                  }
+                >
+                  Critical Only
+                </Button>
+                {(filters.status || filters.severity) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFilters({})}
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {alerts.map(alert => (
-                <div
-                  key={alert.id}
-                  className={`flex items-center justify-between p-4 border rounded-lg ${
-                    alert.status === "resolved" ? "opacity-60" : ""
-                  }`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <span className="text-2xl">
-                      {getSeverityIcon(alert.severity)}
-                    </span>
-                    <div>
-                      <h4 className="font-semibold">{alert.title}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {alert.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {alert.source} • {alert.timestamp}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={`font-medium capitalize ${getSeverityColor(
-                        alert.severity
-                      )}`}
-                    >
-                      {alert.severity}
-                    </p>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {alert.status}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    {alert.status === "active" && (
-                      <>
-                        <Button variant="outline" size="sm">
-                          Acknowledge
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Resolve
-                        </Button>
-                      </>
-                    )}
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <AlertList
+              alerts={alerts}
+              onAcknowledge={handleAcknowledgeAlert}
+              onResolve={handleResolveAlert}
+              onViewDetails={handleViewDetails}
+              loading={loading}
+            />
           </CardContent>
         </Card>
 
+        {/* Alert Configuration Preview */}
         <Card>
           <CardHeader>
-            <CardTitle>Alert Configuration</CardTitle>
+            <CardTitle>Alert Configuration Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <h4 className="font-semibold mb-2">Notification Rules</h4>
+                <h4 className="font-semibold mb-2">Monitoring Status</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>Email Notifications</span>
-                    <span className="text-green-600">Enabled</span>
+                    <span>Performance Monitoring</span>
+                    <Badge variant="default">Active</Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span>SMS Alerts</span>
-                    <span className="text-green-600">Enabled</span>
+                    <span>Regression Detection</span>
+                    <Badge variant="default">Active</Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span>Slack Integration</span>
-                    <span className="text-red-600">Disabled</span>
+                    <span>Real-time Alerts</span>
+                    <Badge variant="default">Active</Badge>
                   </div>
                 </div>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">Thresholds</h4>
+                <h4 className="font-semibold mb-2">Notification Channels</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>CPU Usage</span>
-                    <span>90%</span>
+                    <span>Dashboard Notifications</span>
+                    <Badge variant="default">Enabled</Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span>Memory Usage</span>
-                    <span>85%</span>
+                    <span>Email Alerts</span>
+                    <Badge variant="secondary">Configuring...</Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span>Disk Space</span>
-                    <span>10%</span>
+                    <span>Slack Integration</span>
+                    <Badge variant="secondary">Configuring...</Badge>
                   </div>
                 </div>
               </div>

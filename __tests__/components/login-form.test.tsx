@@ -23,14 +23,10 @@ describe("LoginForm", () => {
   it("should render login form elements", () => {
     render(<LoginForm />)
 
-    expect(
-      screen.getByText("Sign in to DOF Dashboard")
-    ).toBeInTheDocument()
+    expect(screen.getByText("Sign in to DOF Dashboard")).toBeInTheDocument()
     expect(screen.getByLabelText("Email")).toBeInTheDocument()
     expect(screen.getByLabelText("Password")).toBeInTheDocument()
-    expect(
-      screen.getByRole("button", { name: "Sign in" })
-    ).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Continue with Google" })
     ).toBeInTheDocument()
