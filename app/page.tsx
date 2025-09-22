@@ -16,7 +16,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Link href="/dashboard" className="block">
             <Card className="h-full hover:shadow-md transition-shadow">
               <CardHeader>
@@ -64,29 +64,13 @@ export default function Home() {
               </CardContent>
             </Card>
           </Link>
-
-          <Link href="/alerts" className="block">
-            <Card className="h-full hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-center space-x-2">
-                  <span className="text-2xl">🔔</span>
-                  <CardTitle>Alerts</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Configure and manage system alerts and notifications.
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
         </div>
 
         <div className="text-center space-y-4">
           <h2 className="text-2xl font-semibold">Get Started</h2>
           <p className="text-muted-foreground">
-            Choose a section above to begin monitoring your applications, or
-            start with the main dashboard.
+            Choose a section above to begin monitoring your applications performance,
+            or start with the main dashboard.
           </p>
           <Button asChild size="lg">
             <Link href="/dashboard">Go to Dashboard</Link>
