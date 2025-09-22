@@ -27,6 +27,26 @@ jest.mock("@/lib/supabase/client", () => ({
       signInWithOAuth: jest.fn(),
       signOut: jest.fn(),
     },
+    from: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      in: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+      lt: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      range: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    }),
+    channel: jest.fn().mockReturnValue({
+      on: jest.fn().mockReturnThis(),
+      subscribe: jest.fn(),
+    }),
+    removeChannel: jest.fn(),
   }),
 }))
 
@@ -36,6 +56,21 @@ jest.mock("@/lib/supabase/server", () => ({
       getUser: jest.fn().mockResolvedValue({ data: { user: null } }),
       getSession: jest.fn().mockResolvedValue({ data: { session: null } }),
     },
+    from: jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      in: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+      lt: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      range: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    }),
   }),
 }))
 
