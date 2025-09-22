@@ -22,11 +22,6 @@ const navigationItems = [
     href: "/devices",
     icon: "📱",
   },
-  {
-    name: "Alerts",
-    href: "/alerts",
-    icon: "🔔",
-  },
 ]
 
 interface SidebarProps {

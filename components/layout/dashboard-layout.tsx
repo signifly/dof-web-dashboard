@@ -1,31 +1,32 @@
-"use client"
+/**
+ * Server Component Dashboard Layout
+ * Fetches user data and passes to client component
+ */
 
-import { AuthProvider } from "@/components/auth/auth-provider"
-import { Header } from "./header"
-import { Sidebar } from "./sidebar"
+import { DashboardLayoutClient } from "./dashboard-layout-client"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
   title?: string
 }
 
-export function DashboardLayout({ children, title }: DashboardLayoutProps) {
-  return (
-    <AuthProvider>
-      <div className="min-h-screen bg-gray-50">
-        <Header title={title} />
-        <div className="flex h-[calc(100vh-4rem)]">
-          {/* Desktop Sidebar */}
-          <aside className="hidden md:block w-64 p-4">
-            <Sidebar />
-          </aside>
+export async function DashboardLayout({
+  children,
+  title,
+}: DashboardLayoutProps) {
+  // No authentication required - create a mock user
+  const mockUser = {
+    id: "1",
+    email: "local@user.com",
+    name: "Local User",
+    role: "admin" as const,
+    is_active: true,
+    created_at: new Date().toISOString(),
+  }
 
-          {/* Main Content */}
-          <main className="flex-1 p-4 overflow-auto">
-            <div className="max-w-7xl mx-auto">{children}</div>
-          </main>
-        </div>
-      </div>
-    </AuthProvider>
+  return (
+    <DashboardLayoutClient title={title} user={mockUser}>
+      {children}
+    </DashboardLayoutClient>
   )
 }

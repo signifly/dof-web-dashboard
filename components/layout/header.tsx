@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useAuth } from "@/components/auth/auth-provider"
+import { useAuth } from "@/components/auth/simple-auth-provider"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -21,11 +21,10 @@ interface HeaderProps {
 }
 
 export function Header({ title = "Dashboard" }: HeaderProps) {
-  const { user, signOut } = useAuth()
+  const { user, logout } = useAuth()
 
   const handleSignOut = async () => {
-    await signOut()
-    window.location.href = "/auth/login"
+    await logout()
   }
 
   return (
@@ -57,7 +56,7 @@ export function Header({ title = "Dashboard" }: HeaderProps) {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={user.user_metadata?.avatar_url}
+                      src="" // No avatar URL in simple auth
                       alt={user.email || "User"}
                     />
                     <AvatarFallback>
@@ -70,7 +69,7 @@ export function Header({ title = "Dashboard" }: HeaderProps) {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {user.user_metadata?.full_name || "User"}
+                      {user.name}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
