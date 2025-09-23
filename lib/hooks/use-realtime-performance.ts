@@ -4,7 +4,10 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MetricsTrend } from "@/lib/performance-data"
 import { Tables } from "@/types/database"
-import { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js"
+import {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js"
 
 type PerformanceMetric = Tables<"performance_metrics">
 
@@ -35,36 +38,41 @@ export function useRealtimePerformance({
   const supabaseRef = useRef(createClient())
   const channelRef = useRef<RealtimeChannel | null>(null)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const pendingMetricsRef = useRef<Map<string, Partial<MetricsTrend>>>(new Map())
+  const pendingMetricsRef = useRef<Map<string, Partial<MetricsTrend>>>(
+    new Map()
+  )
 
   // Convert database metric to trend data
-  const convertMetricToTrendPoint = useCallback((metric: PerformanceMetric): Partial<MetricsTrend> => {
-    const timestamp = metric.timestamp
-    const screenName = (metric.context as any)?.screen_name || "Unknown"
+  const convertMetricToTrendPoint = useCallback(
+    (metric: PerformanceMetric): Partial<MetricsTrend> => {
+      const timestamp = metric.timestamp
+      const screenName = (metric.context as any)?.screen_name || "Unknown"
 
-    const update: Partial<MetricsTrend> = {
-      timestamp,
-      screen_name: screenName,
-    }
+      const update: Partial<MetricsTrend> = {
+        timestamp,
+        screen_name: screenName,
+      }
 
-    switch (metric.metric_type) {
-      case "fps":
-        update.fps = metric.metric_value
-        break
-      case "memory_usage":
-        update.memory_usage = metric.metric_value
-        break
-      case "navigation_time":
-      case "screen_load":
-        update.load_time = metric.metric_value
-        break
-      case "cpu_usage":
-        update.cpu_usage = metric.metric_value
-        break
-    }
+      switch (metric.metric_type) {
+        case "fps":
+          update.fps = metric.metric_value
+          break
+        case "memory_usage":
+          update.memory_usage = metric.metric_value
+          break
+        case "navigation_time":
+        case "screen_load":
+          update.load_time = metric.metric_value
+          break
+        case "cpu_usage":
+          update.cpu_usage = metric.metric_value
+          break
+      }
 
-    return update
-  }, [])
+      return update
+    },
+    []
+  )
 
   // Merge pending metrics into complete trend points
   const processPendingMetrics = useCallback(() => {
@@ -93,7 +101,10 @@ export function useRealtimePerformance({
     if (completeTrends.length > 0) {
       setData(prevData => {
         const newData = [...prevData, ...completeTrends]
-          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+          .sort(
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          )
           .slice(-maxDataPoints) // Keep only the latest data points
 
         return newData
@@ -103,22 +114,26 @@ export function useRealtimePerformance({
   }, [maxDataPoints])
 
   // Handle incoming realtime events
-  const handleMetricUpdate = useCallback((payload: RealtimePostgresChangesPayload<PerformanceMetric>) => {
-    if (payload.eventType === "INSERT" && payload.new) {
-      const metric = payload.new
-      const trendUpdate = convertMetricToTrendPoint(metric)
+  const handleMetricUpdate = useCallback(
+    (payload: RealtimePostgresChangesPayload<PerformanceMetric>) => {
+      if (payload.eventType === "INSERT" && payload.new) {
+        const metric = payload.new
+        const trendUpdate = convertMetricToTrendPoint(metric)
 
-      if (trendUpdate.timestamp) {
-        // Get or create pending metric for this timestamp
-        const existing = pendingMetricsRef.current.get(trendUpdate.timestamp) || {}
-        const merged = { ...existing, ...trendUpdate }
-        pendingMetricsRef.current.set(trendUpdate.timestamp, merged)
+        if (trendUpdate.timestamp) {
+          // Get or create pending metric for this timestamp
+          const existing =
+            pendingMetricsRef.current.get(trendUpdate.timestamp) || {}
+          const merged = { ...existing, ...trendUpdate }
+          pendingMetricsRef.current.set(trendUpdate.timestamp, merged)
 
-        // Process pending metrics
-        processPendingMetrics()
+          // Process pending metrics
+          processPendingMetrics()
+        }
       }
-    }
-  }, [convertMetricToTrendPoint, processPendingMetrics])
+    },
+    [convertMetricToTrendPoint, processPendingMetrics]
+  )
 
   // Setup realtime subscription
   const setupSubscription = useCallback(() => {
@@ -141,7 +156,7 @@ export function useRealtimePerformance({
         },
         handleMetricUpdate
       )
-      .subscribe((status) => {
+      .subscribe(status => {
         setIsConnected(status === "SUBSCRIBED")
 
         if (status === "SUBSCRIBED") {

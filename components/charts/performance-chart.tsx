@@ -56,7 +56,9 @@ export const PerformanceChart = React.memo(function PerformanceChart({
           <div
             className={`${height} flex items-center justify-center text-muted-foreground`}
           >
-            {enableRealtime ? "Waiting for realtime data..." : "No data available"}
+            {enableRealtime
+              ? "Waiting for realtime data..."
+              : "No data available"}
           </div>
         </CardContent>
       </Card>

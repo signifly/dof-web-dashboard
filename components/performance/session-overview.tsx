@@ -45,12 +45,9 @@ export function SessionOverview({ summary, isLoading }: SessionOverviewProps) {
   }
 
   const getSessionStatus = (session: PerformanceSession) => {
-    if (!session.end_time) return { status: "Active", color: "" }
-    if (session.avg_fps && session.avg_fps >= 30)
-      return { status: "Good", color: "" }
-    if (session.avg_fps && session.avg_fps >= 20)
-      return { status: "Fair", color: "" }
-    return { status: "Poor", color: "" }
+    if (!session.session_end) return { status: "Active", color: "" }
+    // Note: avg_fps is not available in the session table, using a default status
+    return { status: "Completed", color: "" }
   }
 
   return (
@@ -99,12 +96,12 @@ export function SessionOverview({ summary, isLoading }: SessionOverviewProps) {
                     <span className="text-lg">{sessionStatus.color}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {session.platform} • {session.app_version}
+                        {session.device_type} • {session.app_version}
                       </p>
                       <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                         <span>{sessionStatus.status}</span>
                         <span>•</span>
-                        <span>{formatDuration(session.duration)}</span>
+                        <span>{session.os_version}</span>
                         <span>•</span>
                         <span>
                           {format(
@@ -116,13 +113,8 @@ export function SessionOverview({ summary, isLoading }: SessionOverviewProps) {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-muted-foreground">
-                        {session.total_metrics} metrics
+                        {session.session_end ? "Completed" : "Active"}
                       </p>
-                      {session.avg_fps && (
-                        <p className="text-xs font-medium">
-                          {session.avg_fps.toFixed(1)} FPS
-                        </p>
-                      )}
                     </div>
                   </div>
                 )

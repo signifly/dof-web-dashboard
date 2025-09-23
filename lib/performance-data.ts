@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/server"
-import { Database, Tables } from "@/types/database"
+import { Tables } from "@/types/database"
 
 export type PerformanceMetric = Tables<"performance_metrics">
 export type PerformanceSession = Tables<"performance_sessions">

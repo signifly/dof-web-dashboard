@@ -137,9 +137,7 @@ export function UserEngagementCorrelation({
         <CardContent>
           <div className="space-y-3">
             <div className="p-3 bg-blue-900/20 rounded-lg">
-              <div className="font-medium text-blue-900">
-                High FPS Impact
-              </div>
+              <div className="font-medium text-blue-900">High FPS Impact</div>
               <div className="text-sm text-blue-700">
                 Users with 50+ FPS have{" "}
                 {(
@@ -167,9 +165,7 @@ export function UserEngagementCorrelation({
             </div>
 
             <div className="p-3 bg-green-900/20 rounded-lg">
-              <div className="font-medium text-green-900">
-                Load Time Impact
-              </div>
+              <div className="font-medium text-green-900">Load Time Impact</div>
               <div className="text-sm text-green-700">
                 Load times under 1s result in{" "}
                 {(

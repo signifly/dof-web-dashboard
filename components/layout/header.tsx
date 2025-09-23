@@ -32,7 +32,10 @@ interface HeaderProps {
   showConnectionStatus?: boolean
 }
 
-export function Header({ title = "Dashboard", showConnectionStatus = true }: HeaderProps) {
+export function Header({
+  title = "Dashboard",
+  showConnectionStatus = true,
+}: HeaderProps) {
   const pathname = usePathname()
 
   // Monitor realtime connection status
@@ -102,7 +105,9 @@ export function Header({ title = "Dashboard", showConnectionStatus = true }: Hea
                   isConnected && !error && "bg-green-500",
                   !isConnected && !error && "bg-yellow-500 animate-pulse"
                 )}
-                title={error?.message || (isConnected ? "Live" : "Connecting...")}
+                title={
+                  error?.message || (isConnected ? "Live" : "Connecting...")
+                }
               />
             </div>
           )}

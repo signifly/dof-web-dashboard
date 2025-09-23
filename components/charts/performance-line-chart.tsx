@@ -11,6 +11,7 @@ import {
   Legend,
 } from "recharts"
 import { format } from "date-fns"
+import { MetricsTrend } from "@/lib/performance-data"
 
 interface DataPoint {
   timestamp: string
@@ -18,7 +19,7 @@ interface DataPoint {
 }
 
 interface PerformanceLineChartProps {
-  data: DataPoint[]
+  data: MetricsTrend[]
   lines: {
     key: string
     name: string

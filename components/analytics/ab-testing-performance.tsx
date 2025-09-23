@@ -424,9 +424,7 @@ export function ABTestingPerformance({
             </div>
 
             <div className="p-4 bg-blue-900/20 rounded-lg">
-              <div className="font-medium text-blue-900">
-                Currently Testing
-              </div>
+              <div className="font-medium text-blue-900">Currently Testing</div>
               <div className="text-sm text-blue-700 mt-1">
                 Object Pooling is showing promising results with 25% memory
                 reduction. Test is 87% statistically significant and trending
@@ -435,9 +433,7 @@ export function ABTestingPerformance({
             </div>
 
             <div className="p-4 bg-orange-900/20 rounded-lg">
-              <div className="font-medium text-orange-900">
-                Upcoming Tests
-              </div>
+              <div className="font-medium text-orange-900">Upcoming Tests</div>
               <div className="text-sm text-orange-700 mt-1">
                 Progressive Loading test scheduled for March 1st. Expected to
                 reduce initial load times by 35% based on preliminary analysis.

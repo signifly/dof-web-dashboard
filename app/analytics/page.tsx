@@ -33,32 +33,24 @@ export default async function AnalyticsPage() {
               <Button variant="outline">Schedule Report</Button>
             </div>
           </div>
-
-          {/* User Engagement Correlation */}
           <section>
             <h3 className="text-xl font-semibold mb-4">
               User Engagement & Performance Correlation
             </h3>
             <UserEngagementCorrelation performanceData={trends} />
           </section>
-
-          {/* Device Benchmarking */}
           <section>
             <h3 className="text-xl font-semibold mb-4">
               Device Performance Benchmarking
             </h3>
             <DeviceBenchmarking sessions={sessions} />
           </section>
-
-          {/* A/B Testing */}
           <section>
             <h3 className="text-xl font-semibold mb-4">
               A/B Testing Performance Results
             </h3>
             <ABTestingPerformance performanceData={trends} />
           </section>
-
-          {/* Regression Detection */}
           <section>
             <h3 className="text-xl font-semibold mb-4">
               CI/CD Regression Detection

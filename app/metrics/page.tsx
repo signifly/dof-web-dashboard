@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic"
 
 export default async function MetricsPage() {
   try {
-    const [summary, trends, sessions] = await Promise.all([
+    const [summary, trends] = await Promise.all([
       getPerformanceSummary(),
       getPerformanceTrends(100),
       getRecentSessions(20),

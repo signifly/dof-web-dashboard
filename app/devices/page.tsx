@@ -37,9 +37,6 @@ export default async function DevicesPage() {
       device.sessions.push(session)
       device.totalSessions++
 
-      // Note: Individual session metrics are now stored in performance_metrics table
-      // We'll show 0 for now since we need to aggregate from the metrics table
-
       // Update last seen
       if (new Date(session.created_at) > new Date(device.lastSeen)) {
         device.lastSeen = session.created_at
@@ -69,7 +66,7 @@ export default async function DevicesPage() {
         avgFps,
         avgMemory,
         avgCpu,
-        avgLoadTime: 0, // TODO: Calculate from metrics if available
+        avgLoadTime: 0,
         riskLevel,
       }
     })
@@ -94,7 +91,6 @@ export default async function DevicesPage() {
                 <CardTitle className="text-sm font-medium">
                   Total Devices
                 </CardTitle>
-                
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{summary.deviceCount}</div>
@@ -124,7 +120,6 @@ export default async function DevicesPage() {
                 <CardTitle className="text-sm font-medium">
                   Active Sessions
                 </CardTitle>
-                
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
@@ -141,7 +136,6 @@ export default async function DevicesPage() {
                 <CardTitle className="text-sm font-medium">
                   Avg Performance
                 </CardTitle>
-                
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">

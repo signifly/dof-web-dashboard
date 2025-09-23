@@ -1,5 +1,10 @@
 import { MetricCard } from "@/components/charts/metric-card"
 import { PerformanceSummary } from "@/lib/performance-data"
+import {
+  getPerformanceGrade,
+  getCpuGrade,
+  getMemoryGrade,
+} from "@/lib/utils/performance"
 
 interface PerformanceSummaryCardsProps {
   data: PerformanceSummary
@@ -95,7 +100,6 @@ export function PerformanceSummaryCards({
       <MetricCard
         title="Active Sessions"
         value={data.totalSessions}
-        
         description={`${data.totalMetrics.toLocaleString()} total metrics`}
         trend="stable"
       />
@@ -105,7 +109,6 @@ export function PerformanceSummaryCards({
         value={`${data.avgFps.toFixed(1)} FPS`}
         change={performanceGrade.grade}
         changeType={performanceGrade.type}
-        
         trend={performanceGrade.trend}
       />
 
@@ -114,7 +117,6 @@ export function PerformanceSummaryCards({
         value={`${data.avgCpu.toFixed(1)}%`}
         change={cpuGrade.grade}
         changeType={cpuGrade.type}
-        
         trend={cpuGrade.trend}
       />
 
@@ -123,7 +125,6 @@ export function PerformanceSummaryCards({
         value={`${data.avgMemory.toFixed(0)} MB`}
         change={memoryGrade.grade}
         changeType={memoryGrade.type}
-        
         trend={memoryGrade.trend}
       />
     </div>
