@@ -5,32 +5,40 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
+import { ConnectionStatus } from "@/components/ui/connection-status"
 
 const navigationItems = [
   {
     name: "Dashboard",
-    href: "/dashboard",
+    href: "/dashboard" as const,
   },
   {
     name: "Metrics",
-    href: "/metrics",
+    href: "/metrics" as const,
   },
   {
     name: "Devices",
-    href: "/devices",
+    href: "/devices" as const,
   },
   {
     name: "Analytics",
-    href: "/analytics",
+    href: "/analytics" as const,
   },
-]
+] as const
 
 interface HeaderProps {
   title?: string
+  showConnectionStatus?: boolean
 }
 
-export function Header({ title = "Dashboard" }: HeaderProps) {
+export function Header({ title = "Dashboard", showConnectionStatus = true }: HeaderProps) {
   const pathname = usePathname()
+
+  // Monitor realtime connection status
+  const { isConnected, lastUpdate, error, reconnect } = useRealtimePerformance({
+    maxDataPoints: 1, // Minimal data since we only need connection status
+  })
 
   return (
     <Card className="border-b">
@@ -72,7 +80,32 @@ export function Header({ title = "Dashboard" }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Right side content if needed */}
+          {/* Connection Status */}
+          {showConnectionStatus && (
+            <ConnectionStatus
+              isConnected={isConnected}
+              lastUpdate={lastUpdate}
+              error={error}
+              onReconnect={reconnect}
+              size="sm"
+              className="hidden sm:flex"
+            />
+          )}
+
+          {/* Mobile connection status (badge only) */}
+          {showConnectionStatus && (
+            <div className="sm:hidden">
+              <div
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  error && "bg-red-500",
+                  isConnected && !error && "bg-green-500",
+                  !isConnected && !error && "bg-yellow-500 animate-pulse"
+                )}
+                title={error?.message || (isConnected ? "Live" : "Connecting...")}
+              />
+            </div>
+          )}
         </div>
       </div>
     </Card>
