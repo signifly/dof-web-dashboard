@@ -12,7 +12,13 @@ interface RoutePerformanceTableProps {
   routes: RoutePerformanceData[]
 }
 
-type SortField = "routeName" | "performanceScore" | "avgFps" | "avgMemory" | "avgCpu" | "totalSessions"
+type SortField =
+  | "routeName"
+  | "performanceScore"
+  | "avgFps"
+  | "avgMemory"
+  | "avgCpu"
+  | "totalSessions"
 type SortDirection = "asc" | "desc"
 type RiskFilter = "all" | "low" | "medium" | "high"
 
@@ -97,7 +103,7 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
       "Avg CPU (%)",
       "Total Sessions",
       "Unique Devices",
-      "Avg Duration (ms)"
+      "Avg Duration (ms)",
     ]
 
     const csvData = filteredAndSortedRoutes.map(route => [
@@ -110,7 +116,7 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
       route.avgCpu,
       route.totalSessions,
       route.uniqueDevices,
-      route.avgScreenDuration
+      route.avgScreenDuration,
     ])
 
     const csvContent = [headers, ...csvData]
@@ -169,7 +175,7 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
             <Input
               placeholder="Search routes..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="max-w-sm"
             />
           </div>
@@ -178,7 +184,7 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <select
               value={riskFilter}
-              onChange={(e) => setRiskFilter(e.target.value as RiskFilter)}
+              onChange={e => setRiskFilter(e.target.value as RiskFilter)}
               className="w-32 px-3 py-2 text-sm border border-input bg-background rounded-md"
             >
               <option value="all">All Risk</option>
@@ -207,7 +213,9 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                   </th>
-                  <th className="border border-border p-3 text-left">Pattern</th>
+                  <th className="border border-border p-3 text-left">
+                    Pattern
+                  </th>
                   <th className="border border-border p-3 text-left">
                     <Button
                       variant="ghost"
@@ -268,8 +276,11 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredAndSortedRoutes.map((route) => (
-                  <tr key={`${route.routeName}-${route.routePattern}`} className="border-b hover:bg-muted/50">
+                {filteredAndSortedRoutes.map(route => (
+                  <tr
+                    key={`${route.routeName}-${route.routePattern}`}
+                    className="border-b hover:bg-muted/50"
+                  >
                     <td className="border border-border p-3">
                       <div>
                         <div className="font-medium">{route.routeName}</div>
@@ -303,7 +314,9 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                     <td className="border border-border p-3">
                       <div>{route.avgMemory} MB</div>
                       <div className="text-xs text-muted-foreground">
-                        {route.relativePerformance.memoryVsAverage > 0 ? "+" : ""}
+                        {route.relativePerformance.memoryVsAverage > 0
+                          ? "+"
+                          : ""}
                         {route.relativePerformance.memoryVsAverage.toFixed(1)}%
                       </div>
                     </td>
@@ -338,8 +351,7 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
             <div className="text-muted-foreground">
               {routes.length === 0
                 ? "No route performance data available. Make sure screen_time metrics are being collected."
-                : "No routes match the current filters."
-              }
+                : "No routes match the current filters."}
             </div>
             {searchTerm && (
               <Button

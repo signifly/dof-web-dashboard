@@ -12,7 +12,9 @@ import {
   PerformanceMetricsForInference,
 } from "@/lib/utils/cpu-inference"
 
-export function parseScreenTimeContext(context: Json): ScreenTimeContext | null {
+export function parseScreenTimeContext(
+  context: Json
+): ScreenTimeContext | null {
   if (!context || typeof context !== "object") {
     return null
   }
@@ -151,20 +153,22 @@ export async function correlateRoutePerformance(
   if (!session) return []
 
   const screenTimeEvents = metrics
-    .filter(m => m.metric_type === "screen_time")
+    ?.filter(m => m.metric_type === "screen_time")
     .map(m => ({
       ...parseScreenTimeContext(m.context),
       timestamp: m.timestamp,
       metricId: m.id,
     }))
     .filter(Boolean)
-    .sort((a, b) => a!.screenStartTime - b!.screenStartTime) as Array<
-    ScreenTimeContext & { timestamp: string; metricId: string }
-  >
+    .sort((a, b) => {
+      const aTime = (a as ScreenTimeContext & { timestamp: string; metricId: string })?.screenStartTime || 0
+      const bTime = (b as ScreenTimeContext & { timestamp: string; metricId: string })?.screenStartTime || 0
+      return aTime - bTime
+    }) as Array<ScreenTimeContext & { timestamp: string; metricId: string }> || []
 
-  const performanceMetrics = metrics.filter(m =>
+  const performanceMetrics = metrics?.filter(m =>
     ["fps", "memory_usage", "cpu_usage"].includes(m.metric_type)
-  )
+  ) || []
 
   const routeSessions: RoutePerformanceSession[] = []
 
@@ -201,7 +205,8 @@ export async function correlateRoutePerformance(
 
     const avgMemory =
       memoryMetrics.length > 0
-        ? memoryMetrics.reduce((sum, mem) => sum + mem, 0) / memoryMetrics.length
+        ? memoryMetrics.reduce((sum, mem) => sum + mem, 0) /
+          memoryMetrics.length
         : 0
 
     let avgCpu =
@@ -221,7 +226,7 @@ export async function correlateRoutePerformance(
 
     const routeSession: RoutePerformanceSession = {
       sessionId,
-      deviceId: session.anonymous_user_id,
+      deviceId: session?.anonymous_user_id || "",
       routeName: screenEvent.routeName,
       routePath: screenEvent.routePath,
       routePattern: normalizeRoutePattern(
@@ -237,8 +242,8 @@ export async function correlateRoutePerformance(
       avgFps,
       avgMemory,
       avgCpu,
-      deviceType: session.device_type,
-      appVersion: session.app_version,
+      deviceType: session?.device_type || "",
+      appVersion: session?.app_version || "",
       timestamp: screenEvent.timestamp,
     }
 
@@ -291,7 +296,9 @@ function calculateRoutePerformanceData(
   sessions: RoutePerformanceSession[]
 ): RoutePerformanceData {
   if (sessions.length === 0) {
-    throw new Error("Cannot calculate performance data for empty sessions array")
+    throw new Error(
+      "Cannot calculate performance data for empty sessions array"
+    )
   }
 
   const firstSession = sessions[0]
@@ -445,7 +452,8 @@ export async function getRoutePerformanceAnalysis(): Promise<RoutePerformanceAna
           : 0,
       memoryVsAverage:
         appAverages.avgMemory > 0
-          ? ((route.avgMemory - appAverages.avgMemory) / appAverages.avgMemory) *
+          ? ((route.avgMemory - appAverages.avgMemory) /
+              appAverages.avgMemory) *
             100
           : 0,
       cpuVsAverage:
@@ -455,7 +463,9 @@ export async function getRoutePerformanceAnalysis(): Promise<RoutePerformanceAna
     }
   })
 
-  const sortedRoutes = routes.sort((a, b) => b.performanceScore - a.performanceScore)
+  const sortedRoutes = routes.sort(
+    (a, b) => b.performanceScore - a.performanceScore
+  )
 
   const summary = {
     totalRoutes: routes.length,

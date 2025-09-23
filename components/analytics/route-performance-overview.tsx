@@ -196,7 +196,9 @@ export function RoutePerformanceOverview({
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-green-600">Best Performing Routes</CardTitle>
+            <CardTitle className="text-green-600">
+              Best Performing Routes
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {summary.bestPerformingRoutes.length > 0 ? (
@@ -207,7 +209,9 @@ export function RoutePerformanceOverview({
                     className="flex items-center justify-between p-3 bg-green-50 rounded-lg"
                   >
                     <div>
-                      <div className="font-medium text-sm">{route.routeName}</div>
+                      <div className="font-medium text-sm">
+                        {route.routeName}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {route.routePattern}
                       </div>
@@ -233,7 +237,9 @@ export function RoutePerformanceOverview({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-red-600">Worst Performing Routes</CardTitle>
+            <CardTitle className="text-red-600">
+              Worst Performing Routes
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {summary.worstPerformingRoutes.length > 0 ? (
@@ -244,7 +250,9 @@ export function RoutePerformanceOverview({
                     className="flex items-center justify-between p-3 bg-red-50 rounded-lg"
                   >
                     <div>
-                      <div className="font-medium text-sm">{route.routeName}</div>
+                      <div className="font-medium text-sm">
+                        {route.routeName}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {route.routePattern}
                       </div>
