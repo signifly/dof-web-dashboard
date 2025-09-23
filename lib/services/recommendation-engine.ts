@@ -27,7 +27,9 @@ export class RecommendationEngine {
     for (const insight of insights) {
       const applicableRules = this.rules.filter(rule => rule.condition(insight))
 
-      console.log(`🔍 Insight "${insight.title}" (${insight.type}/${insight.category}/${insight.severity}) matched ${applicableRules.length} rules`)
+      console.log(
+        `🔍 Insight "${insight.title}" (${insight.type}/${insight.category}/${insight.severity}) matched ${applicableRules.length} rules`
+      )
 
       for (const rule of applicableRules) {
         const baseRecommendation = rule.recommendation(insight)

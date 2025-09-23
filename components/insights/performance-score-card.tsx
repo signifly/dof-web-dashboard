@@ -135,7 +135,6 @@ export function PerformanceScoreCard({ score }: PerformanceScoreCardProps) {
                 </div>
                 <Progress value={score.breakdown.memory} className="h-2" />
               </div>
-
             </div>
           </div>
 

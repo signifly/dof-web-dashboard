@@ -24,11 +24,25 @@ describe("RecommendationEngine", () => {
     avgMemory: 500,
     avgCpu: 60,
     avgLoadTime: 3000,
-    platformBreakdown: [{ platform: 'android', count: 15 }, { platform: 'ios', count: 10 }],
-    performanceTiers: [{ tier: 'high_end', count: 10 }, { tier: 'mid_range', count: 10 }, { tier: 'low_end', count: 5 }],
+    platformBreakdown: [
+      { platform: "android", count: 15 },
+      { platform: "ios", count: 10 },
+    ],
+    performanceTiers: [
+      { tier: "high_end", count: 10 },
+      { tier: "mid_range", count: 10 },
+      { tier: "low_end", count: 5 },
+    ],
     recentActivity: [],
-    memoryPressure: [{ level: 'low', count: 80 }, { level: 'medium', count: 15 }, { level: 'high', count: 5 }],
-    fpsDistribution: [{ range: '0-30', count: 20 }, { range: '30-60', count: 80 }],
+    memoryPressure: [
+      { level: "low", count: 80 },
+      { level: "medium", count: 15 },
+      { level: "high", count: 5 },
+    ],
+    fpsDistribution: [
+      { range: "0-30", count: 20 },
+      { range: "30-60", count: 80 },
+    ],
   }
 
   const createMockInsight = (
