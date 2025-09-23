@@ -6,6 +6,9 @@ export interface PerformanceInsight {
     | "anomaly"
     | "opportunity"
     | "alert"
+    | "route_performance_anomaly"
+    | "route_vs_global_performance"
+    | "route_performance_degradation"
   severity: "critical" | "high" | "medium" | "low"
   title: string
   description: string
@@ -23,6 +26,16 @@ export interface PerformanceInsight {
     time_window?: {
       start: string
       end: string
+    }
+    route_context?: {
+      route_name: string
+      route_pattern: string
+      affected_routes: string[]
+      route_specific_metrics: {
+        sessions_count: number
+        unique_devices: number
+        avg_screen_duration: number
+      }
     }
   }
 }
