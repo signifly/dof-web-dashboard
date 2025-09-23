@@ -309,11 +309,36 @@ export function InteractiveChart({
     height: 0,
   })
 
+  // Track previous data for animation control
+  const prevDataRef = useRef<string>("")
+  const [shouldAnimate, setShouldAnimate] = useState(false)
+
   // Process and transform data
   const chartData = useMemo(() => {
     const limitedData = data.slice(-maxDataPoints)
     return transformDataForChart(limitedData, chartType, metric)
   }, [data, chartType, metric, maxDataPoints])
+
+  // Handle animation control with useEffect
+  useEffect(() => {
+    const currentDataString = JSON.stringify(chartData)
+    const hasDataChanged = currentDataString !== prevDataRef.current
+
+    if (hasDataChanged && prevDataRef.current !== "") {
+      setShouldAnimate(true)
+      const timer = setTimeout(() => setShouldAnimate(false), 750)
+
+      prevDataRef.current = currentDataString
+
+      return () => clearTimeout(timer)
+    } else if (prevDataRef.current === "") {
+      // First load, no animation
+      prevDataRef.current = currentDataString
+      setShouldAnimate(false)
+    } else {
+      setShouldAnimate(false)
+    }
+  }, [chartData])
 
   // Calculate domain for better visualization
   const [minValue, maxValue] = useMemo(() => {
@@ -484,6 +509,8 @@ export function InteractiveChart({
               fill={`url(#gradient-${metric})`}
               onClick={handleDataPointClick}
               style={{ cursor: onDrillDown ? "pointer" : "default" }}
+              isAnimationActive={shouldAnimate}
+              animationDuration={500}
             />
             {enableBrush && (
               <Brush
@@ -518,6 +545,8 @@ export function InteractiveChart({
               fill={color}
               onClick={handleDataPointClick}
               style={{ cursor: onDrillDown ? "pointer" : "default" }}
+              isAnimationActive={shouldAnimate}
+              animationDuration={500}
             />
             {enableBrush && (
               <Brush
@@ -555,6 +584,8 @@ export function InteractiveChart({
               fill={color}
               onClick={handleDataPointClick}
               style={{ cursor: onDrillDown ? "pointer" : "default" }}
+              isAnimationActive={shouldAnimate}
+              animationDuration={500}
             />
           </ScatterChart>
         )
@@ -585,6 +616,8 @@ export function InteractiveChart({
               activeDot={{ r: 5, fill: color }}
               onClick={handleDataPointClick}
               style={{ cursor: onDrillDown ? "pointer" : "default" }}
+              isAnimationActive={shouldAnimate}
+              animationDuration={500}
             />
             {enableBrush && (
               <Brush

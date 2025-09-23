@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo, useCallback, useState } from "react"
+import React, { useMemo, useCallback, useState, useRef, useEffect } from "react"
 import {
   ResponsiveContainer,
   LineChart,
@@ -191,6 +191,10 @@ export function MultiSeriesChart({
     )
   )
 
+  // Track previous data for animation control
+  const prevDataRef = useRef<string>("")
+  const [shouldAnimate, setShouldAnimate] = useState(false)
+
   // Combine all datasets with proper time alignment
   const combinedData = useMemo(() => {
     const timeMap = new Map<number, any>()
@@ -236,6 +240,27 @@ export function MultiSeriesChart({
   const visibleData = useMemo(() => {
     return getVisibleData(combinedData)
   }, [getVisibleData, combinedData])
+
+  // Handle animation control with useEffect
+  useEffect(() => {
+    const currentDataString = JSON.stringify(visibleData)
+    const hasDataChanged = currentDataString !== prevDataRef.current
+
+    if (hasDataChanged && prevDataRef.current !== "") {
+      setShouldAnimate(true)
+      const timer = setTimeout(() => setShouldAnimate(false), 750)
+
+      prevDataRef.current = currentDataString
+
+      return () => clearTimeout(timer)
+    } else if (prevDataRef.current === "") {
+      // First load, no animation
+      prevDataRef.current = currentDataString
+      setShouldAnimate(false)
+    } else {
+      setShouldAnimate(false)
+    }
+  }, [visibleData])
 
   // Handle dataset visibility toggle
   const handleDatasetToggle = useCallback(
@@ -346,6 +371,8 @@ export function MultiSeriesChart({
                 fillOpacity={dataset.fillOpacity || 0.1}
                 strokeWidth={dataset.strokeWidth || 2}
                 name={`${dataset.name} (${dataset.metric})`}
+                isAnimationActive={shouldAnimate}
+                animationDuration={500}
               />
             )
           } else {
@@ -359,6 +386,8 @@ export function MultiSeriesChart({
                 dot={false}
                 activeDot={{ r: 4, fill: dataset.color }}
                 name={`${dataset.name} (${dataset.metric})`}
+                isAnimationActive={shouldAnimate}
+                animationDuration={500}
               />
             )
           }
