@@ -51,6 +51,7 @@ export function SessionMetricsTimelineComponent({
       fps: metric.fps,
       memory_usage: metric.memory_usage,
       cpu_usage: metric.cpu_usage,
+      load_time: 0, // Default value for session timeline
       screen_name: metric.screen_name,
     }))
   }

@@ -1,7 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -12,7 +18,7 @@ import {
   RefreshConfig,
   DEFAULT_REFRESH_CONFIG,
   loadRefreshConfig,
-  saveRefreshConfig
+  saveRefreshConfig,
 } from "@/lib/utils/refresh-config"
 
 interface RefreshSettingsProps {
@@ -30,7 +36,7 @@ export function RefreshSettings({
   sections = ["intervals", "behavior"],
   compact = false,
   onChange,
-  className
+  className,
 }: RefreshSettingsProps) {
   const [config, setConfig] = useState<RefreshConfig>(DEFAULT_REFRESH_CONFIG)
   const [hasChanges, setHasChanges] = useState(false)
@@ -82,7 +88,9 @@ export function RefreshSettings({
     } else {
       const hours = Math.floor(minutes / 60)
       const remainingMinutes = minutes % 60
-      return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
+      return remainingMinutes > 0
+        ? `${hours}h ${remainingMinutes}m`
+        : `${hours}h`
     }
   }
 
@@ -92,29 +100,29 @@ export function RefreshSettings({
       label: "Active Data",
       description: "Real-time performance metrics, live charts",
       icon: RefreshCw,
-      color: "bg-green-500"
+      color: "bg-green-500",
     },
     {
       key: "summary" as keyof RefreshConfig,
       label: "Summary Data",
       description: "Aggregated analytics, dashboard summaries",
       icon: Clock,
-      color: "bg-blue-500"
+      color: "bg-blue-500",
     },
     {
       key: "background" as keyof RefreshConfig,
       label: "Background",
       description: "When tab is not active or visible",
       icon: Settings,
-      color: "bg-gray-500"
+      color: "bg-gray-500",
     },
     {
       key: "interactive" as keyof RefreshConfig,
       label: "Interactive",
       description: "When user is actively using the page",
       icon: RefreshCw,
-      color: "bg-orange-500"
-    }
+      color: "bg-orange-500",
+    },
   ]
 
   if (compact) {
@@ -123,12 +131,14 @@ export function RefreshSettings({
         <div className="space-y-4">
           {sections.includes("intervals") && (
             <div className="grid grid-cols-2 gap-4">
-              {intervalSettings.slice(0, 2).map((setting) => {
+              {intervalSettings.slice(0, 2).map(setting => {
                 const Icon = setting.icon
                 return (
                   <div key={setting.key} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${setting.color}`} />
+                      <div
+                        className={`w-2 h-2 rounded-full ${setting.color}`}
+                      />
                       <Label className="text-sm">{setting.label}</Label>
                     </div>
                     <div className="flex items-center gap-2">
@@ -137,10 +147,10 @@ export function RefreshSettings({
                         min="1"
                         max="60"
                         value={msToMinutes(config[setting.key])}
-                        onChange={(e) => {
+                        onChange={e => {
                           const minutes = parseInt(e.target.value) || 1
                           handleConfigChange({
-                            [setting.key]: minutesToMs(minutes)
+                            [setting.key]: minutesToMs(minutes),
                           })
                         }}
                         className="h-8"
@@ -187,7 +197,8 @@ export function RefreshSettings({
           Auto-Refresh Settings
         </CardTitle>
         <CardDescription>
-          Configure how often different types of data are refreshed automatically.
+          Configure how often different types of data are refreshed
+          automatically.
         </CardDescription>
       </CardHeader>
 
@@ -197,7 +208,7 @@ export function RefreshSettings({
             <div>
               <h4 className="text-sm font-semibold mb-3">Refresh Intervals</h4>
               <div className="grid gap-4">
-                {intervalSettings.map((setting) => {
+                {intervalSettings.map(setting => {
                   const Icon = setting.icon
                   return (
                     <div
@@ -205,11 +216,15 @@ export function RefreshSettings({
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${setting.color}`} />
+                        <div
+                          className={`w-3 h-3 rounded-full ${setting.color}`}
+                        />
                         <div>
                           <div className="flex items-center gap-2">
                             <Icon className="h-4 w-4 text-muted-foreground" />
-                            <Label className="font-medium">{setting.label}</Label>
+                            <Label className="font-medium">
+                              {setting.label}
+                            </Label>
                             <Badge variant="outline" className="text-xs">
                               {formatInterval(config[setting.key])}
                             </Badge>
@@ -226,15 +241,17 @@ export function RefreshSettings({
                           min="1"
                           max="120"
                           value={msToMinutes(config[setting.key])}
-                          onChange={(e) => {
+                          onChange={e => {
                             const minutes = parseInt(e.target.value) || 1
                             handleConfigChange({
-                              [setting.key]: minutesToMs(minutes)
+                              [setting.key]: minutesToMs(minutes),
                             })
                           }}
                           className="w-20 h-8"
                         />
-                        <span className="text-sm text-muted-foreground">min</span>
+                        <span className="text-sm text-muted-foreground">
+                          min
+                        </span>
                       </div>
                     </div>
                   )
@@ -297,10 +314,7 @@ export function RefreshSettings({
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Reset
               </Button>
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-              >
+              <Button onClick={handleSave} disabled={isSaving}>
                 <Save className="h-4 w-4 mr-2" />
                 {isSaving ? "Saving..." : "Save Changes"}
               </Button>

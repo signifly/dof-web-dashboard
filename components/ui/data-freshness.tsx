@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Clock, Wifi, WifiOff, AlertCircle } from "lucide-react"
@@ -39,51 +39,83 @@ export function DataFreshness({
   onRefresh,
   compact = false,
   showNextRefresh = true,
-  className
+  className,
 }: DataFreshnessProps) {
   const [now, setNow] = useState(new Date())
   const [timeUntilRefresh, setTimeUntilRefresh] = useState<number | null>(null)
 
-  // Update current time every second
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(new Date())
-    }, 1000)
+  // Use refs to avoid dependency issues
+  const nextRefreshRef = useRef(nextRefresh)
+  const isEnabledRef = useRef(isEnabled)
+  const isPausedRef = useRef(isPaused)
 
-    return () => clearInterval(interval)
-  }, [])
-
-  // Calculate time until next refresh
+  // Update refs when props change
   useEffect(() => {
-    if (nextRefresh && isEnabled && !isPaused) {
-      const timeLeft = nextRefresh.getTime() - now.getTime()
-      setTimeUntilRefresh(timeLeft > 0 ? timeLeft : null)
+    nextRefreshRef.current = nextRefresh
+  }, [nextRefresh])
+
+  useEffect(() => {
+    isEnabledRef.current = isEnabled
+  }, [isEnabled])
+
+  useEffect(() => {
+    isPausedRef.current = isPaused
+  }, [isPaused])
+
+  // Stable update function
+  const updateTimeAndRefresh = useCallback(() => {
+    const currentTime = new Date()
+    setNow(currentTime)
+
+    // Calculate time until next refresh using refs
+    const currentNextRefresh = nextRefreshRef.current
+    const currentIsEnabled = isEnabledRef.current
+    const currentIsPaused = isPausedRef.current
+
+    if (currentNextRefresh && currentIsEnabled && !currentIsPaused) {
+      const timeLeft = currentNextRefresh.getTime() - currentTime.getTime()
+      const newTimeUntilRefresh = timeLeft > 0 ? timeLeft : null
+      setTimeUntilRefresh(newTimeUntilRefresh)
     } else {
       setTimeUntilRefresh(null)
     }
-  }, [nextRefresh, now, isEnabled, isPaused])
+  }, [])
 
-  // Format relative time (e.g., "2 minutes ago")
-  const formatRelativeTime = (date: Date): string => {
-    const diffMs = now.getTime() - date.getTime()
-    const diffSeconds = Math.floor(diffMs / 1000)
-    const diffMinutes = Math.floor(diffSeconds / 60)
-    const diffHours = Math.floor(diffMinutes / 60)
+  // Effect for time updates - no dependencies that change
+  useEffect(() => {
+    // Initial calculation
+    updateTimeAndRefresh()
 
-    if (diffSeconds < 60) {
-      return "just now"
-    } else if (diffMinutes < 60) {
-      return `${diffMinutes}m ago`
-    } else if (diffHours < 24) {
-      return `${diffHours}h ago`
-    } else {
-      const diffDays = Math.floor(diffHours / 24)
-      return `${diffDays}d ago`
-    }
-  }
+    // Set up interval for updates
+    const interval = setInterval(updateTimeAndRefresh, 1000)
 
-  // Format countdown time (e.g., "2m 30s")
-  const formatCountdown = (ms: number): string => {
+    return () => clearInterval(interval)
+  }, [updateTimeAndRefresh])
+
+  // Format relative time (e.g., "2 minutes ago") - memoized to prevent recalculation
+  const formatRelativeTime = useCallback(
+    (date: Date): string => {
+      const diffMs = now.getTime() - date.getTime()
+      const diffSeconds = Math.floor(diffMs / 1000)
+      const diffMinutes = Math.floor(diffSeconds / 60)
+      const diffHours = Math.floor(diffMinutes / 60)
+
+      if (diffSeconds < 60) {
+        return "just now"
+      } else if (diffMinutes < 60) {
+        return `${diffMinutes}m ago`
+      } else if (diffHours < 24) {
+        return `${diffHours}h ago`
+      } else {
+        const diffDays = Math.floor(diffHours / 24)
+        return `${diffDays}d ago`
+      }
+    },
+    [now]
+  )
+
+  // Format countdown time (e.g., "2m 30s") - pure function
+  const formatCountdown = useCallback((ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000)
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
@@ -93,15 +125,15 @@ export function DataFreshness({
     } else {
       return `${seconds}s`
     }
-  }
+  }, [])
 
-  // Get status badge variant and content
-  const getStatusBadge = () => {
+  // Get status badge variant and content - memoized
+  const getStatusBadge = useCallback(() => {
     if (error) {
       return {
         variant: "destructive" as const,
         icon: AlertCircle,
-        text: "Error"
+        text: "Error",
       }
     }
 
@@ -109,7 +141,7 @@ export function DataFreshness({
       return {
         variant: "secondary" as const,
         icon: RefreshCw,
-        text: "Updating"
+        text: "Updating",
       }
     }
 
@@ -117,7 +149,7 @@ export function DataFreshness({
       return {
         variant: "outline" as const,
         icon: WifiOff,
-        text: "Disabled"
+        text: "Disabled",
       }
     }
 
@@ -125,23 +157,28 @@ export function DataFreshness({
       return {
         variant: "outline" as const,
         icon: Clock,
-        text: "Paused"
+        text: "Paused",
       }
     }
 
     return {
       variant: "default" as const,
       icon: Wifi,
-      text: "Live"
+      text: "Live",
     }
-  }
+  }, [error, isRefreshing, isEnabled, isPaused])
 
   const status = getStatusBadge()
   const StatusIcon = status.icon
 
   if (compact) {
     return (
-      <div className={cn("flex items-center gap-2 text-xs text-muted-foreground", className)}>
+      <div
+        className={cn(
+          "flex items-center gap-2 text-xs text-muted-foreground",
+          className
+        )}
+      >
         <StatusIcon
           className={cn(
             "h-3 w-3",
@@ -150,9 +187,7 @@ export function DataFreshness({
             !isEnabled && "text-muted-foreground"
           )}
         />
-        {lastUpdated && (
-          <span>{formatRelativeTime(lastUpdated)}</span>
-        )}
+        {lastUpdated && <span>{formatRelativeTime(lastUpdated)}</span>}
         {onRefresh && (
           <Button
             variant="ghost"
@@ -161,7 +196,9 @@ export function DataFreshness({
             disabled={isRefreshing}
             className="h-5 px-1 text-xs"
           >
-            <RefreshCw className={cn("h-3 w-3", isRefreshing && "animate-spin")} />
+            <RefreshCw
+              className={cn("h-3 w-3", isRefreshing && "animate-spin")}
+            />
           </Button>
         )}
       </div>
@@ -173,23 +210,16 @@ export function DataFreshness({
       <div className="flex items-center gap-3">
         <Badge variant={status.variant} className="flex items-center gap-1">
           <StatusIcon
-            className={cn(
-              "h-3 w-3",
-              isRefreshing && "animate-spin"
-            )}
+            className={cn("h-3 w-3", isRefreshing && "animate-spin")}
           />
           {status.text}
         </Badge>
 
         <div className="text-sm text-muted-foreground">
           {error ? (
-            <span className="text-destructive">
-              {error.message}
-            </span>
+            <span className="text-destructive">{error.message}</span>
           ) : lastUpdated ? (
-            <span>
-              Last updated {formatRelativeTime(lastUpdated)}
-            </span>
+            <span>Last updated {formatRelativeTime(lastUpdated)}</span>
           ) : (
             <span>No data</span>
           )}
@@ -197,12 +227,14 @@ export function DataFreshness({
       </div>
 
       <div className="flex items-center gap-3">
-        {showNextRefresh && timeUntilRefresh !== null && timeUntilRefresh > 0 && (
-          <div className="text-xs text-muted-foreground flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            <span>Next: {formatCountdown(timeUntilRefresh)}</span>
-          </div>
-        )}
+        {showNextRefresh &&
+          timeUntilRefresh !== null &&
+          timeUntilRefresh > 0 && (
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>Next: {formatCountdown(timeUntilRefresh)}</span>
+            </div>
+          )}
 
         {onRefresh && (
           <Button
@@ -213,10 +245,7 @@ export function DataFreshness({
             className="h-8"
           >
             <RefreshCw
-              className={cn(
-                "h-4 w-4 mr-2",
-                isRefreshing && "animate-spin"
-              )}
+              className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")}
             />
             Refresh
           </Button>

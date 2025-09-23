@@ -11,7 +11,7 @@ import {
   getRetryInterval,
   shouldPauseRefresh,
   createRefreshState,
-  loadRefreshConfig
+  loadRefreshConfig,
 } from "@/lib/utils/refresh-config"
 
 interface UseSmartRefreshReturn<T> {
@@ -63,7 +63,7 @@ export function useSmartRefresh<T>(
   // User interaction detection
   const { isUserActive, timeSinceLastActivity } = useInteractionDetector({
     timeout: 5000, // 5 seconds to consider user inactive
-    enabled: normalizedOptions.pauseOnInteraction
+    enabled: normalizedOptions.pauseOnInteraction,
   })
 
   // Page visibility detection
@@ -102,7 +102,7 @@ export function useSmartRefresh<T>(
     refreshConfig,
     isUserActive,
     isPageVisible,
-    state.retryCount
+    state.retryCount,
   ])
 
   // Check if refresh should be paused
@@ -112,11 +112,23 @@ export function useSmartRefresh<T>(
       isUserActive,
       timeSinceLastActivity
     )
-  }, [normalizedOptions.pauseOnInteraction, isUserActive, timeSinceLastActivity])
+  }, [
+    normalizedOptions.pauseOnInteraction,
+    isUserActive,
+    timeSinceLastActivity,
+  ])
 
   // Manual refresh function
   const refresh = useCallback(async (): Promise<void> => {
-    if (state.isRefreshing) return
+    setState(prevState => {
+      if (prevState.isRefreshing) return prevState
+
+      return {
+        ...prevState,
+        isRefreshing: true,
+        error: null,
+      }
+    })
 
     // Cancel any pending request
     if (abortControllerRef.current) {
@@ -127,12 +139,6 @@ export function useSmartRefresh<T>(
     const abortController = new AbortController()
     abortControllerRef.current = abortController
 
-    setState(prev => ({
-      ...prev,
-      isRefreshing: true,
-      error: null
-    }))
-
     try {
       const result = await fetchFnRef.current()
 
@@ -142,21 +148,31 @@ export function useSmartRefresh<T>(
       }
 
       setData(result)
-      setState(prev => ({
-        ...prev,
-        isRefreshing: false,
-        lastRefresh: new Date(),
-        nextRefresh: getNextRefreshTime(currentInterval),
-        error: null,
-        retryCount: 0
-      }))
+      setState(prev => {
+        const interval = getRefreshInterval(
+          normalizedOptions.type,
+          refreshConfig,
+          isUserActive,
+          isPageVisible
+        )
+
+        return {
+          ...prev,
+          isRefreshing: false,
+          lastRefresh: new Date(),
+          nextRefresh: getNextRefreshTime(interval),
+          error: null,
+          retryCount: 0,
+        }
+      })
     } catch (error) {
       // Check if request was aborted
       if (abortController.signal.aborted) {
         return
       }
 
-      const refreshError = error instanceof Error ? error : new Error("Refresh failed")
+      const refreshError =
+        error instanceof Error ? error : new Error("Refresh failed")
 
       setState(prev => ({
         ...prev,
@@ -164,57 +180,61 @@ export function useSmartRefresh<T>(
         error: refreshError,
         retryCount: normalizedOptions.retryOnError
           ? Math.min(prev.retryCount + 1, normalizedOptions.maxRetries)
-          : prev.retryCount
+          : prev.retryCount,
       }))
 
-      console.error(`Smart refresh failed for key "${normalizedOptions.key}":`, refreshError)
+      console.error(
+        `Smart refresh failed for key "${normalizedOptions.key}":`,
+        refreshError
+      )
     } finally {
       abortControllerRef.current = null
     }
-  }, [state.isRefreshing, currentInterval, normalizedOptions])
+  }, [normalizedOptions, refreshConfig, isUserActive, isPageVisible])
 
-  // Schedule next refresh
-  const scheduleRefresh = useCallback(() => {
+  // Schedule next refresh - stable version without state dependencies
+  const scheduleRefreshRef = useRef<() => void>()
+
+  scheduleRefreshRef.current = () => {
     // Clear existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
     }
 
-    // Don't schedule if disabled, paused, or at max retries
-    if (
-      !state.isEnabled ||
-      state.isPaused ||
-      shouldPause ||
-      (state.retryCount >= normalizedOptions.maxRetries && !normalizedOptions.retryOnError)
-    ) {
-      setState(prev => ({ ...prev, nextRefresh: null }))
-      return
-    }
+    setState(prevState => {
+      // Don't schedule if disabled, paused, or at max retries
+      if (
+        !prevState.isEnabled ||
+        prevState.isPaused ||
+        shouldPause ||
+        (prevState.retryCount >= normalizedOptions.maxRetries &&
+          !normalizedOptions.retryOnError)
+      ) {
+        return { ...prevState, nextRefresh: null }
+      }
 
-    const interval = currentInterval
-    const nextRefresh = getNextRefreshTime(interval, state.lastRefresh)
+      const interval = currentInterval
+      const nextRefresh = getNextRefreshTime(interval, prevState.lastRefresh)
 
-    setState(prev => ({ ...prev, nextRefresh }))
+      // Schedule the timeout
+      timeoutRef.current = setTimeout(() => {
+        refresh()
+      }, interval)
 
-    timeoutRef.current = setTimeout(() => {
-      refresh()
-    }, interval)
-  }, [
-    state.isEnabled,
-    state.isPaused,
-    state.lastRefresh,
-    state.retryCount,
-    shouldPause,
-    currentInterval,
-    normalizedOptions.maxRetries,
-    normalizedOptions.retryOnError,
-    refresh
-  ])
+      return { ...prevState, nextRefresh }
+    })
+  }
+
+  const scheduleRefresh = useCallback(() => {
+    scheduleRefreshRef.current?.()
+  }, [])
 
   // Control functions
   const enable = useCallback(() => {
     setState(prev => ({ ...prev, isEnabled: true }))
+    // Schedule refresh after enabling
+    setTimeout(() => scheduleRefreshRef.current?.(), 0)
   }, [])
 
   const disable = useCallback(() => {
@@ -235,6 +255,8 @@ export function useSmartRefresh<T>(
 
   const resume = useCallback(() => {
     setState(prev => ({ ...prev, isPaused: false }))
+    // Schedule refresh after resuming
+    setTimeout(() => scheduleRefreshRef.current?.(), 0)
   }, [])
 
   const reset = useCallback(() => {
@@ -243,19 +265,29 @@ export function useSmartRefresh<T>(
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
     }
+    // Schedule refresh after reset if enabled
+    if (normalizedOptions.enabled) {
+      setTimeout(() => scheduleRefreshRef.current?.(), 0)
+    }
   }, [normalizedOptions.enabled])
 
-  // Schedule refresh when conditions change
+  // Schedule refresh when external conditions change (not state)
   useEffect(() => {
-    scheduleRefresh()
-  }, [scheduleRefresh])
+    scheduleRefreshRef.current?.()
+  }, [
+    shouldPause,
+    currentInterval,
+    normalizedOptions.maxRetries,
+    normalizedOptions.retryOnError,
+  ])
 
   // Initial refresh
   useEffect(() => {
     if (normalizedOptions.enabled && initialData === null) {
       refresh()
     }
-  }, []) // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount - explicitly ignore dependencies
 
   // Cleanup on unmount
   useEffect(() => {
@@ -283,6 +315,6 @@ export function useSmartRefresh<T>(
     disable,
     pause,
     resume,
-    reset
+    reset,
   }
 }

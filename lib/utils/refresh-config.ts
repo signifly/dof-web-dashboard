@@ -49,10 +49,10 @@ export interface RefreshState {
  * Based on issue requirements: 30s for active data, 5min for summaries
  */
 export const DEFAULT_REFRESH_CONFIG: RefreshConfig = {
-  active: 30 * 1000,      // 30 seconds for real-time data
+  active: 30 * 1000, // 30 seconds for real-time data
   summary: 5 * 60 * 1000, // 5 minutes for summary data
   background: 10 * 60 * 1000, // 10 minutes when tab not active
-  interactive: 60 * 1000   // 1 minute when user is actively interacting
+  interactive: 60 * 1000, // 1 minute when user is actively interacting
 }
 
 /**
@@ -67,7 +67,7 @@ export const DEFAULT_REFRESH_OPTIONS: Required<RefreshOptions> = {
   maxRetries: 3,
   backoffMultiplier: 2,
   maxBackoffInterval: 5 * 60 * 1000, // 5 minutes max backoff
-  type: "active"
+  type: "active",
 }
 
 /**
@@ -184,7 +184,7 @@ export function createRefreshState(enabled: boolean = true): RefreshState {
     error: null,
     retryCount: 0,
     isEnabled: enabled,
-    isPaused: false
+    isPaused: false,
   }
 }
 
@@ -193,7 +193,7 @@ export function createRefreshState(enabled: boolean = true): RefreshState {
  */
 export const REFRESH_STORAGE_KEYS = {
   CONFIG: "dof-refresh-config",
-  USER_PREFERENCES: "dof-refresh-preferences"
+  USER_PREFERENCES: "dof-refresh-preferences",
 } as const
 
 /**

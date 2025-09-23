@@ -1,9 +1,14 @@
-import { debugMetricTypes } from "@/lib/performance-data"
+// import { debugMetricTypes } from "@/lib/performance-data"
 
 export const dynamic = "force-dynamic"
 
 export default async function DebugMetricsPage() {
-  const debugData = await debugMetricTypes()
+  // const debugData = await debugMetricTypes()
+  const debugData = {
+    totalMetrics: 0,
+    error: "Debug function temporarily disabled",
+    metricTypes: [],
+  }
 
   return (
     <div className="container mx-auto p-6">

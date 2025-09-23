@@ -22,13 +22,13 @@ const DEFAULT_EVENTS = [
   "touchstart",
   "click",
   "focus",
-  "blur"
+  "blur",
 ]
 
 export function useInteractionDetector({
   timeout = 5000, // 5 seconds default
   enabled = true,
-  events = DEFAULT_EVENTS
+  events = DEFAULT_EVENTS,
 }: UseInteractionDetectorOptions = {}): UseInteractionDetectorReturn {
   const [isUserActive, setIsUserActive] = useState(true)
   const [lastActivity, setLastActivity] = useState<Date | null>(new Date())
@@ -131,6 +131,6 @@ export function useInteractionDetector({
   return {
     isUserActive,
     lastActivity,
-    timeSinceLastActivity
+    timeSinceLastActivity,
   }
 }
