@@ -1,29 +1,29 @@
 // Simple script to debug database metric types
-const { createClient } = require("@supabase/supabase-js")
-require("dotenv").config({ path: ".env.local" })
+const { createClient } = require('@supabase/supabase-js')
+require('dotenv').config({ path: '.env.local' })
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error("Missing Supabase credentials")
+  console.error('Missing Supabase credentials')
   process.exit(1)
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function debugDatabase() {
-  console.log("🔍 Debugging database metric types...\n")
+  console.log('🔍 Debugging database metric types...\n')
 
   try {
     // Get unique metric types with counts
     const { data: metrics, error } = await supabase
-      .from("performance_metrics")
-      .select("metric_type, metric_value")
+      .from('performance_metrics')
+      .select('metric_type, metric_value')
       .limit(1000)
 
     if (error) {
-      console.error("Error fetching metrics:", error)
+      console.error('Error fetching metrics:', error)
       return
     }
 
@@ -46,8 +46,8 @@ async function debugDatabase() {
       }
     })
 
-    console.log("📈 Metric Types Found:")
-    console.log("=====================================")
+    console.log('📈 Metric Types Found:')
+    console.log('=====================================')
 
     Array.from(typeCounts.entries())
       .sort((a, b) => b[1] - a[1]) // Sort by count descending
@@ -55,22 +55,15 @@ async function debugDatabase() {
         const examples = typeExamples.get(type) || []
         console.log(`📌 "${type}":`)
         console.log(`   Count: ${count}`)
-        console.log(`   Examples: [${examples.join(", ")}]`)
-        console.log("")
+        console.log(`   Examples: [${examples.join(', ')}]`)
+        console.log('')
       })
 
     // Check specifically for load time related metrics
-    console.log("🕐 Load Time Analysis:")
-    console.log("=====================================")
+    console.log('🕐 Load Time Analysis:')
+    console.log('=====================================')
 
-    const loadTimeTypes = [
-      "navigation_time",
-      "screen_load",
-      "load_time",
-      "page_load",
-      "startup_time",
-      "boot_time",
-    ]
+    const loadTimeTypes = ['navigation_time', 'screen_load', 'load_time', 'page_load', 'startup_time', 'boot_time']
     let foundLoadTimeMetrics = false
 
     loadTimeTypes.forEach(type => {
@@ -83,17 +76,16 @@ async function debugDatabase() {
     })
 
     if (!foundLoadTimeMetrics) {
-      console.log("\n🚨 NO LOAD TIME METRICS FOUND!")
+      console.log('\n🚨 NO LOAD TIME METRICS FOUND!')
       console.log('This explains why load time shows "N/A".')
-      console.log(
-        "Load time metrics need to be added to your database with one of these metric types:"
-      )
+      console.log('Load time metrics need to be added to your database with one of these metric types:')
       console.log('- "navigation_time"')
       console.log('- "screen_load"')
       console.log('- "load_time"')
     }
+
   } catch (error) {
-    console.error("Script error:", error)
+    console.error('Script error:', error)
   }
 }
 
