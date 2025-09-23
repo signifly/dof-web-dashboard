@@ -241,7 +241,6 @@ export function SessionPerformanceAnalysisComponent({
               </div>
             </div>
 
-
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4" />

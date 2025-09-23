@@ -781,7 +781,6 @@ export async function getScreenNames(): Promise<string[]> {
   }
 }
 
-
 /**
  * Get device performance data with calculated metrics averages
  */

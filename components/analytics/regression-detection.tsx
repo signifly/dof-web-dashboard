@@ -101,7 +101,6 @@ const generateRegressionData = (builds: BuildPerformance[]) => {
     })
   }
 
-
   return { builds, alerts }
 }
 
@@ -267,18 +266,14 @@ export function RegressionDetection({
                           <span>Baseline:</span>
                           <span>
                             {alert.baseline}
-                            {alert.metric === "FPS"
-                              ? " FPS"
-                              : " MB"}
+                            {alert.metric === "FPS" ? " FPS" : " MB"}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Current:</span>
                           <span className="text-red-600">
                             {alert.current}
-                            {alert.metric === "FPS"
-                              ? " FPS"
-                              : " MB"}
+                            {alert.metric === "FPS" ? " FPS" : " MB"}
                           </span>
                         </div>
                         <div className="flex justify-between font-medium">

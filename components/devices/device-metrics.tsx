@@ -290,7 +290,6 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
         </Card>
       </div>
 
-
       {/* Screen Usage Breakdown */}
       {screenData.length > 1 && (
         <Card>

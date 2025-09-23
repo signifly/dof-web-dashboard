@@ -360,15 +360,14 @@ export function ABTestingPerformance({
               </div>
             </div>
 
-
             <div className="p-4 bg-purple-900/20 rounded-lg">
               <div className="font-medium text-purple-900">
                 Performance Impact
               </div>
               <div className="text-sm text-purple-700 mt-1">
                 A/B testing has led to cumulative improvements: +18% FPS, -20%
-                memory usage. User retention increased by 4.2%
-                following these optimizations.
+                memory usage. User retention increased by 4.2% following these
+                optimizations.
               </div>
             </div>
           </div>

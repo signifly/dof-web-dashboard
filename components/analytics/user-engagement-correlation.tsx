@@ -81,7 +81,6 @@ export function UserEngagementCorrelation({
                 Memory vs Interactions Correlation
               </div>
             </div>
-
           </div>
         </CardContent>
       </Card>
@@ -151,7 +150,6 @@ export function UserEngagementCorrelation({
                 per session
               </div>
             </div>
-
           </div>
         </CardContent>
       </Card>

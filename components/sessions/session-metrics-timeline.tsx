@@ -394,7 +394,6 @@ export function SessionMetricsTimelineComponent({
                   </div>
                 </div>
               </div>
-
             </div>
           </CardContent>
         </Card>

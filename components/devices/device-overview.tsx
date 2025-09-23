@@ -237,7 +237,6 @@ export function DeviceOverview({ device }: DeviceOverviewProps) {
                 </span>
               </div>
             </div>
-
           </div>
         </CardContent>
       </Card>
