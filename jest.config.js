@@ -21,7 +21,7 @@ const customJestConfig = {
     "!**/node_modules/**",
     "!components/ui/**", // Exclude ui components from coverage as they're mostly third-party
   ],
-  moduleNameMapping: {
+  moduleNameMapper: {
     // Handle module aliases (same as in tsconfig.json)
     "^@/(.*)$": "<rootDir>/$1",
   },
