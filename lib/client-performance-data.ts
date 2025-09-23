@@ -3,6 +3,10 @@ import {
   inferCPUUsage,
   PerformanceMetricsForInference,
 } from "@/lib/utils/cpu-inference"
+import { Tables } from "@/types/database"
+
+type PerformanceSession = Tables<"performance_sessions">
+type PerformanceMetric = Tables<"performance_metrics">
 
 /**
  * Get build performance data grouped by app version (client-side version)
@@ -26,9 +30,13 @@ export async function getBuildPerformanceDataClient(): Promise<any[]> {
       .from("performance_metrics")
       .select("*")
 
-    if (metricsError || !metrics) {
+    if (metricsError || !metrics || metrics.length === 0) {
       return []
     }
+
+    // Type assert the data to help TypeScript
+    const typedSessions = sessions as PerformanceSession[]
+    const typedMetrics = metrics as PerformanceMetric[]
 
     // Available metric types: fps, memory_usage, navigation_time, screen_load
     // Note: cpu_usage is not available in current database schema
@@ -36,7 +44,7 @@ export async function getBuildPerformanceDataClient(): Promise<any[]> {
     // Group sessions by app version
     const versionGroups = new Map<string, any>()
 
-    sessions.forEach(session => {
+    typedSessions.forEach(session => {
       const version = session.app_version
       if (!versionGroups.has(version)) {
         versionGroups.set(version, {
@@ -66,7 +74,7 @@ export async function getBuildPerformanceDataClient(): Promise<any[]> {
     // Calculate performance metrics for each version
     const buildPerformance = Array.from(versionGroups.values()).map(group => {
       const sessionIds = new Set(group.sessions.map((s: any) => s.id))
-      const versionMetrics = metrics.filter(
+      const versionMetrics = typedMetrics.filter(
         m => m.session_id && sessionIds.has(m.session_id)
       )
 
