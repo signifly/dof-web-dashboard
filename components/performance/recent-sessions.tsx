@@ -2,6 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PerformanceSession } from "@/lib/performance-data"
+import Link from "next/link"
+import { ExternalLink } from "lucide-react"
 
 interface RecentSessionsProps {
   sessions: PerformanceSession[]
@@ -82,34 +84,47 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
       <CardContent>
         <div className="space-y-4">
           {sessions.slice(0, 8).map(session => (
-            <div
+            <Link
               key={session.id}
-              className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+              href={`/sessions/${encodeURIComponent(session.id)}`}
+              className="block"
             >
-              <div className="flex items-center space-x-3">
-                <div
-                  className={`w-3 h-3 rounded-full bg-blue-900/200`}
-                  title="Session"
-                />
-                <div>
-                  <div className="font-medium text-sm">
-                    {session.device_type} • {session.app_version}
+              <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group">
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      getSessionStatus(session) === "Active"
+                        ? "bg-green-500"
+                        : getSessionStatus(session) === "Completed"
+                          ? "bg-blue-500"
+                          : "bg-gray-500"
+                    }`}
+                    title={`${getSessionStatus(session)} Session`}
+                  />
+                  <div>
+                    <div className="font-medium text-sm flex items-center space-x-2">
+                      <span>
+                        {session.device_type} • {session.app_version}
+                      </span>
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      User: {session.anonymous_user_id.slice(0, 8)}... •
+                      Session: {session.id.slice(0, 8)}...
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="text-sm font-medium">
+                    {getSessionStatus(session)}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    User: {session.anonymous_user_id.slice(0, 8)}...
+                    {formatDate(session.session_start)}
                   </div>
                 </div>
               </div>
-
-              <div className="text-right">
-                <div className="text-sm font-medium">
-                  {getSessionStatus(session)}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {formatDate(session.session_start)}
-                </div>
-              </div>
-            </div>
+            </Link>
           ))}
 
           {sessions.length > 8 && (
