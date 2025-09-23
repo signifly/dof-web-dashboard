@@ -18,6 +18,10 @@ const navigationItems = [
     href: "/metrics" as const,
   },
   {
+    name: "Routes",
+    href: "/routes" as const,
+  },
+  {
     name: "Devices",
     href: "/devices" as const,
   },
