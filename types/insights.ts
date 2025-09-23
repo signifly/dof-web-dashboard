@@ -9,6 +9,9 @@ export interface PerformanceInsight {
     | "route_performance_anomaly"
     | "route_vs_global_performance"
     | "route_performance_degradation"
+    | "journey_abandonment_pattern"
+    | "journey_bottleneck_detection"
+    | "journey_optimization_opportunity"
   severity: "critical" | "high" | "medium" | "low"
   title: string
   description: string

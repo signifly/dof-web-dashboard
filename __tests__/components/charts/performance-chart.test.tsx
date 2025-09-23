@@ -6,6 +6,9 @@ import { MetricsTrend } from "@/lib/performance-data"
 
 import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
 
+const mockUseRealtimePerformance =
+  useRealtimePerformance as jest.MockedFunction<typeof useRealtimePerformance>
+
 describe("PerformanceChart", () => {
   const mockData: MetricsTrend[] = [
     {
@@ -35,7 +38,7 @@ describe("PerformanceChart", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    useRealtimePerformance.mockReturnValue({
+    mockUseRealtimePerformance.mockReturnValue({
       data: [],
       isConnected: true,
       lastUpdate: new Date(),
@@ -66,7 +69,7 @@ describe("PerformanceChart", () => {
       },
     ]
 
-    useRealtimePerformance.mockReturnValue({
+    mockUseRealtimePerformance.mockReturnValue({
       data: realtimeData,
       isConnected: true,
       lastUpdate: new Date(),
@@ -94,7 +97,7 @@ describe("PerformanceChart", () => {
   })
 
   it("should show 'Waiting for realtime data' when realtime enabled but no data", () => {
-    useRealtimePerformance.mockReturnValue({
+    mockUseRealtimePerformance.mockReturnValue({
       data: [],
       isConnected: true,
       lastUpdate: null,
@@ -148,7 +151,7 @@ describe("PerformanceChart", () => {
 
   it("should handle error state in realtime mode", () => {
     const mockError = new Error("Connection failed")
-    useRealtimePerformance.mockReturnValue({
+    mockUseRealtimePerformance.mockReturnValue({
       data: mockData,
       isConnected: false,
       lastUpdate: new Date(),

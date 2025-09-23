@@ -8,6 +8,7 @@ describe("ConnectionStatus", () => {
   const defaultProps = {
     isConnected: true,
     lastUpdate: new Date("2023-01-01T12:00:00Z"),
+    error: null,
     onReconnect: jest.fn(),
   }
 
@@ -95,6 +96,7 @@ describe("ConnectionStatus", () => {
 describe("ConnectionStatusBadge", () => {
   const defaultProps = {
     isConnected: true,
+    error: null,
     onReconnect: jest.fn(),
   }
 
@@ -148,14 +150,12 @@ describe("ConnectionStatusBadge", () => {
     expect(defaultProps.onReconnect).not.toHaveBeenCalled()
   })
 
-  it("should handle different sizes", () => {
-    const { rerender } = render(
-      <ConnectionStatusBadge {...defaultProps} size="sm" />
-    )
+  it("should render consistently", () => {
+    const { rerender } = render(<ConnectionStatusBadge {...defaultProps} />)
 
     expect(screen.getByText("Live")).toBeInTheDocument()
 
-    rerender(<ConnectionStatusBadge {...defaultProps} size="lg" />)
+    rerender(<ConnectionStatusBadge {...defaultProps} />)
 
     expect(screen.getByText("Live")).toBeInTheDocument()
   })

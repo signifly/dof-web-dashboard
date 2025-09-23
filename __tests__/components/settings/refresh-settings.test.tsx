@@ -44,7 +44,7 @@ describe("RefreshSettings", () => {
     render(<RefreshSettings sections={["intervals"]} />)
 
     expect(screen.getByText("Refresh Intervals")).toBeInTheDocument()
-    expect(screen.queryByText("Global Settings")).not.toBeInTheDocument()
+    expect(screen.queryByText("Behavior")).not.toBeInTheDocument()
   })
 
   it("should load initial values from config", () => {
@@ -97,10 +97,10 @@ describe("RefreshSettings", () => {
     expect(container.querySelector(".space-y-6")).not.toBeInTheDocument()
   })
 
-  it("should render global settings section", () => {
-    render(<RefreshSettings sections={["global"]} />)
+  it("should render behavior settings section", () => {
+    render(<RefreshSettings sections={["behavior"]} />)
 
-    expect(screen.getByText("Global Settings")).toBeInTheDocument()
+    expect(screen.getByText("Behavior")).toBeInTheDocument()
     expect(
       screen.getByLabelText("Pause on User Interaction")
     ).toBeInTheDocument()
@@ -109,7 +109,7 @@ describe("RefreshSettings", () => {
 
   it("should handle switch toggles in global settings", async () => {
     const user = userEvent.setup()
-    render(<RefreshSettings sections={["global"]} />)
+    render(<RefreshSettings sections={["behavior"]} />)
 
     const pauseSwitch = screen.getByLabelText("Pause on User Interaction")
 
@@ -126,10 +126,10 @@ describe("RefreshSettings", () => {
   })
 
   it("should render both sections when specified", () => {
-    render(<RefreshSettings sections={["intervals", "global"]} />)
+    render(<RefreshSettings sections={["intervals", "behavior"]} />)
 
     expect(screen.getByText("Refresh Intervals")).toBeInTheDocument()
-    expect(screen.getByText("Global Settings")).toBeInTheDocument()
+    expect(screen.getByText("Behavior")).toBeInTheDocument()
   })
 
   it("should format time values correctly", () => {
@@ -274,7 +274,7 @@ describe("RefreshSettings", () => {
       writable: true,
     })
 
-    render(<RefreshSettings sections={["global"]} />)
+    render(<RefreshSettings sections={["behavior"]} />)
 
     const pauseSwitch = screen.getByLabelText("Pause on User Interaction")
     const autoRefreshSwitch = screen.getByLabelText("Auto-refresh Enabled")
