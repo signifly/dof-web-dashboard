@@ -114,10 +114,10 @@ export function PerformanceSummaryCards({
 
       <MetricCard
         title="CPU Usage"
-        value={`${data.avgCpu.toFixed(1)}%`}
-        change={cpuGrade.grade}
-        changeType={cpuGrade.type}
-        trend={cpuGrade.trend}
+        value={data.avgCpu === 0 ? "No data" : `${data.avgCpu.toFixed(1)}%`}
+        change={data.avgCpu === 0 ? "No data available" : cpuGrade.grade}
+        changeType={data.avgCpu === 0 ? "neutral" : cpuGrade.type}
+        trend={data.avgCpu === 0 ? "stable" : cpuGrade.trend}
       />
 
       <MetricCard

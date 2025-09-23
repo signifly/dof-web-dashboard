@@ -26,6 +26,9 @@ export async function getBuildPerformanceDataClient(): Promise<any[]> {
       return []
     }
 
+    // Available metric types: fps, memory_usage, navigation_time, screen_load
+    // Note: cpu_usage is not available in current database schema
+
     // Group sessions by app version
     const versionGroups = new Map<string, any>()
 
