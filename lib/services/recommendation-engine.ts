@@ -5,6 +5,12 @@ import {
   OptimizationOpportunity,
 } from "@/types/insights"
 import { PerformanceSummary } from "@/lib/performance-data"
+import { RoutePerformanceAnalysis } from "@/types/route-performance"
+import {
+  analyzeRouteOptimizationOpportunities,
+  RouteOptimizationAnalysis,
+  RouteOptimizationRecommendation,
+} from "@/lib/utils/route-recommendations"
 
 export class RecommendationEngine {
   private rules: RecommendationRule[]
@@ -19,7 +25,8 @@ export class RecommendationEngine {
   async generateRecommendations(
     insights: PerformanceInsight[],
     context: PerformanceSummary,
-    opportunities?: OptimizationOpportunity[]
+    opportunities?: OptimizationOpportunity[],
+    routeData?: RoutePerformanceAnalysis
   ): Promise<PerformanceRecommendation[]> {
     const recommendations: PerformanceRecommendation[] = []
 
@@ -67,6 +74,18 @@ export class RecommendationEngine {
           recommendations.push(opportunityRecommendation)
         }
       }
+    }
+
+    // Generate route-specific recommendations
+    if (routeData) {
+      const routeOptimizations =
+        analyzeRouteOptimizationOpportunities(routeData)
+      const routeRecommendations =
+        this.generateRouteOptimizationRecommendations(
+          routeOptimizations,
+          context
+        )
+      recommendations.push(...routeRecommendations)
     }
 
     // Remove duplicates and sort by priority
@@ -319,6 +338,147 @@ export class RecommendationEngine {
         priority_weight: 0.7,
         category: ["compatibility", "optimization"],
       },
+
+      // Route-Specific Recommendation Rules for Issue #28
+
+      // Route Navigation Optimization Rules
+      {
+        id: "route_preloading_optimization",
+        name: "Route Preloading Optimization",
+        description: "Implement preloading for heavy routes",
+        condition: insight =>
+          insight.type === "route_performance_anomaly" &&
+          !!(
+            insight.data_context.route_context?.route_specific_metrics
+              ?.avg_screen_duration &&
+            insight.data_context.route_context.route_specific_metrics
+              .avg_screen_duration > 3000
+          ),
+        recommendation: insight => ({
+          title: "Implement Route Preloading",
+          description:
+            "Long-duration route detected. Implement preloading for better UX.",
+          category: "route_navigation",
+          impact: "medium",
+          effort: "medium",
+          actionable_steps: [
+            "Implement route component preloading for heavy screens",
+            "Add skeleton loaders for route transitions",
+            "Cache route data during idle time",
+            "Implement progressive loading for route assets",
+          ],
+          estimated_improvement: "30-50% reduction in perceived load time",
+          related_metrics: ["screen_duration", "user_experience"],
+          implementation_time: "2-3 development days",
+        }),
+        priority_weight: 1.3,
+        category: ["route_navigation", "performance"],
+      },
+
+      // Device-Route Compatibility Rules
+      {
+        id: "low_end_device_route_optimization",
+        name: "Low-End Device Route Optimization",
+        description: "Optimize routes for low-end devices",
+        condition: insight =>
+          insight.type === "route_performance_anomaly" &&
+          !!(
+            insight.data_context.route_context?.route_specific_metrics
+              ?.avg_screen_duration &&
+            insight.data_context.route_context.route_specific_metrics
+              .avg_screen_duration > 5000
+          ),
+        recommendation: insight => ({
+          title: "Optimize Route for Low-End Devices",
+          description:
+            "Route performs poorly on low-end devices. Implement device-specific optimizations.",
+          category: "route_device_optimization",
+          impact: "high",
+          effort: "medium",
+          actionable_steps: [
+            "Reduce asset quality on low-end devices for this route",
+            "Implement simplified UI components for resource-constrained devices",
+            "Add device-specific route loading strategies",
+            "Consider alternative route flows for low-end devices",
+          ],
+          estimated_improvement: "Route-specific improvements: 40-60%",
+          related_metrics: ["fps", "memory_usage", "device_compatibility"],
+          implementation_time: "3-5 development days",
+        }),
+        priority_weight: 1.4,
+        category: ["route_device_optimization", "compatibility"],
+      },
+
+      // Route Performance Budget Rules
+      {
+        id: "route_performance_budget_exceeded",
+        name: "Route Performance Budget Exceeded",
+        description: "Route exceeds performance budget thresholds",
+        condition: insight =>
+          insight.type === "route_performance_degradation" ||
+          (insight.type === "route_performance_anomaly" &&
+            !!(
+              insight.data_context.route_context?.route_specific_metrics
+                ?.avg_screen_duration &&
+              insight.data_context.route_context.route_specific_metrics
+                .avg_screen_duration > 5000
+            )),
+        recommendation: insight => ({
+          title: "Route Exceeds Performance Budget",
+          description:
+            "Route loading time exceeds performance budget. Optimization required.",
+          category: "route_performance_budget",
+          impact: "high",
+          effort: "medium",
+          actionable_steps: [
+            "Set performance budget targets for this route",
+            "Implement route performance monitoring",
+            "Add automated alerts for budget violations",
+            "Create route performance regression testing",
+          ],
+          estimated_improvement: "Restore within performance budget",
+          related_metrics: ["screen_duration", "performance_budget"],
+          implementation_time: "1-2 development days",
+        }),
+        priority_weight: 1.6,
+        category: ["route_performance_budget", "monitoring"],
+      },
+
+      // Route Caching Optimization Rules
+      {
+        id: "route_caching_opportunity",
+        name: "Route Caching Opportunity",
+        description:
+          "Implement caching strategies for frequently accessed routes",
+        condition: insight =>
+          insight.type === "route_vs_global_performance" &&
+          !!(
+            insight.data_context.route_context?.route_specific_metrics
+              ?.sessions_count &&
+            insight.data_context.route_context.route_specific_metrics
+              .sessions_count > 50
+          ),
+        recommendation: insight => ({
+          title: "Implement Route Caching Strategy",
+          description:
+            "High-traffic route detected. Implement caching for improved performance.",
+          category: "route_caching",
+          impact: "medium",
+          effort: "low",
+          actionable_steps: [
+            "Implement route-level data caching",
+            "Add component-level memoization for route components",
+            "Cache route transition animations",
+            "Implement intelligent cache invalidation strategies",
+          ],
+          estimated_improvement:
+            "20-35% performance improvement for repeat visits",
+          related_metrics: ["screen_duration", "memory_usage"],
+          implementation_time: "1-2 development days",
+        }),
+        priority_weight: 1.1,
+        category: ["route_caching", "optimization"],
+      },
     ]
   }
 
@@ -359,6 +519,32 @@ export class RecommendationEngine {
     // Device count factor - more affected devices = higher priority
     const deviceFactor = Math.min(1.5, 1 + context.deviceCount / 100)
 
+    // Route-specific priority adjustments
+    if (insight.data_context.route_context) {
+      const routeContext = insight.data_context.route_context
+
+      // Boost priority for routes with many affected sessions
+      if (routeContext.route_specific_metrics.sessions_count > 100) {
+        contextMultiplier += 0.3
+      }
+
+      // Boost priority for routes with poor performance vs others
+      if (routeContext.route_specific_metrics.avg_screen_duration > 4000) {
+        contextMultiplier += 0.4
+      }
+
+      // Boost priority for routes affecting many devices
+      if (routeContext.route_specific_metrics.unique_devices > 20) {
+        contextMultiplier += 0.2
+      }
+    }
+
+    // Route-specific category adjustments
+    if (recommendation.category.toString().startsWith("route_")) {
+      // Route-specific recommendations get priority boost
+      contextMultiplier += 0.25
+    }
+
     // Calculate final priority score
     const baseScore =
       impactWeight * 0.3 +
@@ -368,6 +554,252 @@ export class RecommendationEngine {
       rule.priority_weight * 0.1
 
     return baseScore * contextMultiplier * deviceFactor
+  }
+
+  /**
+   * Generate recommendations from route optimization analysis
+   */
+  private generateRouteOptimizationRecommendations(
+    routeOptimizations: RouteOptimizationAnalysis[],
+    context: PerformanceSummary
+  ): PerformanceRecommendation[] {
+    const recommendations: PerformanceRecommendation[] = []
+
+    for (const routeAnalysis of routeOptimizations) {
+      for (const optimization of routeAnalysis.optimization_recommendations) {
+        const priorityScore = this.calculateRouteOptimizationPriorityScore(
+          optimization,
+          routeAnalysis,
+          context
+        )
+
+        if (priorityScore >= 2.0) {
+          const recommendation: PerformanceRecommendation = {
+            id: crypto.randomUUID(),
+            insight_id: `route-optimization-${routeAnalysis.route_pattern}`,
+            title: this.getRouteOptimizationTitle(optimization, routeAnalysis),
+            description: optimization.description,
+            category: this.getRouteOptimizationCategory(optimization.type),
+            impact: this.mapPriorityToImpact(optimization.priority),
+            effort: this.mapComplexityToEffort(
+              optimization.implementation_complexity
+            ),
+            priority_score: priorityScore,
+            actionable_steps: this.getRouteOptimizationActionSteps(
+              optimization,
+              routeAnalysis
+            ),
+            estimated_improvement: optimization.estimated_impact,
+            related_metrics: this.getRouteOptimizationMetrics(
+              optimization.type
+            ),
+            implementation_time: this.getRouteOptimizationTimeEstimate(
+              optimization.implementation_complexity
+            ),
+            status: "pending",
+            created_at: new Date().toISOString(),
+          }
+
+          recommendations.push(recommendation)
+        }
+      }
+    }
+
+    return recommendations
+  }
+
+  /**
+   * Calculate priority score for route optimization recommendations
+   */
+  private calculateRouteOptimizationPriorityScore(
+    optimization: RouteOptimizationRecommendation,
+    routeAnalysis: RouteOptimizationAnalysis,
+    context: PerformanceSummary
+  ): number {
+    const priorityWeight = { high: 3, medium: 2, low: 1 }[optimization.priority]
+    const complexityWeight = { simple: 3, moderate: 2, complex: 1 }[
+      optimization.implementation_complexity
+    ]
+
+    let baseScore = (priorityWeight + complexityWeight) / 2
+
+    // Route-specific adjustments
+    if (routeAnalysis.performance_budget_status === "exceeded") {
+      baseScore += 1.0
+    } else if (routeAnalysis.performance_budget_status === "approaching") {
+      baseScore += 0.5
+    }
+
+    if (routeAnalysis.device_compatibility_issues.length > 0) {
+      baseScore += 0.5
+    }
+
+    if (
+      routeAnalysis.preloading_opportunity &&
+      optimization.type === "preloading"
+    ) {
+      baseScore += 0.7
+    }
+
+    if (
+      routeAnalysis.caching_potential === "high" &&
+      optimization.type === "caching"
+    ) {
+      baseScore += 0.6
+    }
+
+    return baseScore
+  }
+
+  /**
+   * Get title for route optimization recommendation
+   */
+  private getRouteOptimizationTitle(
+    optimization: RouteOptimizationRecommendation,
+    routeAnalysis: RouteOptimizationAnalysis
+  ): string {
+    const routePattern =
+      routeAnalysis.route_pattern.replace(/^\//, "").replace(/\//g, " ") ||
+      "route"
+
+    switch (optimization.type) {
+      case "preloading":
+        return `Implement Preloading for ${routePattern}`
+      case "caching":
+        return `Optimize Caching for ${routePattern}`
+      case "device_optimization":
+        return `Device Compatibility for ${routePattern}`
+      case "performance_budget":
+        return `Performance Budget for ${routePattern}`
+      default:
+        return `Route Optimization for ${routePattern}`
+    }
+  }
+
+  /**
+   * Get category for route optimization type
+   */
+  private getRouteOptimizationCategory(
+    type:
+      | "preloading"
+      | "caching"
+      | "device_optimization"
+      | "performance_budget"
+  ):
+    | "route_navigation"
+    | "route_caching"
+    | "route_device_optimization"
+    | "route_performance_budget" {
+    switch (type) {
+      case "preloading":
+        return "route_navigation"
+      case "caching":
+        return "route_caching"
+      case "device_optimization":
+        return "route_device_optimization"
+      case "performance_budget":
+        return "route_performance_budget"
+    }
+  }
+
+  /**
+   * Get action steps for route optimization
+   */
+  private getRouteOptimizationActionSteps(
+    optimization: RouteOptimizationRecommendation,
+    routeAnalysis: RouteOptimizationAnalysis
+  ): string[] {
+    const baseSteps: Record<string, string[]> = {
+      preloading: [
+        "Implement route component preloading",
+        "Add skeleton loaders for route transitions",
+        "Cache critical route data during idle time",
+        "Implement progressive loading for route assets",
+      ],
+      caching: [
+        "Implement route-level data caching",
+        "Add component-level memoization",
+        "Cache route transition animations",
+        "Implement intelligent cache invalidation",
+      ],
+      device_optimization: [
+        "Analyze device-specific performance issues",
+        "Implement device-tier based optimizations",
+        "Add simplified UI for resource-constrained devices",
+        "Consider alternative flows for low-end devices",
+      ],
+      performance_budget: [
+        "Set performance budget targets for route",
+        "Implement route performance monitoring",
+        "Add automated alerts for budget violations",
+        "Create performance regression testing",
+      ],
+    }
+
+    return baseSteps[optimization.type] || ["Implement route optimization"]
+  }
+
+  /**
+   * Get related metrics for route optimization type
+   */
+  private getRouteOptimizationMetrics(
+    type:
+      | "preloading"
+      | "caching"
+      | "device_optimization"
+      | "performance_budget"
+  ): string[] {
+    switch (type) {
+      case "preloading":
+        return ["screen_duration", "user_experience", "perceived_performance"]
+      case "caching":
+        return ["screen_duration", "memory_usage", "repeat_visit_performance"]
+      case "device_optimization":
+        return ["fps", "memory_usage", "device_compatibility", "cpu_usage"]
+      case "performance_budget":
+        return ["screen_duration", "performance_budget", "user_experience"]
+    }
+  }
+
+  /**
+   * Get time estimate for route optimization complexity
+   */
+  private getRouteOptimizationTimeEstimate(
+    complexity: "simple" | "moderate" | "complex"
+  ): string {
+    switch (complexity) {
+      case "simple":
+        return "1-2 development days"
+      case "moderate":
+        return "2-4 development days"
+      case "complex":
+        return "1-2 weeks"
+    }
+  }
+
+  /**
+   * Map priority to impact
+   */
+  private mapPriorityToImpact(
+    priority: "high" | "medium" | "low"
+  ): "high" | "medium" | "low" {
+    return priority
+  }
+
+  /**
+   * Map complexity to effort
+   */
+  private mapComplexityToEffort(
+    complexity: "simple" | "moderate" | "complex"
+  ): "high" | "medium" | "low" {
+    switch (complexity) {
+      case "simple":
+        return "low"
+      case "moderate":
+        return "medium"
+      case "complex":
+        return "high"
+    }
   }
 
   /**

@@ -45,7 +45,15 @@ export interface PerformanceRecommendation {
   insight_id: string
   title: string
   description: string
-  category: "performance" | "memory" | "cpu" | "rendering"
+  category:
+    | "performance"
+    | "memory"
+    | "cpu"
+    | "rendering"
+    | "route_navigation"
+    | "route_caching"
+    | "route_device_optimization"
+    | "route_performance_budget"
   impact: "high" | "medium" | "low"
   effort: "high" | "medium" | "low"
   priority_score: number // calculated based on impact, effort, confidence
@@ -240,4 +248,22 @@ export interface InsightsEngineState {
   cached_baselines: Record<string, number>
   recommendation_history: PerformanceRecommendation[]
   configuration: InsightsEngineConfig
+}
+
+// Route-specific recommendation types for Issue #28
+export interface DeviceRouteCompatibility {
+  device_tier: "high_end" | "mid_range" | "low_end"
+  route_pattern: string
+  performance_score: number
+  optimization_priority: number
+}
+
+export interface RouteRecommendation extends PerformanceRecommendation {
+  route_context?: {
+    affected_routes: string[]
+    route_patterns: string[]
+    navigation_impact: "high" | "medium" | "low"
+    device_compatibility?: DeviceRouteCompatibility[]
+    implementation_scope: "single_route" | "route_group" | "global_navigation"
+  }
 }
