@@ -61,7 +61,6 @@ interface DeviceCalculation {
   totalSessions: number
   fpsMetrics: number[]
   memoryMetrics: number[]
-  loadTimeMetrics: number[]
   lastSeen: string
 }
 
@@ -76,7 +75,10 @@ function calculateInferredCPU(
   const fpsMetrics = metrics.filter(m => m.metric_type === "fps")
   const memoryMetrics = metrics.filter(m => m.metric_type === "memory_usage")
   const loadTimeMetrics = metrics.filter(
-    m => m.metric_type === "navigation_time" || m.metric_type === "screen_load"
+    m =>
+      m.metric_type === "navigation_time" ||
+      m.metric_type === "screen_load" ||
+      m.metric_type === "load_time"
   )
 
   if (
@@ -167,7 +169,9 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
     const loadTimeMetrics =
       metrics?.filter(
         m =>
-          m.metric_type === "navigation_time" || m.metric_type === "screen_load"
+          m.metric_type === "navigation_time" ||
+          m.metric_type === "screen_load" ||
+          m.metric_type === "load_time"
       ) || []
 
     const avgFps =
@@ -626,7 +630,9 @@ export async function getBuildPerformanceData(): Promise<any[]> {
       )
       const loadTimeMetrics = versionMetrics.filter(
         m =>
-          m.metric_type === "navigation_time" || m.metric_type === "screen_load"
+          m.metric_type === "navigation_time" ||
+          m.metric_type === "screen_load" ||
+          m.metric_type === "load_time"
       )
       const cpuMetrics = versionMetrics.filter(
         m => m.metric_type === "cpu_usage"
@@ -775,6 +781,7 @@ export async function getScreenNames(): Promise<string[]> {
   }
 }
 
+
 /**
  * Get device performance data with calculated metrics averages
  */
@@ -823,7 +830,6 @@ export async function getDevicePerformanceData(): Promise<DeviceProfile[]> {
           totalSessions: 0,
           fpsMetrics: [],
           memoryMetrics: [],
-          loadTimeMetrics: [],
           lastSeen: session.created_at,
         })
       }
@@ -840,6 +846,7 @@ export async function getDevicePerformanceData(): Promise<DeviceProfile[]> {
       // Collect metrics for this session
       const sessionMetrics =
         metrics?.filter(m => m.session_id === session.id) || []
+
       sessionMetrics.forEach(metric => {
         switch (metric.metric_type) {
           case "fps":
@@ -847,10 +854,6 @@ export async function getDevicePerformanceData(): Promise<DeviceProfile[]> {
             break
           case "memory_usage":
             device.memoryMetrics.push(metric.metric_value)
-            break
-          case "navigation_time":
-          case "screen_load":
-            device.loadTimeMetrics.push(metric.metric_value)
             break
         }
       })
@@ -868,12 +871,6 @@ export async function getDevicePerformanceData(): Promise<DeviceProfile[]> {
         device.memoryMetrics.length > 0
           ? device.memoryMetrics.reduce((sum, mem) => sum + mem, 0) /
             device.memoryMetrics.length
-          : 0
-
-      const avgLoadTime =
-        device.loadTimeMetrics.length > 0
-          ? device.loadTimeMetrics.reduce((sum, time) => sum + time, 0) /
-            device.loadTimeMetrics.length
           : 0
 
       // Calculate inferred CPU
@@ -900,7 +897,7 @@ export async function getDevicePerformanceData(): Promise<DeviceProfile[]> {
         totalSessions: device.totalSessions,
         avgFps: Math.round(avgFps * 10) / 10, // Real calculated value
         avgMemory: Math.round(avgMemory), // Real calculated value
-        avgLoadTime: Math.round(avgLoadTime), // Real calculated value (NOT hardcoded)
+        avgLoadTime: 0, // Not available in this database
         avgCpu: Math.round(avgCpu * 10) / 10,
         lastSeen: device.lastSeen,
         riskLevel,
