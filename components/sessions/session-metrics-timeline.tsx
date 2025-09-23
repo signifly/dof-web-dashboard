@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SessionMetricsTimeline } from "@/types/session"
 import { MetricsTrend } from "@/lib/performance-data"
-import { PerformanceLineChart } from "@/components/charts/performance-line-chart"
+import { MultiSeriesChart } from "@/components/charts"
 import { format } from "date-fns"
 import { useState } from "react"
 import { Activity, Clock, Zap, HardDrive, Cpu } from "lucide-react"
@@ -258,11 +258,40 @@ export function SessionMetricsTimelineComponent({
         <CardContent>
           {chartData.length > 0 ? (
             <div className="space-y-4">
-              <PerformanceLineChart
-                data={chartData}
-                lines={chartConfig}
+              <MultiSeriesChart
+                datasets={[
+                  {
+                    name: "FPS",
+                    data: chartData,
+                    metric: "fps",
+                    color: "#10b981",
+                    visible:
+                      selectedMetric === "all" || selectedMetric === "fps",
+                  },
+                  {
+                    name: "Memory",
+                    data: chartData,
+                    metric: "memory_usage",
+                    color: "#f59e0b",
+                    visible:
+                      selectedMetric === "all" || selectedMetric === "memory",
+                  },
+                  {
+                    name: "CPU",
+                    data: chartData,
+                    metric: "cpu_usage",
+                    color: "#ef4444",
+                    visible:
+                      selectedMetric === "all" || selectedMetric === "cpu",
+                  },
+                ]}
+                title="Session Performance Timeline"
                 height={350}
-                showLegend={selectedMetric === "all"}
+                chartType="line"
+                enableBrush={true}
+                enableZoom={true}
+                enableExport={true}
+                enableLegend={selectedMetric === "all"}
               />
 
               {/* Screen Transitions */}

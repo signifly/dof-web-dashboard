@@ -35,8 +35,11 @@ interface RecommendationsPanelProps {
 export function RecommendationsPanel({
   recommendations,
 }: RecommendationsPanelProps) {
-  const [dismissedRecommendations, setDismissedRecommendations] = useState<Set<string>>(new Set())
-  const [selectedRecommendation, setSelectedRecommendation] = useState<PerformanceRecommendation | null>(null)
+  const [dismissedRecommendations, setDismissedRecommendations] = useState<
+    Set<string>
+  >(new Set())
+  const [selectedRecommendation, setSelectedRecommendation] =
+    useState<PerformanceRecommendation | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
   const handleDismiss = (recommendationId: string) => {
@@ -331,35 +334,49 @@ export function RecommendationsPanel({
                   <span className="text-muted-foreground">Category:</span>
                   <div className="flex items-center gap-1 mt-1">
                     {getCategoryIcon(selectedRecommendation.category)}
-                    <span className="capitalize">{selectedRecommendation.category}</span>
+                    <span className="capitalize">
+                      {selectedRecommendation.category}
+                    </span>
                   </div>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Priority Score:</span>
-                  <div className={`font-medium mt-1 ${getPriorityColor(selectedRecommendation.priority_score)}`}>
+                  <div
+                    className={`font-medium mt-1 ${getPriorityColor(selectedRecommendation.priority_score)}`}
+                  >
                     {selectedRecommendation.priority_score.toFixed(1)}
                   </div>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Impact:</span>
                   <div className="mt-1">
-                    <Badge className={getImpactColor(selectedRecommendation.impact)}>
+                    <Badge
+                      className={getImpactColor(selectedRecommendation.impact)}
+                    >
                       {selectedRecommendation.impact} impact
                     </Badge>
                   </div>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Effort:</span>
-                  <div className={`px-2 py-1 rounded-md border text-xs mt-1 inline-block ${getEffortColor(selectedRecommendation.effort)}`}>
+                  <div
+                    className={`px-2 py-1 rounded-md border text-xs mt-1 inline-block ${getEffortColor(selectedRecommendation.effort)}`}
+                  >
                     {selectedRecommendation.effort} effort
                   </div>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Implementation Time:</span>
-                  <div className="mt-1 text-sm">{selectedRecommendation.implementation_time}</div>
+                  <span className="text-muted-foreground">
+                    Implementation Time:
+                  </span>
+                  <div className="mt-1 text-sm">
+                    {selectedRecommendation.implementation_time}
+                  </div>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Estimated Improvement:</span>
+                  <span className="text-muted-foreground">
+                    Estimated Improvement:
+                  </span>
                   <div className="mt-1 text-sm text-green-600 font-medium">
                     {selectedRecommendation.estimated_improvement}
                   </div>
@@ -370,14 +387,16 @@ export function RecommendationsPanel({
               <div>
                 <h4 className="font-medium mb-3">Action Steps:</h4>
                 <div className="space-y-3">
-                  {selectedRecommendation.actionable_steps.map((step, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
-                        {index + 1}
+                  {selectedRecommendation.actionable_steps.map(
+                    (step, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
+                          {index + 1}
+                        </div>
+                        <p className="text-sm leading-relaxed">{step}</p>
                       </div>
-                      <p className="text-sm leading-relaxed">{step}</p>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </div>
 
@@ -386,11 +405,17 @@ export function RecommendationsPanel({
                 <div>
                   <h4 className="font-medium mb-2">Related Metrics:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedRecommendation.related_metrics.map((metric, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {metric.replace("_", " ")}
-                      </Badge>
-                    ))}
+                    {selectedRecommendation.related_metrics.map(
+                      (metric, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {metric.replace("_", " ")}
+                        </Badge>
+                      )
+                    )}
                   </div>
                 </div>
               )}

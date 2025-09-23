@@ -119,13 +119,20 @@ export class PerformanceInsightsEngine {
     ]
 
     // 8. Generate recommendations using recommendation engine
-    console.log("📊 Generated Insights:", insights.length, insights.map(i => ({
-      type: i.type,
-      category: i.category,
-      severity: i.severity,
-      title: i.title
-    })))
-    console.log("🎯 Optimization Opportunities:", optimizationOpportunities.length)
+    console.log(
+      "📊 Generated Insights:",
+      insights.length,
+      insights.map(i => ({
+        type: i.type,
+        category: i.category,
+        severity: i.severity,
+        title: i.title,
+      }))
+    )
+    console.log(
+      "🎯 Optimization Opportunities:",
+      optimizationOpportunities.length
+    )
 
     const recommendations =
       await this.recommendationEngine.generateRecommendations(
@@ -573,5 +580,4 @@ export class PerformanceInsightsEngine {
     if (type.includes("fps")) return "performance"
     return "performance"
   }
-
 }

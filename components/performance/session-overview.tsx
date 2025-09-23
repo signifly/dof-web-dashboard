@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PerformanceBarChart } from "@/components/charts/performance-bar-chart"
+import { InteractiveChart } from "@/components/charts"
 import { PerformanceSummary, PerformanceSession } from "@/lib/performance-data"
 import { format } from "date-fns"
 
@@ -58,21 +58,23 @@ export function SessionOverview({ summary, isLoading }: SessionOverviewProps) {
         </CardHeader>
         <CardContent>
           {summary.platformBreakdown.length > 0 ? (
-            <PerformanceBarChart
-              data={summary.platformBreakdown.map(p => ({
-                name: p.platform,
-                sessions: p.count,
+            <InteractiveChart
+              data={summary.platformBreakdown.map((p, index) => ({
+                timestamp: `Platform ${index + 1}`,
+                fps: p.count,
+                memory_usage: 0,
+                cpu_usage: 0,
+                load_time: 0,
+                screen_name: p.platform,
               }))}
-              bars={[
-                {
-                  key: "sessions",
-                  name: "Sessions",
-                  color: "#8884d8",
-                  unit: " sessions",
-                },
-              ]}
+              metric="fps"
+              chartType="bar"
+              title="Platform Distribution"
               height={200}
-              showLegend={false}
+              enableBrush={false}
+              enableZoom={false}
+              enableExport={false}
+              enableAnomalyDetection={false}
             />
           ) : (
             <div className="h-[200px] flex items-center justify-center text-muted-foreground">
