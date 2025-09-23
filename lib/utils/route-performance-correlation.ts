@@ -223,7 +223,8 @@ export function detectRoutePerformanceAnomalies(
 
     // FPS anomalies - check against target range, not app average
     if (route.avgFps < FPS_TARGET_MIN) {
-      const deviationFromTarget = ((route.avgFps - FPS_TARGET_OPTIMAL) / FPS_TARGET_OPTIMAL) * 100
+      const deviationFromTarget =
+        ((route.avgFps - FPS_TARGET_OPTIMAL) / FPS_TARGET_OPTIMAL) * 100
 
       anomalies.push({
         route_pattern: route.routePattern,
@@ -244,15 +245,22 @@ export function detectRoutePerformanceAnomalies(
     const MEMORY_CRITICAL_THRESHOLD = 600 // MB - point where "critical" pressure might occur
 
     if (route.avgMemory > MEMORY_WARNING_THRESHOLD) {
-      const severity = route.avgMemory > MEMORY_CRITICAL_THRESHOLD ? "critical" :
-                      route.avgMemory > 500 ? "high" : "medium"
+      const severity =
+        route.avgMemory > MEMORY_CRITICAL_THRESHOLD
+          ? "critical"
+          : route.avgMemory > 500
+            ? "high"
+            : "medium"
 
       anomalies.push({
         route_pattern: route.routePattern,
         route_name: route.routeName,
         metric_type: "memory",
         anomaly_severity: severity,
-        deviation_from_norm: ((route.avgMemory - MEMORY_WARNING_THRESHOLD) / MEMORY_WARNING_THRESHOLD) * 100,
+        deviation_from_norm:
+          ((route.avgMemory - MEMORY_WARNING_THRESHOLD) /
+            MEMORY_WARNING_THRESHOLD) *
+          100,
         current_value: route.avgMemory,
         expected_value: MEMORY_WARNING_THRESHOLD, // Target to stay below warning threshold
         sessions_count: route.totalSessions,
@@ -304,7 +312,8 @@ export function compareRoutesAgainstGlobalPerformance(
     )
 
     // FPS comparison - against target performance, not just app average
-    const fpsDeviationFromTarget = ((route.avgFps - FPS_TARGET_OPTIMAL) / FPS_TARGET_OPTIMAL) * 100
+    const fpsDeviationFromTarget =
+      ((route.avgFps - FPS_TARGET_OPTIMAL) / FPS_TARGET_OPTIMAL) * 100
 
     if (Math.abs(fpsDeviationFromTarget) > 15) {
       comparisons.push({
@@ -325,9 +334,13 @@ export function compareRoutesAgainstGlobalPerformance(
     const MEMORY_OPTIMAL_TARGET = 300 // MB - target for optimal performance
     const MEMORY_WARNING_THRESHOLD = 400 // MB - warning pressure threshold
 
-    const memoryDeviationFromOptimal = ((route.avgMemory - MEMORY_OPTIMAL_TARGET) / MEMORY_OPTIMAL_TARGET) * 100
+    const memoryDeviationFromOptimal =
+      ((route.avgMemory - MEMORY_OPTIMAL_TARGET) / MEMORY_OPTIMAL_TARGET) * 100
 
-    if (Math.abs(memoryDeviationFromOptimal) > 20 || route.avgMemory > MEMORY_WARNING_THRESHOLD) {
+    if (
+      Math.abs(memoryDeviationFromOptimal) > 20 ||
+      route.avgMemory > MEMORY_WARNING_THRESHOLD
+    ) {
       comparisons.push({
         route_pattern: route.routePattern,
         route_name: route.routeName,
@@ -409,6 +422,6 @@ function getFpsAnomalySeverity(
   actualFps: number
 ): "critical" | "high" | "medium" {
   if (actualFps < 20) return "critical" // Very poor performance
-  if (actualFps < 30) return "high"     // Poor performance
-  return "medium"                       // Below target but manageable
+  if (actualFps < 30) return "high" // Poor performance
+  return "medium" // Below target but manageable
 }

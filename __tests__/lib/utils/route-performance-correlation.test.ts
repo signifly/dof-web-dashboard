@@ -161,10 +161,7 @@ describe("Route Performance Correlation", () => {
     it("should identify routes with high risk level", () => {
       const highRiskAnalysis: RoutePerformanceAnalysis = {
         ...mockRouteAnalysis,
-        routes: [
-          { ...mockRouteData, riskLevel: "high" },
-          mockGoodRouteData,
-        ],
+        routes: [{ ...mockRouteData, riskLevel: "high" }, mockGoodRouteData],
       }
 
       const problematicRoutes = identifyProblematicRoutes(highRiskAnalysis)
@@ -436,7 +433,10 @@ describe("Route Performance Correlation", () => {
 
       expect(overperformingComparison).toBeDefined()
       expect(overperformingComparison?.route_name).toBe("highFpsRoute")
-      expect(overperformingComparison?.deviation_percentage).toBeCloseTo(18.2, 1) // (65-55)/55*100
+      expect(overperformingComparison?.deviation_percentage).toBeCloseTo(
+        18.2,
+        1
+      ) // (65-55)/55*100
     })
 
     it("should identify routes underperforming against FPS target", () => {
@@ -459,11 +459,15 @@ describe("Route Performance Correlation", () => {
 
       expect(underperformingComparison).toBeDefined()
       expect(underperformingComparison?.route_name).toBe("lowFpsRoute")
-      expect(underperformingComparison?.deviation_percentage).toBeCloseTo(27.3, 1) // (40-55)/55*100 absolute
+      expect(underperformingComparison?.deviation_percentage).toBeCloseTo(
+        27.3,
+        1
+      ) // (40-55)/55*100 absolute
     })
 
     it("should calculate deviation percentages correctly", () => {
-      const comparisons = compareRoutesAgainstGlobalPerformance(mockRouteAnalysis)
+      const comparisons =
+        compareRoutesAgainstGlobalPerformance(mockRouteAnalysis)
 
       expect(comparisons.length).toBeGreaterThan(0)
       comparisons.forEach(comparison => {
@@ -474,7 +478,8 @@ describe("Route Performance Correlation", () => {
     })
 
     it("should sort comparisons by deviation percentage", () => {
-      const comparisons = compareRoutesAgainstGlobalPerformance(mockRouteAnalysis)
+      const comparisons =
+        compareRoutesAgainstGlobalPerformance(mockRouteAnalysis)
 
       for (let i = 1; i < comparisons.length; i++) {
         expect(comparisons[i - 1].deviation_percentage).toBeGreaterThanOrEqual(
@@ -500,7 +505,8 @@ describe("Route Performance Correlation", () => {
         ],
       }
 
-      const comparisons = compareRoutesAgainstGlobalPerformance(highSessionAnalysis)
+      const comparisons =
+        compareRoutesAgainstGlobalPerformance(highSessionAnalysis)
 
       const highConfidenceComparison = comparisons.find(
         c => c.sessions_count === 15
