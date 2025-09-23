@@ -5,21 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { RoutePerformanceData } from "@/types/route-performance"
 import { ArrowUpDown, Download, Search, Filter } from "lucide-react"
 
@@ -191,28 +176,27 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
 
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <Select value={riskFilter} onValueChange={(value: RiskFilter) => setRiskFilter(value)}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Risk Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Risk</SelectItem>
-                <SelectItem value="low">Low Risk</SelectItem>
-                <SelectItem value="medium">Medium Risk</SelectItem>
-                <SelectItem value="high">High Risk</SelectItem>
-              </SelectContent>
-            </Select>
+            <select
+              value={riskFilter}
+              onChange={(e) => setRiskFilter(e.target.value as RiskFilter)}
+              className="w-32 px-3 py-2 text-sm border border-input bg-background rounded-md"
+            >
+              <option value="all">All Risk</option>
+              <option value="low">Low Risk</option>
+              <option value="medium">Medium Risk</option>
+              <option value="high">High Risk</option>
+            </select>
           </div>
         </div>
       </CardHeader>
 
       <CardContent>
         {filteredAndSortedRoutes.length > 0 ? (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-border">
+              <thead>
+                <tr className="border-b">
+                  <th className="border border-border p-3 text-left">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -222,9 +206,9 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                       Route
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
-                  </TableHead>
-                  <TableHead>Pattern</TableHead>
-                  <TableHead>
+                  </th>
+                  <th className="border border-border p-3 text-left">Pattern</th>
+                  <th className="border border-border p-3 text-left">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -234,9 +218,9 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                       Score
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
-                  </TableHead>
-                  <TableHead>Risk</TableHead>
-                  <TableHead>
+                  </th>
+                  <th className="border border-border p-3 text-left">Risk</th>
+                  <th className="border border-border p-3 text-left">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -246,8 +230,8 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                       FPS
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
-                  </TableHead>
-                  <TableHead>
+                  </th>
+                  <th className="border border-border p-3 text-left">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -257,8 +241,8 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                       Memory
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
-                  </TableHead>
-                  <TableHead>
+                  </th>
+                  <th className="border border-border p-3 text-left">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -268,8 +252,8 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                       CPU
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
-                  </TableHead>
-                  <TableHead>
+                  </th>
+                  <th className="border border-border p-3 text-left">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -279,75 +263,75 @@ export function RoutePerformanceTable({ routes }: RoutePerformanceTableProps) {
                       Sessions
                       <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
-                  </TableHead>
-                  <TableHead>Trend</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+                  </th>
+                  <th className="border border-border p-3 text-left">Trend</th>
+                </tr>
+              </thead>
+              <tbody>
                 {filteredAndSortedRoutes.map((route) => (
-                  <TableRow key={`${route.routeName}-${route.routePattern}`}>
-                    <TableCell>
+                  <tr key={`${route.routeName}-${route.routePattern}`} className="border-b hover:bg-muted/50">
+                    <td className="border border-border p-3">
                       <div>
                         <div className="font-medium">{route.routeName}</div>
                         <div className="text-xs text-muted-foreground">
                           {route.uniqueDevices} devices
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <code className="text-xs bg-muted px-2 py-1 rounded">
                         {route.routePattern}
                       </code>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <div className="font-bold text-lg">
                         {route.performanceScore}
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <Badge variant={getRiskBadgeVariant(route.riskLevel)}>
                         {route.riskLevel}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <div>{route.avgFps}</div>
                       <div className="text-xs text-muted-foreground">
                         {route.relativePerformance.fpsVsAverage > 0 ? "+" : ""}
                         {route.relativePerformance.fpsVsAverage.toFixed(1)}%
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <div>{route.avgMemory} MB</div>
                       <div className="text-xs text-muted-foreground">
                         {route.relativePerformance.memoryVsAverage > 0 ? "+" : ""}
                         {route.relativePerformance.memoryVsAverage.toFixed(1)}%
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <div>{route.avgCpu}%</div>
                       <div className="text-xs text-muted-foreground">
                         {route.relativePerformance.cpuVsAverage > 0 ? "+" : ""}
                         {route.relativePerformance.cpuVsAverage.toFixed(1)}%
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <div>{route.totalSessions}</div>
                       <div className="text-xs text-muted-foreground">
                         {(route.avgScreenDuration / 1000).toFixed(1)}s avg
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="border border-border p-3">
                       <div className="flex items-center gap-1">
                         <span>{getTrendIcon(route.performanceTrend)}</span>
                         <span className="text-xs capitalize">
                           {route.performanceTrend}
                         </span>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
         ) : (
           <div className="text-center py-12">
