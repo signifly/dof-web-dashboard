@@ -1,5 +1,5 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { PerformanceSummaryCards } from "@/components/performance/performance-summary-cards"
+import { PerformanceSummaryCards, CPUInferenceNote } from "@/components/performance/performance-summary-cards"
 import { PlatformBreakdown } from "@/components/performance/platform-breakdown"
 import { RecentSessions } from "@/components/performance/recent-sessions"
 import { PerformanceChart } from "@/components/charts/performance-chart"
@@ -24,7 +24,10 @@ export default async function DashboardPage() {
     return (
       <DashboardLayout title="Dashboard">
         <div className="space-y-6">
-          <PerformanceSummaryCards data={summary} />
+          <div>
+            <PerformanceSummaryCards data={summary} />
+            {summary.avgCpu > 0 && <CPUInferenceNote />}
+          </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <div className="col-span-4 space-y-4">

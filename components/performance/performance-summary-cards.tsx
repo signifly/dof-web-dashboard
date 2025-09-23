@@ -114,8 +114,8 @@ export function PerformanceSummaryCards({
 
       <MetricCard
         title="CPU Usage"
-        value={data.avgCpu === 0 ? "No data" : `${data.avgCpu.toFixed(1)}%`}
-        change={data.avgCpu === 0 ? "No data available" : cpuGrade.grade}
+        value={data.avgCpu === 0 ? "No data" : `${data.avgCpu.toFixed(1)}%*`}
+        change={data.avgCpu === 0 ? "No data available" : `${cpuGrade.grade} (inferred)`}
         changeType={data.avgCpu === 0 ? "neutral" : cpuGrade.type}
         trend={data.avgCpu === 0 ? "stable" : cpuGrade.trend}
       />
@@ -127,6 +127,15 @@ export function PerformanceSummaryCards({
         changeType={memoryGrade.type}
         trend={memoryGrade.trend}
       />
+    </div>
+  )
+}
+
+export function CPUInferenceNote() {
+  return (
+    <div className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+      <span>*</span>
+      <span>CPU usage values are inferred from FPS, memory, and load time metrics</span>
     </div>
   )
 }

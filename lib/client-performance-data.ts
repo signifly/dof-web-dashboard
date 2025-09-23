@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
+import { inferCPUUsage, PerformanceMetricsForInference } from "@/lib/utils/cpu-inference"
 
 /**
  * Get build performance data grouped by app version (client-side version)
@@ -94,11 +95,59 @@ export async function getBuildPerformanceDataClient(): Promise<any[]> {
           ? loadTimeMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
             loadTimeMetrics.length
           : 0
-      const avgCpu =
-        cpuMetrics.length > 0
-          ? cpuMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-            cpuMetrics.length
-          : 0
+      // Calculate inferred CPU for this version group
+      let avgCpu = 0
+      if (cpuMetrics.length > 0) {
+        // Use actual CPU data if available
+        avgCpu = cpuMetrics.reduce((sum, m) => sum + m.metric_value, 0) / cpuMetrics.length
+      } else {
+        // Infer CPU from other metrics
+        const cpuInferences: number[] = []
+        group.sessions.forEach((session: any) => {
+          const sessionMetrics = versionMetrics.filter(m => m.session_id === session.id)
+          if (sessionMetrics.length > 0) {
+            // Helper function to calculate inferred CPU
+            const calculateInferredCPU = (metrics: any[], deviceType: string): number => {
+              const fpsMetrics = metrics.filter(m => m.metric_type === "fps")
+              const memoryMetrics = metrics.filter(m => m.metric_type === "memory_usage")
+              const loadTimeMetrics = metrics.filter(
+                m => m.metric_type === "navigation_time" || m.metric_type === "screen_load"
+              )
+
+              if (fpsMetrics.length === 0 && memoryMetrics.length === 0 && loadTimeMetrics.length === 0) {
+                return 0
+              }
+
+              const avgFps = fpsMetrics.length > 0
+                ? fpsMetrics.reduce((sum, m) => sum + m.metric_value, 0) / fpsMetrics.length
+                : 30
+
+              const avgMemory = memoryMetrics.length > 0
+                ? memoryMetrics.reduce((sum, m) => sum + m.metric_value, 0) / memoryMetrics.length
+                : 200
+
+              const avgLoadTime = loadTimeMetrics.length > 0
+                ? loadTimeMetrics.reduce((sum, m) => sum + m.metric_value, 0) / loadTimeMetrics.length
+                : 1000
+
+              const inferenceInput: PerformanceMetricsForInference = {
+                fps: avgFps,
+                memory_usage: avgMemory,
+                load_time: avgLoadTime,
+                device_type: deviceType
+              }
+
+              return inferCPUUsage(inferenceInput)
+            }
+
+            const inferredCpu = calculateInferredCPU(sessionMetrics, session.device_type || 'Unknown')
+            cpuInferences.push(inferredCpu)
+          }
+        })
+        if (cpuInferences.length > 0) {
+          avgCpu = cpuInferences.reduce((sum, cpu) => sum + cpu, 0) / cpuInferences.length
+        }
+      }
 
       // Calculate regression score (performance composite)
       const fpsScore =

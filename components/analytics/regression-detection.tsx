@@ -391,7 +391,7 @@ export function RegressionDetection({
                       <div className="text-muted-foreground">ms</div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium">{build.avgCpu === 0 ? "N/A" : `${build.avgCpu}%`}</div>
+                      <div className="font-medium">{build.avgCpu === 0 ? "N/A" : `${build.avgCpu}%*`}</div>
                       <div className="text-muted-foreground">CPU</div>
                     </div>
                   </div>
