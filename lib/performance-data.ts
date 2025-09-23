@@ -38,6 +38,33 @@ export interface SessionPerformance {
   trends: MetricsTrend[]
 }
 
+export interface DeviceProfile {
+  deviceId: string
+  platform: string
+  appVersion: string
+  sessions: PerformanceSession[]
+  totalSessions: number
+  avgFps: number
+  avgMemory: number
+  avgLoadTime: number
+  avgCpu: number
+  lastSeen: string
+  performanceTier?: string
+  riskLevel: "low" | "medium" | "high"
+}
+
+interface DeviceCalculation {
+  deviceId: string
+  platform: string
+  appVersion: string
+  sessions: PerformanceSession[]
+  totalSessions: number
+  fpsMetrics: number[]
+  memoryMetrics: number[]
+  loadTimeMetrics: number[]
+  lastSeen: string
+}
+
 /**
  * Calculate inferred CPU usage for a session based on its metrics
  */
@@ -744,6 +771,143 @@ export async function getScreenNames(): Promise<string[]> {
     return Array.from(screenNames).sort()
   } catch (error) {
     console.error("Error fetching screen names:", error)
+    return []
+  }
+}
+
+/**
+ * Get device performance data with calculated metrics averages
+ */
+export async function getDevicePerformanceData(): Promise<DeviceProfile[]> {
+  const supabase = createClient()
+
+  try {
+    // 1. Fetch all recent sessions grouped by device
+    const { data: sessions, error: sessionsError } = await supabase
+      .from("performance_sessions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(1000) // Reasonable limit for performance
+
+    if (sessionsError || !sessions?.length) {
+      console.warn(
+        `Sessions error: ${sessionsError?.message || "No sessions found"}`
+      )
+      return []
+    }
+
+    // 2. Get all session IDs for metrics lookup
+    const sessionIds = sessions.map(s => s.id)
+
+    // 3. Fetch all metrics for these sessions
+    const { data: metrics, error: metricsError } = await supabase
+      .from("performance_metrics")
+      .select("*")
+      .in("session_id", sessionIds)
+
+    if (metricsError) {
+      console.warn(`Metrics error: ${metricsError.message}`)
+    }
+
+    // 4. Group sessions by device and calculate real averages
+    const deviceMap = new Map<string, DeviceCalculation>()
+
+    sessions.forEach(session => {
+      const deviceId = session.anonymous_user_id
+      if (!deviceMap.has(deviceId)) {
+        deviceMap.set(deviceId, {
+          deviceId,
+          platform: session.device_type || "Unknown",
+          appVersion: session.app_version || "Unknown",
+          sessions: [],
+          totalSessions: 0,
+          fpsMetrics: [],
+          memoryMetrics: [],
+          loadTimeMetrics: [],
+          lastSeen: session.created_at,
+        })
+      }
+
+      const device = deviceMap.get(deviceId)!
+      device.sessions.push(session)
+      device.totalSessions++
+
+      // Update last seen
+      if (new Date(session.created_at) > new Date(device.lastSeen)) {
+        device.lastSeen = session.created_at
+      }
+
+      // Collect metrics for this session
+      const sessionMetrics =
+        metrics?.filter(m => m.session_id === session.id) || []
+      sessionMetrics.forEach(metric => {
+        switch (metric.metric_type) {
+          case "fps":
+            device.fpsMetrics.push(metric.metric_value)
+            break
+          case "memory_usage":
+            device.memoryMetrics.push(metric.metric_value)
+            break
+          case "navigation_time":
+          case "screen_load":
+            device.loadTimeMetrics.push(metric.metric_value)
+            break
+        }
+      })
+    })
+
+    // 5. Calculate final averages and return DeviceProfile[]
+    return Array.from(deviceMap.values()).map(device => {
+      const avgFps =
+        device.fpsMetrics.length > 0
+          ? device.fpsMetrics.reduce((sum, fps) => sum + fps, 0) /
+            device.fpsMetrics.length
+          : 0
+
+      const avgMemory =
+        device.memoryMetrics.length > 0
+          ? device.memoryMetrics.reduce((sum, mem) => sum + mem, 0) /
+            device.memoryMetrics.length
+          : 0
+
+      const avgLoadTime =
+        device.loadTimeMetrics.length > 0
+          ? device.loadTimeMetrics.reduce((sum, time) => sum + time, 0) /
+            device.loadTimeMetrics.length
+          : 0
+
+      // Calculate inferred CPU
+      const avgCpu = calculateInferredCPU(
+        device.sessions.flatMap(
+          s => metrics?.filter(m => m.session_id === s.id) || []
+        ),
+        device.platform
+      )
+
+      // Calculate risk level based on actual metrics
+      let riskLevel: "low" | "medium" | "high" = "low"
+      if (avgFps < 20 || avgMemory > 800 || device.totalSessions < 2) {
+        riskLevel = "high"
+      } else if (avgFps < 45 || avgMemory > 400 || device.totalSessions < 5) {
+        riskLevel = "medium"
+      }
+
+      return {
+        deviceId: device.deviceId,
+        platform: device.platform,
+        appVersion: device.appVersion,
+        sessions: device.sessions,
+        totalSessions: device.totalSessions,
+        avgFps: Math.round(avgFps * 10) / 10, // Real calculated value
+        avgMemory: Math.round(avgMemory), // Real calculated value
+        avgLoadTime: Math.round(avgLoadTime), // Real calculated value (NOT hardcoded)
+        avgCpu: Math.round(avgCpu * 10) / 10,
+        lastSeen: device.lastSeen,
+        riskLevel,
+      }
+    })
+  } catch (error) {
+    console.error("Error fetching device performance data:", error)
     return []
   }
 }

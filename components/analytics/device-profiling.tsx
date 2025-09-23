@@ -78,9 +78,9 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
         ? Math.max(30 - (device.avgMemory / 1000) * 10, 0)
         : 30 // 30 points max for memory efficiency
     const loadTimeScore =
-      device.avgLoadTime > 0
+      device.avgLoadTime && device.avgLoadTime > 0
         ? Math.max(30 - (device.avgLoadTime / 1000) * 15, 0)
-        : 30 // 30 points max for load time
+        : 0 // No score if no load time data available
 
     return Math.round(fpsScore + memoryScore + loadTimeScore)
   }
@@ -177,7 +177,7 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
                     </div>
                     <div className="text-center">
                       <div className="font-medium">
-                        {device.avgLoadTime > 0
+                        {device.avgLoadTime && device.avgLoadTime > 0
                           ? `${device.avgLoadTime.toFixed(0)}ms`
                           : "N/A"}
                       </div>
