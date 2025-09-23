@@ -291,13 +291,13 @@ describe("Route Performance Correlation", () => {
   })
 
   describe("detectRoutePerformanceAnomalies", () => {
-    it("should detect FPS anomalies", () => {
+    it("should detect FPS anomalies against target 50-60 FPS range", () => {
       const anomalousAnalysis: RoutePerformanceAnalysis = {
         ...mockRouteAnalysis,
         routes: [
           {
             ...mockRouteData,
-            avgFps: 20, // Very low compared to app average of 50.5
+            avgFps: 35, // Below target range of 50-60 FPS
           },
         ],
       }
@@ -307,8 +307,25 @@ describe("Route Performance Correlation", () => {
       expect(anomalies).toHaveLength(1)
       expect(anomalies[0].metric_type).toBe("fps")
       expect(anomalies[0].route_pattern).toBe("/home/[id]/game-bird-name/game")
-      expect(anomalies[0].current_value).toBe(20)
-      expect(anomalies[0].expected_value).toBe(50.5)
+      expect(anomalies[0].current_value).toBe(35)
+      expect(anomalies[0].expected_value).toBe(55) // FPS target optimal
+      expect(anomalies[0].anomaly_severity).toBe("medium") // 35 FPS is below target but manageable
+    })
+
+    it("should not detect FPS anomalies for routes meeting target", () => {
+      const goodFpsAnalysis: RoutePerformanceAnalysis = {
+        ...mockRouteAnalysis,
+        routes: [
+          {
+            ...mockRouteData,
+            avgFps: 58, // Within target range of 50-60 FPS
+          },
+        ],
+      }
+
+      const anomalies = detectRoutePerformanceAnomalies(goodFpsAnalysis)
+
+      expect(anomalies.filter(a => a.metric_type === "fps")).toHaveLength(0)
     })
 
     it("should detect memory anomalies", () => {
@@ -379,25 +396,50 @@ describe("Route Performance Correlation", () => {
   })
 
   describe("compareRoutesAgainstGlobalPerformance", () => {
-    it("should identify overperforming routes", () => {
-      const comparisons = compareRoutesAgainstGlobalPerformance(mockRouteAnalysis)
+    it("should identify routes overperforming against FPS target", () => {
+      const highFpsAnalysis: RoutePerformanceAnalysis = {
+        ...mockRouteAnalysis,
+        routes: [
+          {
+            ...mockRouteData,
+            routeName: "highFpsRoute",
+            avgFps: 65, // Above target optimal of 55 FPS
+          },
+        ],
+      }
+
+      const comparisons = compareRoutesAgainstGlobalPerformance(highFpsAnalysis)
 
       const overperformingComparison = comparisons.find(
-        c => c.comparison_type === "overperforming"
+        c => c.comparison_type === "overperforming" && c.metric_type === "fps"
       )
 
       expect(overperformingComparison).toBeDefined()
-      expect(overperformingComparison?.route_name).toBe("home")
+      expect(overperformingComparison?.route_name).toBe("highFpsRoute")
+      expect(overperformingComparison?.deviation_percentage).toBeCloseTo(18.2, 1) // (65-55)/55*100
     })
 
-    it("should identify underperforming routes", () => {
-      const comparisons = compareRoutesAgainstGlobalPerformance(mockRouteAnalysis)
+    it("should identify routes underperforming against FPS target", () => {
+      const lowFpsAnalysis: RoutePerformanceAnalysis = {
+        ...mockRouteAnalysis,
+        routes: [
+          {
+            ...mockRouteData,
+            routeName: "lowFpsRoute",
+            avgFps: 40, // Below target optimal of 55 FPS
+          },
+        ],
+      }
+
+      const comparisons = compareRoutesAgainstGlobalPerformance(lowFpsAnalysis)
 
       const underperformingComparison = comparisons.find(
-        c => c.comparison_type === "underperforming"
+        c => c.comparison_type === "underperforming" && c.metric_type === "fps"
       )
 
       expect(underperformingComparison).toBeDefined()
+      expect(underperformingComparison?.route_name).toBe("lowFpsRoute")
+      expect(underperformingComparison?.deviation_percentage).toBeCloseTo(27.3, 1) // (40-55)/55*100 absolute
     })
 
     it("should calculate deviation percentages correctly", () => {

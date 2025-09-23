@@ -211,24 +211,28 @@ export function detectRoutePerformanceAnomalies(
 ): RouteAnomalyDetection[] {
   const anomalies: RouteAnomalyDetection[] = []
 
+  // FPS target range: 50-60 FPS is the goal for all routes
+  const FPS_TARGET_MIN = 50
+  const FPS_TARGET_OPTIMAL = 55
+
   routeAnalysis.routes.forEach(route => {
     const insight = correlateRouteWithGlobalPerformance(
       route,
       routeAnalysis.appAverages
     )
 
-    // FPS anomalies
-    if (Math.abs(insight.performance_vs_average.fps_deviation) > 30) {
+    // FPS anomalies - check against target range, not app average
+    if (route.avgFps < FPS_TARGET_MIN) {
+      const deviationFromTarget = ((route.avgFps - FPS_TARGET_OPTIMAL) / FPS_TARGET_OPTIMAL) * 100
+
       anomalies.push({
         route_pattern: route.routePattern,
         route_name: route.routeName,
         metric_type: "fps",
-        anomaly_severity: getAnomalySeverity(
-          Math.abs(insight.performance_vs_average.fps_deviation)
-        ),
-        deviation_from_norm: insight.performance_vs_average.fps_deviation,
+        anomaly_severity: getFpsAnomalySeverity(route.avgFps),
+        deviation_from_norm: deviationFromTarget,
         current_value: route.avgFps,
-        expected_value: routeAnalysis.appAverages.avgFps,
+        expected_value: FPS_TARGET_OPTIMAL,
         sessions_count: route.totalSessions,
         unique_devices: route.uniqueDevices,
       })
@@ -285,24 +289,27 @@ export function compareRoutesAgainstGlobalPerformance(
 ): RouteComparison[] {
   const comparisons: RouteComparison[] = []
 
+  // FPS target range: 50-60 FPS is the goal for all routes
+  const FPS_TARGET_OPTIMAL = 55
+
   routeAnalysis.routes.forEach(route => {
     const insight = correlateRouteWithGlobalPerformance(
       route,
       routeAnalysis.appAverages
     )
 
-    // FPS comparison
-    if (Math.abs(insight.performance_vs_average.fps_deviation) > 15) {
+    // FPS comparison - against target performance, not just app average
+    const fpsDeviationFromTarget = ((route.avgFps - FPS_TARGET_OPTIMAL) / FPS_TARGET_OPTIMAL) * 100
+
+    if (Math.abs(fpsDeviationFromTarget) > 15) {
       comparisons.push({
         route_pattern: route.routePattern,
         route_name: route.routeName,
         comparison_type:
-          insight.performance_vs_average.fps_deviation > 0
+          route.avgFps >= FPS_TARGET_OPTIMAL
             ? "overperforming"
             : "underperforming",
-        deviation_percentage: Math.abs(
-          insight.performance_vs_average.fps_deviation
-        ),
+        deviation_percentage: Math.abs(fpsDeviationFromTarget),
         metric_type: "fps",
         sessions_count: route.totalSessions,
         confidence: route.totalSessions >= 10 ? 0.9 : 0.6,
@@ -388,4 +395,12 @@ function getAnomalySeverity(
   if (deviationPercentage > 70) return "critical"
   if (deviationPercentage > 50) return "high"
   return "medium"
+}
+
+function getFpsAnomalySeverity(
+  actualFps: number
+): "critical" | "high" | "medium" {
+  if (actualFps < 20) return "critical" // Very poor performance
+  if (actualFps < 30) return "high"     // Poor performance
+  return "medium"                       // Below target but manageable
 }
