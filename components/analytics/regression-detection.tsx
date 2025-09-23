@@ -3,6 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { MetricsTrend } from "@/lib/performance-data"
+import { getBuildPerformanceDataClient } from "@/lib/client-performance-data"
+import { useEffect, useState } from "react"
 
 interface RegressionDetectionProps {
   performanceData: MetricsTrend[]
@@ -38,82 +40,63 @@ interface BuildPerformance {
   status: "passed" | "failed" | "warning"
 }
 
-// Generate regression alerts and build performance data
-const generateRegressionData = (performanceData: MetricsTrend[]) => {
-  const builds: BuildPerformance[] = [
-    {
-      version: "v1.2.3",
-      commit: "a1b2c3d",
-      branch: "main",
-      timestamp: "2024-02-20T10:30:00Z",
-      avgFps: 58.2,
-      avgMemory: 145,
-      avgLoadTime: 820,
-      avgCpu: 42,
-      regressionScore: 95,
-      status: "passed",
-    },
-    {
-      version: "v1.2.4",
-      commit: "e4f5g6h",
-      branch: "main",
-      timestamp: "2024-02-21T14:20:00Z",
-      avgFps: 52.1,
-      avgMemory: 168,
-      avgLoadTime: 950,
-      avgCpu: 48,
-      regressionScore: 72,
-      status: "warning",
-    },
-    {
-      version: "v1.2.5",
-      commit: "i7j8k9l",
-      branch: "feature/optimization",
-      timestamp: "2024-02-22T09:15:00Z",
-      avgFps: 61.3,
-      avgMemory: 132,
-      avgLoadTime: 780,
-      avgCpu: 38,
-      regressionScore: 98,
-      status: "passed",
-    },
-  ]
+// Generate regression alerts from real performance data
+const generateRegressionData = (builds: BuildPerformance[]) => {
+  // Only generate alerts if we have real build data
+  if (builds.length < 2) {
+    return { builds, alerts: [] }
+  }
 
-  const alerts: RegressionAlert[] = [
-    {
-      id: "alert-001",
-      severity: "critical",
+  // Use actual build data for alerts
+  const latestBuild = builds[0]
+  const previousBuild = builds[1]
+
+  const alerts: RegressionAlert[] = []
+
+  // Generate FPS regression alert if there's a significant drop
+  if (previousBuild.avgFps - latestBuild.avgFps > 5) {
+    alerts.push({
+      id: "alert-fps",
+      severity: previousBuild.avgFps - latestBuild.avgFps > 10 ? "critical" : "warning",
       metric: "FPS",
-      change: -10.5,
-      baseline: 58.2,
-      current: 52.1,
-      buildInfo: builds[1],
-      affectedDevices: ["Android", "iOS"],
-      status: "investigating",
-    },
-    {
-      id: "alert-002",
-      severity: "warning",
+      change: ((latestBuild.avgFps - previousBuild.avgFps) / previousBuild.avgFps) * 100,
+      baseline: previousBuild.avgFps,
+      current: latestBuild.avgFps,
+      buildInfo: latestBuild,
+      affectedDevices: latestBuild.platforms || ["Unknown"],
+      status: "new",
+    })
+  }
+
+  // Generate memory regression alert if there's a significant increase
+  if (latestBuild.avgMemory - previousBuild.avgMemory > previousBuild.avgMemory * 0.15) {
+    alerts.push({
+      id: "alert-memory",
+      severity: latestBuild.avgMemory - previousBuild.avgMemory > previousBuild.avgMemory * 0.25 ? "critical" : "warning",
       metric: "Memory Usage",
-      change: 15.8,
-      baseline: 145,
-      current: 168,
-      buildInfo: builds[1],
-      affectedDevices: ["Android"],
+      change: ((latestBuild.avgMemory - previousBuild.avgMemory) / previousBuild.avgMemory) * 100,
+      baseline: previousBuild.avgMemory,
+      current: latestBuild.avgMemory,
+      buildInfo: latestBuild,
+      affectedDevices: latestBuild.platforms || ["Unknown"],
       status: "new",
-    },
-    {
-      id: "alert-003",
-      severity: "warning",
+    })
+  }
+
+  // Generate load time regression alert if there's a significant increase
+  if (latestBuild.avgLoadTime - previousBuild.avgLoadTime > previousBuild.avgLoadTime * 0.2) {
+    alerts.push({
+      id: "alert-loadtime",
+      severity: latestBuild.avgLoadTime - previousBuild.avgLoadTime > previousBuild.avgLoadTime * 0.35 ? "critical" : "warning",
       metric: "Load Time",
-      change: 15.9,
-      baseline: 820,
-      current: 950,
-      buildInfo: builds[1],
-      affectedDevices: ["Android", "iOS", "Web"],
+      change: ((latestBuild.avgLoadTime - previousBuild.avgLoadTime) / previousBuild.avgLoadTime) * 100,
+      baseline: previousBuild.avgLoadTime,
+      current: latestBuild.avgLoadTime,
+      buildInfo: latestBuild,
+      affectedDevices: latestBuild.platforms || ["Unknown"],
       status: "new",
-    },
-  ]
+    })
+  }
 
   return { builds, alerts }
 }
@@ -121,7 +104,31 @@ const generateRegressionData = (performanceData: MetricsTrend[]) => {
 export function RegressionDetection({
   performanceData,
 }: RegressionDetectionProps) {
-  const { builds, alerts } = generateRegressionData(performanceData)
+  const [builds, setBuilds] = useState<BuildPerformance[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchBuildData() {
+      try {
+        setLoading(true)
+        const realBuilds = await getBuildPerformanceDataClient()
+        setBuilds(realBuilds)
+        setError(null)
+      } catch (err) {
+        console.error("Error fetching build performance data:", err)
+        setError("Failed to load build performance data")
+        // Fallback to empty array
+        setBuilds([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBuildData()
+  }, [])
+
+  const { alerts } = generateRegressionData(builds)
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -323,55 +330,75 @@ export function RegressionDetection({
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Build Performance</CardTitle>
+          <CardTitle>Recent App Version Performance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {builds.map((build, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center p-4 border rounded-lg"
-              >
-                <div className="flex items-center space-x-4">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs border ${getStatusColor(build.status)}`}
-                  >
-                    {build.status}
-                  </span>
-                  <div>
-                    <div className="font-medium">{build.version}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {build.commit} • {build.branch} •{" "}
-                      {new Date(build.timestamp).toLocaleDateString()}
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-muted-foreground">
+                Loading performance data...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-red-600">{error}</div>
+            </div>
+          ) : builds.length === 0 ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-muted-foreground">
+                No performance data available
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {builds.map((build, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center p-4 border rounded-lg"
+                >
+                  <div className="flex items-center space-x-4">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs border ${getStatusColor(build.status)}`}
+                    >
+                      {build.status}
+                    </span>
+                    <div>
+                      <div className="font-medium">{build.version}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {build.commit} • {build.branch} •{" "}
+                        {new Date(build.timestamp).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-6 text-sm">
+                    <div className="text-center">
+                      <div className="font-medium">{build.regressionScore}</div>
+                      <div className="text-muted-foreground">Score</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium">
+                        {build.avgFps.toFixed(1)}
+                      </div>
+                      <div className="text-muted-foreground">FPS</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium">{build.avgMemory}</div>
+                      <div className="text-muted-foreground">MB</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium">{build.avgLoadTime}</div>
+                      <div className="text-muted-foreground">ms</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium">{build.avgCpu}%</div>
+                      <div className="text-muted-foreground">CPU</div>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center space-x-6 text-sm">
-                  <div className="text-center">
-                    <div className="font-medium">{build.regressionScore}</div>
-                    <div className="text-muted-foreground">Score</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium">{build.avgFps.toFixed(1)}</div>
-                    <div className="text-muted-foreground">FPS</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium">{build.avgMemory}</div>
-                    <div className="text-muted-foreground">MB</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium">{build.avgLoadTime}</div>
-                    <div className="text-muted-foreground">ms</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium">{build.avgCpu}%</div>
-                    <div className="text-muted-foreground">CPU</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
