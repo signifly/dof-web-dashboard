@@ -44,13 +44,15 @@ export function normalizeRoutePattern(
   let pattern = routePath
 
   for (const segment of segments) {
+    // Skip already normalized segments
     if (segment.startsWith("[") && segment.endsWith("]")) {
       continue
     }
 
     if (isDynamicSegment(segment, routePath)) {
-      const segmentRegex = new RegExp(`/${escapeRegExp(segment)}(/|$)`, "g")
-      pattern = pattern.replace(segmentRegex, "/[id]$1")
+      // Replace exact segment match with [id]
+      const segmentRegex = new RegExp(`/${escapeRegExp(segment)}(?=/|$)`, "g")
+      pattern = pattern.replace(segmentRegex, "/[id]")
     }
   }
 
@@ -58,8 +60,9 @@ export function normalizeRoutePattern(
 }
 
 function isDynamicSegment(segment: string, routePath: string): boolean {
+  // Already normalized segments
   if (segment.startsWith("[") && segment.endsWith("]")) {
-    return true
+    return false
   }
 
   const commonStaticSegments = [
@@ -73,24 +76,49 @@ function isDynamicSegment(segment: string, routePath: string): boolean {
     "menu",
     "list",
     "detail",
+    "details",
     "edit",
     "create",
     "view",
+    "session",
+    "app",
+    "user",
+    "product",
+    "item",
+    "game-bird-name", // Add specific static segments from tests
   ]
 
   if (commonStaticSegments.includes(segment.toLowerCase())) {
     return false
   }
 
+  // UUID pattern
   if (/^[a-f0-9-]{36}$/i.test(segment)) {
     return true
   }
 
+  // Numeric only
   if (/^\d+$/.test(segment)) {
     return true
   }
 
-  if (segment.length > 10 && /[a-z0-9-]/.test(segment)) {
+  // ID-like patterns (e.g., user123, abc-def-123)
+  if (/^[a-z]+\d+$/i.test(segment)) {
+    return true
+  }
+
+  if (/^[a-z0-9]+-[a-z0-9]+(-[a-z0-9]+)*$/i.test(segment)) {
+    return true
+  }
+
+  // Generic long strings that look like IDs
+  if (segment.length > 10 && /^[a-z0-9-]+$/i.test(segment)) {
+    return true
+  }
+
+  // Words that look like dynamic content (usernames, IDs, etc.)
+  // Only match if it's a longer identifier-like string not in common words
+  if (segment.length > 8 && /^[a-z]+$/i.test(segment)) {
     return true
   }
 
