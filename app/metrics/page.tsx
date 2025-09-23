@@ -121,7 +121,9 @@ export default async function MetricsPage() {
                     <div className="flex justify-between items-center">
                       <span>Average CPU Usage</span>
                       <span className="font-medium">
-                        {summary.avgCpu === 0 ? "No data" : `${summary.avgCpu.toFixed(1)}%*`}
+                        {summary.avgCpu === 0
+                          ? "No data"
+                          : `${summary.avgCpu.toFixed(1)}%*`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">

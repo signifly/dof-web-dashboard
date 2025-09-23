@@ -38,6 +38,12 @@ interface BuildPerformance {
   avgCpu: number
   regressionScore: number
   status: "passed" | "failed" | "warning"
+  totalSessions: number
+  platforms: string[]
+  dateRange: {
+    first: string
+    last: string
+  }
 }
 
 // Generate regression alerts from real performance data
@@ -57,9 +63,12 @@ const generateRegressionData = (builds: BuildPerformance[]) => {
   if (previousBuild.avgFps - latestBuild.avgFps > 5) {
     alerts.push({
       id: "alert-fps",
-      severity: previousBuild.avgFps - latestBuild.avgFps > 10 ? "critical" : "warning",
+      severity:
+        previousBuild.avgFps - latestBuild.avgFps > 10 ? "critical" : "warning",
       metric: "FPS",
-      change: ((latestBuild.avgFps - previousBuild.avgFps) / previousBuild.avgFps) * 100,
+      change:
+        ((latestBuild.avgFps - previousBuild.avgFps) / previousBuild.avgFps) *
+        100,
       baseline: previousBuild.avgFps,
       current: latestBuild.avgFps,
       buildInfo: latestBuild,
@@ -69,12 +78,22 @@ const generateRegressionData = (builds: BuildPerformance[]) => {
   }
 
   // Generate memory regression alert if there's a significant increase
-  if (latestBuild.avgMemory - previousBuild.avgMemory > previousBuild.avgMemory * 0.15) {
+  if (
+    latestBuild.avgMemory - previousBuild.avgMemory >
+    previousBuild.avgMemory * 0.15
+  ) {
     alerts.push({
       id: "alert-memory",
-      severity: latestBuild.avgMemory - previousBuild.avgMemory > previousBuild.avgMemory * 0.25 ? "critical" : "warning",
+      severity:
+        latestBuild.avgMemory - previousBuild.avgMemory >
+        previousBuild.avgMemory * 0.25
+          ? "critical"
+          : "warning",
       metric: "Memory Usage",
-      change: ((latestBuild.avgMemory - previousBuild.avgMemory) / previousBuild.avgMemory) * 100,
+      change:
+        ((latestBuild.avgMemory - previousBuild.avgMemory) /
+          previousBuild.avgMemory) *
+        100,
       baseline: previousBuild.avgMemory,
       current: latestBuild.avgMemory,
       buildInfo: latestBuild,
@@ -84,12 +103,22 @@ const generateRegressionData = (builds: BuildPerformance[]) => {
   }
 
   // Generate load time regression alert if there's a significant increase
-  if (latestBuild.avgLoadTime - previousBuild.avgLoadTime > previousBuild.avgLoadTime * 0.2) {
+  if (
+    latestBuild.avgLoadTime - previousBuild.avgLoadTime >
+    previousBuild.avgLoadTime * 0.2
+  ) {
     alerts.push({
       id: "alert-loadtime",
-      severity: latestBuild.avgLoadTime - previousBuild.avgLoadTime > previousBuild.avgLoadTime * 0.35 ? "critical" : "warning",
+      severity:
+        latestBuild.avgLoadTime - previousBuild.avgLoadTime >
+        previousBuild.avgLoadTime * 0.35
+          ? "critical"
+          : "warning",
       metric: "Load Time",
-      change: ((latestBuild.avgLoadTime - previousBuild.avgLoadTime) / previousBuild.avgLoadTime) * 100,
+      change:
+        ((latestBuild.avgLoadTime - previousBuild.avgLoadTime) /
+          previousBuild.avgLoadTime) *
+        100,
       baseline: previousBuild.avgLoadTime,
       current: latestBuild.avgLoadTime,
       buildInfo: latestBuild,
@@ -391,7 +420,9 @@ export function RegressionDetection({
                       <div className="text-muted-foreground">ms</div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium">{build.avgCpu === 0 ? "N/A" : `${build.avgCpu}%*`}</div>
+                      <div className="font-medium">
+                        {build.avgCpu === 0 ? "N/A" : `${build.avgCpu}%*`}
+                      </div>
                       <div className="text-muted-foreground">CPU</div>
                     </div>
                   </div>

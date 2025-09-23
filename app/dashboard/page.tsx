@@ -1,5 +1,8 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { PerformanceSummaryCards, CPUInferenceNote } from "@/components/performance/performance-summary-cards"
+import {
+  PerformanceSummaryCards,
+  CPUInferenceNote,
+} from "@/components/performance/performance-summary-cards"
 import { PlatformBreakdown } from "@/components/performance/platform-breakdown"
 import { RecentSessions } from "@/components/performance/recent-sessions"
 import { PerformanceChart } from "@/components/charts/performance-chart"

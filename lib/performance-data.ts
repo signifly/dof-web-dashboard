@@ -1,6 +1,9 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
-import { inferCPUUsage, PerformanceMetricsForInference } from "@/lib/utils/cpu-inference"
+import {
+  inferCPUUsage,
+  PerformanceMetricsForInference,
+} from "@/lib/utils/cpu-inference"
 
 export type PerformanceMetric = Tables<"performance_metrics">
 export type PerformanceSession = Tables<"performance_sessions">
@@ -49,28 +52,38 @@ function calculateInferredCPU(
     m => m.metric_type === "navigation_time" || m.metric_type === "screen_load"
   )
 
-  if (fpsMetrics.length === 0 && memoryMetrics.length === 0 && loadTimeMetrics.length === 0) {
+  if (
+    fpsMetrics.length === 0 &&
+    memoryMetrics.length === 0 &&
+    loadTimeMetrics.length === 0
+  ) {
     return 0 // No data to infer from
   }
 
   // Calculate averages
-  const avgFps = fpsMetrics.length > 0
-    ? fpsMetrics.reduce((sum, m) => sum + m.metric_value, 0) / fpsMetrics.length
-    : 30 // Default reasonable FPS if no data
+  const avgFps =
+    fpsMetrics.length > 0
+      ? fpsMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
+        fpsMetrics.length
+      : 30 // Default reasonable FPS if no data
 
-  const avgMemory = memoryMetrics.length > 0
-    ? memoryMetrics.reduce((sum, m) => sum + m.metric_value, 0) / memoryMetrics.length
-    : 200 // Default reasonable memory if no data
+  const avgMemory =
+    memoryMetrics.length > 0
+      ? memoryMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
+        memoryMetrics.length
+      : 200 // Default reasonable memory if no data
 
-  const avgLoadTime = loadTimeMetrics.length > 0
-    ? loadTimeMetrics.reduce((sum, m) => sum + m.metric_value, 0) / loadTimeMetrics.length
-    : 1000 // Default reasonable load time if no data
+  const avgLoadTime =
+    loadTimeMetrics.length > 0
+      ? loadTimeMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
+        loadTimeMetrics.length
+      : 1000 // Default reasonable load time if no data
 
   const inferenceInput: PerformanceMetricsForInference = {
     fps: avgFps,
     memory_usage: avgMemory,
     load_time: avgLoadTime,
-    device_type: deviceType
+    device_type: deviceType,
   }
 
   return inferCPUUsage(inferenceInput)
@@ -157,13 +170,18 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
       sessions.forEach(session => {
         const sessionMetrics = metrics.filter(m => m.session_id === session.id)
         if (sessionMetrics.length > 0) {
-          const inferredCpu = calculateInferredCPU(sessionMetrics, session.device_type || 'Unknown')
+          const inferredCpu = calculateInferredCPU(
+            sessionMetrics,
+            session.device_type || "Unknown"
+          )
           sessionCpuValues.push(inferredCpu)
         }
       })
 
       if (sessionCpuValues.length > 0) {
-        avgInferredCpu = sessionCpuValues.reduce((sum, cpu) => sum + cpu, 0) / sessionCpuValues.length
+        avgInferredCpu =
+          sessionCpuValues.reduce((sum, cpu) => sum + cpu, 0) /
+          sessionCpuValues.length
       }
     }
 
@@ -357,15 +375,16 @@ export async function getPerformanceTrends(
     // Calculate inferred CPU for trend points that lack CPU data
     const trends = Array.from(metricsGrouped.values()).map(point => {
       if (point.cpu_usage === 0 && point.session_id) {
-        const deviceType = sessionMap.get(point.session_id) || 'Unknown'
+        const deviceType = sessionMap.get(point.session_id) || "Unknown"
         if (point.fps > 0 || point.memory_usage > 0 || point.load_time > 0) {
           const inferenceInput: PerformanceMetricsForInference = {
             fps: point.fps || 30,
             memory_usage: point.memory_usage || 200,
             load_time: point.load_time || 1000,
-            device_type: deviceType
+            device_type: deviceType,
           }
-          point.cpu_usage = Math.round(inferCPUUsage(inferenceInput) * 100) / 100
+          point.cpu_usage =
+            Math.round(inferCPUUsage(inferenceInput) * 100) / 100
         }
       }
       return point
@@ -605,19 +624,28 @@ export async function getBuildPerformanceData(): Promise<any[]> {
       let avgCpu = 0
       if (cpuMetrics.length > 0) {
         // Use actual CPU data if available
-        avgCpu = cpuMetrics.reduce((sum, m) => sum + m.metric_value, 0) / cpuMetrics.length
+        avgCpu =
+          cpuMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
+          cpuMetrics.length
       } else {
         // Infer CPU from other metrics
         const cpuInferences: number[] = []
         group.sessions.forEach((session: any) => {
-          const sessionMetrics = versionMetrics.filter(m => m.session_id === session.id)
+          const sessionMetrics = versionMetrics.filter(
+            m => m.session_id === session.id
+          )
           if (sessionMetrics.length > 0) {
-            const inferredCpu = calculateInferredCPU(sessionMetrics, session.device_type || 'Unknown')
+            const inferredCpu = calculateInferredCPU(
+              sessionMetrics,
+              session.device_type || "Unknown"
+            )
             cpuInferences.push(inferredCpu)
           }
         })
         if (cpuInferences.length > 0) {
-          avgCpu = cpuInferences.reduce((sum, cpu) => sum + cpu, 0) / cpuInferences.length
+          avgCpu =
+            cpuInferences.reduce((sum, cpu) => sum + cpu, 0) /
+            cpuInferences.length
         }
       }
 
