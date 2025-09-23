@@ -124,7 +124,6 @@ const generateABTests = (performanceData: MetricsTrend[]): ABTest[] => {
           users: 3000,
           avgFps: avgFps * 1.03,
           avgMemory: avgMemory * 0.75,
-          avgLoadTime: avgLoadTime * 0.98,
           avgCpu: avgCpu * 1.02,
           conversionRate: 14.5,
           retentionRate: 81.7,
