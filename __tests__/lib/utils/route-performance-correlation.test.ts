@@ -328,20 +328,40 @@ describe("Route Performance Correlation", () => {
       expect(anomalies.filter(a => a.metric_type === "fps")).toHaveLength(0)
     })
 
-    it("should detect memory anomalies", () => {
+    it("should detect memory anomalies above warning threshold", () => {
       const memoryAnomalousAnalysis: RoutePerformanceAnalysis = {
         ...mockRouteAnalysis,
         routes: [
           {
             ...mockRouteData,
-            avgMemory: 500, // Very high compared to app average of 280
+            avgMemory: 450, // Above 400MB warning threshold
           },
         ],
       }
 
       const anomalies = detectRoutePerformanceAnomalies(memoryAnomalousAnalysis)
 
-      expect(anomalies.some(a => a.metric_type === "memory")).toBe(true)
+      const memoryAnomaly = anomalies.find(a => a.metric_type === "memory")
+      expect(memoryAnomaly).toBeDefined()
+      expect(memoryAnomaly?.current_value).toBe(450)
+      expect(memoryAnomaly?.expected_value).toBe(400) // Warning threshold
+      expect(memoryAnomaly?.anomaly_severity).toBe("medium")
+    })
+
+    it("should not detect memory anomalies for normal pressure levels", () => {
+      const normalMemoryAnalysis: RoutePerformanceAnalysis = {
+        ...mockRouteAnalysis,
+        routes: [
+          {
+            ...mockRouteData,
+            avgMemory: 350, // Below 400MB warning threshold - normal pressure
+          },
+        ],
+      }
+
+      const anomalies = detectRoutePerformanceAnomalies(normalMemoryAnalysis)
+
+      expect(anomalies.filter(a => a.metric_type === "memory")).toHaveLength(0)
     })
 
     it("should detect CPU anomalies", () => {

@@ -238,18 +238,23 @@ export function detectRoutePerformanceAnomalies(
       })
     }
 
-    // Memory anomalies
-    if (Math.abs(insight.performance_vs_average.memory_deviation) > 40) {
+    // Memory anomalies - based on memory pressure levels
+    // Since all current sessions show "normal" pressure, focus on routes that might cause pressure
+    const MEMORY_WARNING_THRESHOLD = 400 // MB - point where "warning" pressure might occur
+    const MEMORY_CRITICAL_THRESHOLD = 600 // MB - point where "critical" pressure might occur
+
+    if (route.avgMemory > MEMORY_WARNING_THRESHOLD) {
+      const severity = route.avgMemory > MEMORY_CRITICAL_THRESHOLD ? "critical" :
+                      route.avgMemory > 500 ? "high" : "medium"
+
       anomalies.push({
         route_pattern: route.routePattern,
         route_name: route.routeName,
         metric_type: "memory",
-        anomaly_severity: getAnomalySeverity(
-          Math.abs(insight.performance_vs_average.memory_deviation)
-        ),
-        deviation_from_norm: insight.performance_vs_average.memory_deviation,
+        anomaly_severity: severity,
+        deviation_from_norm: ((route.avgMemory - MEMORY_WARNING_THRESHOLD) / MEMORY_WARNING_THRESHOLD) * 100,
         current_value: route.avgMemory,
-        expected_value: routeAnalysis.appAverages.avgMemory,
+        expected_value: MEMORY_WARNING_THRESHOLD, // Target to stay below warning threshold
         sessions_count: route.totalSessions,
         unique_devices: route.uniqueDevices,
       })
@@ -316,18 +321,21 @@ export function compareRoutesAgainstGlobalPerformance(
       })
     }
 
-    // Memory comparison
-    if (Math.abs(insight.performance_vs_average.memory_deviation) > 20) {
+    // Memory comparison - against memory pressure thresholds
+    const MEMORY_OPTIMAL_TARGET = 300 // MB - target for optimal performance
+    const MEMORY_WARNING_THRESHOLD = 400 // MB - warning pressure threshold
+
+    const memoryDeviationFromOptimal = ((route.avgMemory - MEMORY_OPTIMAL_TARGET) / MEMORY_OPTIMAL_TARGET) * 100
+
+    if (Math.abs(memoryDeviationFromOptimal) > 20 || route.avgMemory > MEMORY_WARNING_THRESHOLD) {
       comparisons.push({
         route_pattern: route.routePattern,
         route_name: route.routeName,
         comparison_type:
-          insight.performance_vs_average.memory_deviation > 0
-            ? "underperforming"
-            : "overperforming",
-        deviation_percentage: Math.abs(
-          insight.performance_vs_average.memory_deviation
-        ),
+          route.avgMemory <= MEMORY_OPTIMAL_TARGET
+            ? "overperforming" // Lower memory usage is better
+            : "underperforming",
+        deviation_percentage: Math.abs(memoryDeviationFromOptimal),
         metric_type: "memory",
         sessions_count: route.totalSessions,
         confidence: route.totalSessions >= 10 ? 0.9 : 0.6,
