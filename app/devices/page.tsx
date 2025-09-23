@@ -3,73 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DeviceProfiling } from "@/components/analytics/device-profiling"
 import {
   getPerformanceSummary,
-  getRecentSessions,
+  getDevicePerformanceData,
 } from "@/lib/performance-data"
 
 export const dynamic = "force-dynamic"
 
 export default async function DevicesPage() {
   try {
-    const [summary, sessions] = await Promise.all([
+    const [summary, devices] = await Promise.all([
       getPerformanceSummary(),
-      getRecentSessions(50),
+      getDevicePerformanceData(),
     ])
-
-    // Group sessions by device
-    const deviceMap = new Map()
-    sessions.forEach(session => {
-      const deviceId = session.anonymous_user_id
-      if (!deviceMap.has(deviceId)) {
-        deviceMap.set(deviceId, {
-          deviceId,
-          platform: session.device_type,
-          appVersion: session.app_version,
-          sessions: [],
-          totalSessions: 0,
-          avgFps: 0,
-          avgMemory: 0,
-          avgCpu: 0,
-          lastSeen: session.created_at,
-        })
-      }
-
-      const device = deviceMap.get(deviceId)
-      device.sessions.push(session)
-      device.totalSessions++
-
-      // Update last seen
-      if (new Date(session.created_at) > new Date(device.lastSeen)) {
-        device.lastSeen = session.created_at
-      }
-    })
-
-    // Calculate final averages and risk assessment
-    const devices = Array.from(deviceMap.values()).map(device => {
-      const avgFps =
-        device.totalSessions > 0 ? device.avgFps / device.totalSessions : 0
-      const avgMemory =
-        device.totalSessions > 0 ? device.avgMemory / device.totalSessions : 0
-      const avgCpu =
-        device.totalSessions > 0 ? device.avgCpu / device.totalSessions : 0
-
-      // Calculate risk level based on performance metrics
-      let riskLevel: "low" | "medium" | "high" = "low"
-
-      if (avgFps < 20 || avgMemory > 800 || device.totalSessions < 2) {
-        riskLevel = "high"
-      } else if (avgFps < 45 || avgMemory > 400 || device.totalSessions < 5) {
-        riskLevel = "medium"
-      }
-
-      return {
-        ...device,
-        avgFps,
-        avgMemory,
-        avgCpu,
-        avgLoadTime: 0,
-        riskLevel,
-      }
-    })
 
     return (
       <DashboardLayout title="Devices">

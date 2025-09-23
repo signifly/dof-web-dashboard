@@ -71,18 +71,14 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
   }
 
   const getPerformanceScore = (device: DeviceProfile) => {
-    // Calculate a composite performance score
-    const fpsScore = Math.min((device.avgFps / 60) * 40, 40) // 40 points max for FPS
+    // Calculate a composite performance score based on FPS and Memory only
+    const fpsScore = Math.min((device.avgFps / 60) * 60, 60) // 60 points max for FPS
     const memoryScore =
       device.avgMemory > 0
-        ? Math.max(30 - (device.avgMemory / 1000) * 10, 0)
-        : 30 // 30 points max for memory efficiency
-    const loadTimeScore =
-      device.avgLoadTime > 0
-        ? Math.max(30 - (device.avgLoadTime / 1000) * 15, 0)
-        : 30 // 30 points max for load time
+        ? Math.max(40 - (device.avgMemory / 1000) * 15, 0)
+        : 40 // 40 points max for memory efficiency
 
-    return Math.round(fpsScore + memoryScore + loadTimeScore)
+    return Math.round(fpsScore + memoryScore)
   }
 
   // Sort devices by performance score (highest first)
@@ -160,7 +156,7 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div className="text-center">
                       <div className="font-medium">
                         {device.avgFps.toFixed(1)}
@@ -174,14 +170,6 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
                           : "N/A"}
                       </div>
                       <div className="text-muted-foreground">Memory</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-medium">
-                        {device.avgLoadTime > 0
-                          ? `${device.avgLoadTime.toFixed(0)}ms`
-                          : "N/A"}
-                      </div>
-                      <div className="text-muted-foreground">Load Time</div>
                     </div>
                     <div className="text-center">
                       <div className="font-medium">{device.totalSessions}</div>
@@ -222,12 +210,10 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
 
             <div className="mt-6 pt-4 border-t text-sm text-muted-foreground">
               <strong>Performance Scoring:</strong>
-              <br />• <strong>FPS (40pts):</strong> Frame rate consistency and
+              <br />• <strong>FPS (60pts):</strong> Frame rate consistency and
               smoothness
-              <br />• <strong>Memory (30pts):</strong> Memory efficiency and
+              <br />• <strong>Memory (40pts):</strong> Memory efficiency and
               usage patterns
-              <br />• <strong>Load Time (30pts):</strong> Screen transition and
-              load performance
               <br />
               <br />
               <strong>Risk Levels:</strong> Based on performance trends and

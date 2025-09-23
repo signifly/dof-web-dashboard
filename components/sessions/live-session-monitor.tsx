@@ -45,7 +45,7 @@ export function LiveSessionMonitor({
 
   const getPerformanceIndicator = (
     value: number,
-    type: "fps" | "memory" | "cpu" | "loadTime"
+    type: "fps" | "memory" | "cpu"
   ) => {
     let status: "good" | "warning" | "danger" = "good"
     let color = "text-green-600"
@@ -62,10 +62,6 @@ export function LiveSessionMonitor({
       case "cpu":
         if (value > 80) status = "danger"
         else if (value > 60) status = "warning"
-        break
-      case "loadTime":
-        if (value > 3000) status = "danger"
-        else if (value > 2000) status = "warning"
         break
     }
 
@@ -160,7 +156,7 @@ export function LiveSessionMonitor({
         {latestMetric && (
           <div className="space-y-3">
             <h4 className="text-sm font-medium">Latest Performance</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">FPS</p>
                 <p
@@ -185,15 +181,6 @@ export function LiveSessionMonitor({
                   className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.cpu_usage, "cpu").color}`}
                 >
                   {latestMetric.cpu_usage.toFixed(0)}%
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Load Time</p>
-                <p
-                  className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.load_time, "loadTime").color}`}
-                >
-                  {(latestMetric.load_time / 1000).toFixed(1)}s
                 </p>
               </div>
             </div>

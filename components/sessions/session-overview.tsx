@@ -228,12 +228,6 @@ export function SessionOverview({ session }: SessionOverviewProps) {
                 {session.healthIndicators.avgCpu.toFixed(0)}%
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Average Load Time</span>
-              <span className="font-medium">
-                {(session.healthIndicators.avgLoadTime / 1000).toFixed(1)}s
-              </span>
-            </div>
           </div>
         </CardContent>
       </Card>

@@ -37,21 +37,13 @@ export default async function MetricsPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <MetricCard
               title="Average FPS"
               value={`${summary.avgFps.toFixed(1)}`}
               description="Frames per second across all sessions"
               trend={summary.avgFps >= 30 ? "up" : "down"}
               changeType={summary.avgFps >= 30 ? "positive" : "negative"}
-            />
-
-            <MetricCard
-              title="Load Time"
-              value={`${summary.avgLoadTime.toFixed(0)}ms`}
-              description="Average screen load time"
-              trend={summary.avgLoadTime <= 1000 ? "up" : "down"}
-              changeType={summary.avgLoadTime <= 1000 ? "positive" : "negative"}
             />
 
             <MetricCard
@@ -86,19 +78,12 @@ export default async function MetricsPage() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-1">
             <PerformanceChart
               data={trends}
               title="Memory Usage Trends"
               metric="memory_usage"
               unit=" MB"
-              height="h-64"
-            />
-            <PerformanceChart
-              data={trends}
-              title="Load Time Distribution"
-              metric="load_time"
-              unit="ms"
               height="h-64"
             />
           </div>
@@ -130,12 +115,6 @@ export default async function MetricsPage() {
                       <span>Average Memory Usage</span>
                       <span className="font-medium">
                         {summary.avgMemory.toFixed(1)} MB
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Average Load Time</span>
-                      <span className="font-medium">
-                        {summary.avgLoadTime.toFixed(0)}ms
                       </span>
                     </div>
                   </div>
