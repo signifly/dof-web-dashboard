@@ -18,6 +18,8 @@ import {
 import { StatisticalAnalysisUtils } from "@/lib/utils/statistical-analysis"
 import { PerformanceScoringEngine } from "@/lib/utils/performance-scoring"
 import { RecommendationEngine } from "./recommendation-engine"
+import { UserJourneyTracker } from "./user-journey-tracker"
+import { analyzeJourneyAbandonmentPatterns } from "@/lib/utils/journey-analysis"
 import {
   InsightsReport,
   PerformanceInsight,
@@ -28,11 +30,13 @@ import {
   TrendAnalysis,
 } from "@/types/insights"
 import { RoutePerformanceAnalysis } from "@/types/route-performance"
+import { UserJourney, JourneyAbandonmentPattern } from "@/types/user-journey"
 
 export class PerformanceInsightsEngine {
   private statisticalAnalysis = StatisticalAnalysisUtils
   private scoringEngine: PerformanceScoringEngine
   private recommendationEngine: RecommendationEngine
+  private journeyTracker: UserJourneyTracker
   private config: InsightsEngineConfig
 
   constructor(config?: Partial<InsightsEngineConfig>) {
@@ -73,6 +77,7 @@ export class PerformanceInsightsEngine {
       weights: this.config.scoring.weights,
     })
     this.recommendationEngine = new RecommendationEngine()
+    this.journeyTracker = new UserJourneyTracker()
   }
 
   /**
@@ -125,13 +130,16 @@ export class PerformanceInsightsEngine {
       trends
     )
 
-    // 7. Generate insights (including route performance insights)
+    // 7. Generate insights (including route performance and journey insights)
+    const journeyInsights = await this.createJourneyInsights()
+
     const insights = [
       ...this.createTrendInsights(trends),
       ...this.createAnomalyInsights(anomalies),
       ...this.createOpportunityInsights(optimizationOpportunities),
       ...this.createPerformanceInsights(performanceData, performanceScore),
       ...this.createRoutePerformanceInsights(routeData, performanceData),
+      ...journeyInsights,
     ]
 
     // 8. Generate recommendations using recommendation engine
@@ -667,6 +675,221 @@ export class PerformanceInsightsEngine {
           },
         },
       }))
+  }
+
+  /**
+   * Create journey-specific insights from user journey analysis
+   */
+  private async createJourneyInsights(): Promise<PerformanceInsight[]> {
+    const insights: PerformanceInsight[] = []
+
+    try {
+      // Reconstruct user journeys
+      const journeys = await this.journeyTracker.reconstructJourneys()
+
+      if (journeys.length === 0) {
+        return insights
+      }
+
+      // Analyze journey patterns
+      const patterns =
+        await this.journeyTracker.analyzeJourneyPatterns(journeys)
+
+      // Analyze abandonment patterns
+      const abandonmentPatterns = analyzeJourneyAbandonmentPatterns(journeys)
+
+      // Generate journey-specific insights
+      insights.push(
+        ...this.createJourneyAbandonmentInsights(abandonmentPatterns)
+      )
+      insights.push(...this.createJourneyBottleneckInsights(journeys))
+      insights.push(...this.createJourneyOptimizationInsights(patterns))
+
+      return insights
+    } catch (error) {
+      console.error("Error generating journey insights:", error)
+      return insights
+    }
+  }
+
+  /**
+   * Create insights from journey abandonment patterns
+   */
+  private createJourneyAbandonmentInsights(
+    abandonmentPatterns: JourneyAbandonmentPattern[]
+  ): PerformanceInsight[] {
+    const insights: PerformanceInsight[] = []
+
+    // Focus on top 3 abandonment points
+    abandonmentPatterns.slice(0, 3).forEach(pattern => {
+      if (pattern.frequency >= 3) {
+        insights.push({
+          id: crypto.randomUUID(),
+          type: "journey_abandonment_pattern",
+          title: `High User Abandonment at ${pattern.abandonment_point}`,
+          description: `Users frequently abandon their journey at ${pattern.abandonment_point} (${pattern.frequency} instances)`,
+          severity:
+            pattern.frequency > 10
+              ? "high"
+              : pattern.frequency > 5
+                ? "medium"
+                : "low",
+          confidence: Math.min(0.9, pattern.frequency / 20),
+          impact:
+            pattern.frequency > 10
+              ? "high"
+              : pattern.frequency > 5
+                ? "medium"
+                : "low",
+          category: "performance",
+          detected_at: new Date().toISOString(),
+          data_context: {
+            metric_type: "journey_abandonment",
+            value: pattern.frequency,
+            baseline: 0,
+            deviation: pattern.frequency,
+            affected_sessions: pattern.frequency,
+            route_context: {
+              route_name: pattern.abandonment_point,
+              route_pattern: pattern.abandonment_point,
+              affected_routes: pattern.common_preceding_routes,
+              route_specific_metrics: {
+                sessions_count: pattern.frequency,
+                unique_devices: pattern.frequency, // Approximation
+                avg_screen_duration: pattern.avg_time_to_abandonment,
+              },
+            },
+          },
+        })
+      }
+    })
+
+    return insights
+  }
+
+  /**
+   * Create insights from journey bottleneck analysis
+   */
+  private createJourneyBottleneckInsights(
+    journeys: UserJourney[]
+  ): PerformanceInsight[] {
+    const insights: PerformanceInsight[] = []
+
+    // Analyze bottlenecks across all journeys
+    const allBottlenecks = journeys.flatMap(
+      journey => journey.bottleneck_points
+    )
+    const bottleneckCounts = new Map<
+      string,
+      { count: number; avgImpact: number }
+    >()
+
+    allBottlenecks.forEach(bottleneck => {
+      const key = bottleneck.route_pattern
+      if (!bottleneckCounts.has(key)) {
+        bottleneckCounts.set(key, { count: 0, avgImpact: 0 })
+      }
+      const data = bottleneckCounts.get(key)!
+      data.count++
+      data.avgImpact =
+        (data.avgImpact * (data.count - 1) + bottleneck.impact_score) /
+        data.count
+    })
+
+    // Create insights for significant bottlenecks
+    Array.from(bottleneckCounts.entries())
+      .filter(([_, data]) => data.count >= 3)
+      .sort((a, b) => b[1].avgImpact - a[1].avgImpact)
+      .slice(0, 3)
+      .forEach(([route, data]) => {
+        insights.push({
+          id: crypto.randomUUID(),
+          type: "journey_bottleneck_detection",
+          title: `Journey Bottleneck Detected at ${route}`,
+          description: `Route ${route} consistently causes performance issues across user journeys (${data.count} instances)`,
+          severity:
+            data.avgImpact > 60
+              ? "high"
+              : data.avgImpact > 30
+                ? "medium"
+                : "low",
+          confidence: Math.min(0.9, data.count / 10),
+          impact:
+            data.avgImpact > 60
+              ? "high"
+              : data.avgImpact > 30
+                ? "medium"
+                : "low",
+          category: "performance",
+          detected_at: new Date().toISOString(),
+          data_context: {
+            metric_type: "journey_bottleneck",
+            value: data.avgImpact,
+            baseline: 0,
+            deviation: data.avgImpact,
+            affected_sessions: data.count,
+            route_context: {
+              route_name: route,
+              route_pattern: route,
+              affected_routes: [route],
+              route_specific_metrics: {
+                sessions_count: data.count,
+                unique_devices: data.count, // Approximation
+                avg_screen_duration: 5000, // Would calculate from actual data
+              },
+            },
+          },
+        })
+      })
+
+    return insights
+  }
+
+  /**
+   * Create insights from journey optimization opportunities
+   */
+  private createJourneyOptimizationInsights(
+    patterns: any[]
+  ): PerformanceInsight[] {
+    const insights: PerformanceInsight[] = []
+
+    // Focus on patterns with high optimization potential
+    patterns
+      .filter(pattern => pattern.optimization_potential > 40)
+      .sort((a, b) => b.optimization_potential - a.optimization_potential)
+      .slice(0, 2)
+      .forEach(pattern => {
+        insights.push({
+          id: crypto.randomUUID(),
+          type: "journey_optimization_opportunity",
+          title: `Journey Optimization Opportunity: ${pattern.route_sequence.join(" → ")}`,
+          description: `User journey pattern with ${pattern.frequency} occurrences has ${pattern.optimization_potential.toFixed(1)}% optimization potential`,
+          severity: pattern.optimization_potential > 70 ? "high" : "medium",
+          confidence: Math.min(0.9, pattern.frequency / 10),
+          impact: pattern.optimization_potential > 70 ? "high" : "medium",
+          category: "performance",
+          detected_at: new Date().toISOString(),
+          data_context: {
+            metric_type: "journey_optimization",
+            value: pattern.optimization_potential,
+            baseline: 0,
+            deviation: pattern.optimization_potential,
+            affected_sessions: pattern.frequency,
+            route_context: {
+              route_name: pattern.route_sequence.join(" → "),
+              route_pattern: pattern.route_sequence.join(" -> "),
+              affected_routes: pattern.route_sequence,
+              route_specific_metrics: {
+                sessions_count: pattern.frequency,
+                unique_devices: pattern.frequency,
+                avg_screen_duration: pattern.avg_journey_duration,
+              },
+            },
+          },
+        })
+      })
+
+    return insights
   }
 
   /**
