@@ -37,12 +37,16 @@ export function LiveSessionMonitor({
 
   const getConnectionStatus = () => {
     if (error) return { icon: WifiOff, color: "text-red-500", text: "Error" }
-    if (!isConnected) return { icon: WifiOff, color: "text-gray-500", text: "Disconnected" }
+    if (!isConnected)
+      return { icon: WifiOff, color: "text-gray-500", text: "Disconnected" }
     if (isLive) return { icon: Activity, color: "text-green-500", text: "Live" }
     return { icon: Wifi, color: "text-blue-500", text: "Connected" }
   }
 
-  const getPerformanceIndicator = (value: number, type: "fps" | "memory" | "cpu" | "loadTime") => {
+  const getPerformanceIndicator = (
+    value: number,
+    type: "fps" | "memory" | "cpu" | "loadTime"
+  ) => {
     let status: "good" | "warning" | "danger" = "good"
     let color = "text-green-600"
 
@@ -111,7 +115,8 @@ export function LiveSessionMonitor({
         {error && (
           <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-3 border border-red-200 dark:border-red-800">
             <p className="text-sm text-red-800 dark:text-red-200">
-              <span className="font-medium">Connection Error:</span> {error.message}
+              <span className="font-medium">Connection Error:</span>{" "}
+              {error.message}
             </p>
           </div>
         )}
@@ -120,14 +125,22 @@ export function LiveSessionMonitor({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Status</p>
-            <Badge className={isLive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+            <Badge
+              className={
+                isLive
+                  ? "bg-green-100 text-green-800"
+                  : "bg-gray-100 text-gray-800"
+              }
+            >
               {isLive ? "LIVE" : "INACTIVE"}
             </Badge>
           </div>
 
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Total Metrics</p>
-            <p className="text-lg font-semibold">{totalMetrics.toLocaleString()}</p>
+            <p className="text-lg font-semibold">
+              {totalMetrics.toLocaleString()}
+            </p>
           </div>
 
           <div className="space-y-1">
@@ -150,28 +163,36 @@ export function LiveSessionMonitor({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">FPS</p>
-                <p className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.fps, "fps").color}`}>
+                <p
+                  className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.fps, "fps").color}`}
+                >
                   {latestMetric.fps.toFixed(1)}
                 </p>
               </div>
 
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Memory</p>
-                <p className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.memory_usage, "memory").color}`}>
+                <p
+                  className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.memory_usage, "memory").color}`}
+                >
                   {latestMetric.memory_usage.toFixed(0)}MB
                 </p>
               </div>
 
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">CPU</p>
-                <p className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.cpu_usage, "cpu").color}`}>
+                <p
+                  className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.cpu_usage, "cpu").color}`}
+                >
                   {latestMetric.cpu_usage.toFixed(0)}%
                 </p>
               </div>
 
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Load Time</p>
-                <p className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.load_time, "loadTime").color}`}>
+                <p
+                  className={`text-lg font-bold ${getPerformanceIndicator(latestMetric.load_time, "loadTime").color}`}
+                >
                   {(latestMetric.load_time / 1000).toFixed(1)}s
                 </p>
               </div>
@@ -189,32 +210,48 @@ export function LiveSessionMonitor({
           <div className="space-y-3">
             <h4 className="text-sm font-medium">Recent Activity</h4>
             <div className="max-h-48 overflow-y-auto space-y-2">
-              {metrics.slice(-10).reverse().map((metric, index) => (
-                <div
-                  key={`${metric.timestamp}-${index}`}
-                  className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50"
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {formatTime(metric.timestamp)}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {metric.screen_name}
-                    </Badge>
+              {metrics
+                .slice(-10)
+                .reverse()
+                .map((metric, index) => (
+                  <div
+                    key={`${metric.timestamp}-${index}`}
+                    className="flex items-center justify-between text-sm p-2 rounded-lg bg-muted/50"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {formatTime(metric.timestamp)}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {metric.screen_name}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center space-x-4 text-xs">
+                      <span
+                        className={
+                          getPerformanceIndicator(metric.fps, "fps").color
+                        }
+                      >
+                        {metric.fps.toFixed(0)} FPS
+                      </span>
+                      <span
+                        className={
+                          getPerformanceIndicator(metric.memory_usage, "memory")
+                            .color
+                        }
+                      >
+                        {metric.memory_usage.toFixed(0)}MB
+                      </span>
+                      <span
+                        className={
+                          getPerformanceIndicator(metric.cpu_usage, "cpu").color
+                        }
+                      >
+                        {metric.cpu_usage.toFixed(0)}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-4 text-xs">
-                    <span className={getPerformanceIndicator(metric.fps, "fps").color}>
-                      {metric.fps.toFixed(0)} FPS
-                    </span>
-                    <span className={getPerformanceIndicator(metric.memory_usage, "memory").color}>
-                      {metric.memory_usage.toFixed(0)}MB
-                    </span>
-                    <span className={getPerformanceIndicator(metric.cpu_usage, "cpu").color}>
-                      {metric.cpu_usage.toFixed(0)}%
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
@@ -225,7 +262,9 @@ export function LiveSessionMonitor({
             <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p className="text-sm">Waiting for live session data...</p>
             <p className="text-xs mt-1">
-              {isConnected ? "Connected and monitoring" : "Connecting to session"}
+              {isConnected
+                ? "Connected and monitoring"
+                : "Connecting to session"}
             </p>
           </div>
         )}

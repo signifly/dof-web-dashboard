@@ -81,7 +81,9 @@ export function SessionPerformanceAnalysisComponent({
     }
   }
 
-  const getScreenPerformanceStatus = (screen: typeof analysis.screenPerformance[0]) => {
+  const getScreenPerformanceStatus = (
+    screen: (typeof analysis.screenPerformance)[0]
+  ) => {
     if (screen.issueCount === 0 && screen.avgFps > 30) {
       return { icon: CheckCircle2, color: "text-green-600", status: "Good" }
     } else if (screen.issueCount <= 2 && screen.avgFps > 20) {
@@ -91,13 +93,16 @@ export function SessionPerformanceAnalysisComponent({
     }
   }
 
-  const issuesByScreen = analysis.performanceIssues.reduce((acc, issue) => {
-    if (!acc[issue.affectedScreen]) {
-      acc[issue.affectedScreen] = []
-    }
-    acc[issue.affectedScreen].push(issue)
-    return acc
-  }, {} as Record<string, typeof analysis.performanceIssues>)
+  const issuesByScreen = analysis.performanceIssues.reduce(
+    (acc, issue) => {
+      if (!acc[issue.affectedScreen]) {
+        acc[issue.affectedScreen] = []
+      }
+      acc[issue.affectedScreen].push(issue)
+      return acc
+    },
+    {} as Record<string, typeof analysis.performanceIssues>
+  )
 
   const totalIssues = analysis.performanceIssues.length
   const highSeverityIssues = analysis.performanceIssues.filter(
@@ -184,7 +189,9 @@ export function SessionPerformanceAnalysisComponent({
             <div className="text-center py-8 text-muted-foreground">
               <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
               <p className="text-lg font-medium">No Performance Issues</p>
-              <p className="text-sm">This session performed within acceptable ranges</p>
+              <p className="text-sm">
+                This session performed within acceptable ranges
+              </p>
             </div>
           )}
         </CardContent>
@@ -285,10 +292,7 @@ export function SessionPerformanceAnalysisComponent({
                 const screenIssues = issuesByScreen[screen.screenName] || []
 
                 return (
-                  <div
-                    key={index}
-                    className="p-4 border rounded-lg space-y-3"
-                  >
+                  <div key={index} className="p-4 border rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <StatusIcon className={`h-5 w-5 ${status.color}`} />
@@ -315,7 +319,9 @@ export function SessionPerformanceAnalysisComponent({
                         </span>
                       </div>
                       <div>
-                        <span className="text-muted-foreground">Avg Memory:</span>
+                        <span className="text-muted-foreground">
+                          Avg Memory:
+                        </span>
                         <span className="ml-2 font-medium">
                           {screen.avgMemory.toFixed(0)}MB
                         </span>
@@ -337,8 +343,7 @@ export function SessionPerformanceAnalysisComponent({
                           {screenIssues.map((issue, issueIndex) => (
                             <Badge
                               key={issueIndex}
-                              className={getIssueColor(issue.severity)}
-                              className="text-xs"
+                              className={`${getIssueColor(issue.severity)} text-xs`}
                             >
                               {issue.type.replace("_", " ")}
                             </Badge>

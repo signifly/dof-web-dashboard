@@ -46,9 +46,9 @@ export function useRealtimeSessionMetrics(
   const supabaseRef = useRef(createClient())
   const channelRef = useRef<RealtimeChannel | null>(null)
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const pendingMetricsRef = useRef<Map<string, Partial<SessionMetricsTimeline>>>(
-    new Map()
-  )
+  const pendingMetricsRef = useRef<
+    Map<string, Partial<SessionMetricsTimeline>>
+  >(new Map())
 
   // Convert database metric to session timeline point
   const convertMetricToTimelinePoint = useCallback(
@@ -57,7 +57,10 @@ export function useRealtimeSessionMetrics(
       const screenName = (metric.context as any)?.screen_name || "Unknown"
 
       // Round timestamp to aggregation interval
-      const roundedTimestamp = roundToNearestInterval(timestamp, aggregationInterval)
+      const roundedTimestamp = roundToNearestInterval(
+        timestamp,
+        aggregationInterval
+      )
 
       const update: Partial<SessionMetricsTimeline> = {
         timestamp: roundedTimestamp,
@@ -224,7 +227,8 @@ export function useRealtimeSessionMetrics(
     if (metrics.length === 0) return false
 
     const lastMetric = metrics[metrics.length - 1]
-    const timeSinceLastMetric = Date.now() - new Date(lastMetric.timestamp).getTime()
+    const timeSinceLastMetric =
+      Date.now() - new Date(lastMetric.timestamp).getTime()
 
     // Consider session live if we received metrics within the last 30 seconds
     return timeSinceLastMetric < 30000
@@ -271,8 +275,6 @@ export function useRealtimeSessionMetrics(
 // Helper function to round timestamp to nearest interval
 function roundToNearestInterval(timestamp: string, intervalMs: number): string {
   const date = new Date(timestamp)
-  const rounded = new Date(
-    Math.round(date.getTime() / intervalMs) * intervalMs
-  )
+  const rounded = new Date(Math.round(date.getTime() / intervalMs) * intervalMs)
   return rounded.toISOString()
 }

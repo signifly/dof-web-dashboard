@@ -230,7 +230,7 @@ export async function getDeviceMetrics(
 /**
  * Calculate device health score based on performance metrics
  */
-function calculateHealthScore(input: DeviceHealthInput): number {
+export function calculateHealthScore(input: DeviceHealthInput): number {
   const { recentMetrics, totalSessions, daysSinceFirstSeen } = input
 
   if (!recentMetrics.length) return 0

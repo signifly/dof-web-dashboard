@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SessionMetricsTimeline } from "@/types/session"
+import { MetricsTrend } from "@/lib/performance-data"
 import { PerformanceLineChart } from "@/components/charts/performance-line-chart"
 import { format } from "date-fns"
 import { useState } from "react"
@@ -42,17 +43,16 @@ export function SessionMetricsTimelineComponent({
     return filteredMetrics
   }
 
-  const getChartData = () => {
+  const getChartData = (): MetricsTrend[] => {
     const filteredMetrics = getFilteredMetrics()
 
     return filteredMetrics.map(metric => ({
       timestamp: formatTime(metric.timestamp),
-      fullTimestamp: metric.timestamp,
       fps: metric.fps,
-      memory: metric.memory_usage,
-      cpu: metric.cpu_usage,
-      loadTime: metric.load_time / 1000, // Convert to seconds for better readability
-      screen: metric.screen_name,
+      memory_usage: metric.memory_usage,
+      cpu_usage: metric.cpu_usage,
+      load_time: metric.load_time,
+      screen_name: metric.screen_name,
     }))
   }
 
@@ -65,22 +65,22 @@ export function SessionMetricsTimelineComponent({
         unit: " FPS",
       },
       memory: {
-        key: "memory",
+        key: "memory_usage",
         name: "Memory",
         color: "#f59e0b",
         unit: "MB",
       },
       cpu: {
-        key: "cpu",
+        key: "cpu_usage",
         name: "CPU",
         color: "#ef4444",
         unit: "%",
       },
       loadTime: {
-        key: "loadTime",
+        key: "load_time",
         name: "Load Time",
         color: "#8b5cf6",
-        unit: "s",
+        unit: "ms",
       },
     }
 
@@ -103,9 +103,12 @@ export function SessionMetricsTimelineComponent({
     if (metrics.length === 0) return null
 
     const avgFps = metrics.reduce((sum, m) => sum + m.fps, 0) / metrics.length
-    const avgMemory = metrics.reduce((sum, m) => sum + m.memory_usage, 0) / metrics.length
-    const avgCpu = metrics.reduce((sum, m) => sum + m.cpu_usage, 0) / metrics.length
-    const avgLoadTime = metrics.reduce((sum, m) => sum + m.load_time, 0) / metrics.length
+    const avgMemory =
+      metrics.reduce((sum, m) => sum + m.memory_usage, 0) / metrics.length
+    const avgCpu =
+      metrics.reduce((sum, m) => sum + m.cpu_usage, 0) / metrics.length
+    const avgLoadTime =
+      metrics.reduce((sum, m) => sum + m.load_time, 0) / metrics.length
 
     const maxFps = Math.max(...metrics.map(m => m.fps))
     const maxMemory = Math.max(...metrics.map(m => m.memory_usage))
@@ -118,13 +121,31 @@ export function SessionMetricsTimelineComponent({
     const minLoadTime = Math.min(...metrics.map(m => m.load_time))
 
     return {
-      avg: { fps: avgFps, memory: avgMemory, cpu: avgCpu, loadTime: avgLoadTime },
-      max: { fps: maxFps, memory: maxMemory, cpu: maxCpu, loadTime: maxLoadTime },
-      min: { fps: minFps, memory: minMemory, cpu: minCpu, loadTime: minLoadTime },
+      avg: {
+        fps: avgFps,
+        memory: avgMemory,
+        cpu: avgCpu,
+        loadTime: avgLoadTime,
+      },
+      max: {
+        fps: maxFps,
+        memory: maxMemory,
+        cpu: maxCpu,
+        loadTime: maxLoadTime,
+      },
+      min: {
+        fps: minFps,
+        memory: minMemory,
+        cpu: minCpu,
+        loadTime: minLoadTime,
+      },
     }
   }
 
-  const getPerformanceIndicator = (value: number, type: "fps" | "memory" | "cpu" | "loadTime") => {
+  const getPerformanceIndicator = (
+    value: number,
+    type: "fps" | "memory" | "cpu" | "loadTime"
+  ) => {
     let status: "good" | "warning" | "danger" = "good"
 
     switch (type) {
@@ -150,7 +171,8 @@ export function SessionMetricsTimelineComponent({
   }
 
   const getScreenTransitions = () => {
-    const transitions: { timestamp: string; screen: string; index: number }[] = []
+    const transitions: { timestamp: string; screen: string; index: number }[] =
+      []
     let currentScreen = ""
 
     metrics.forEach((metric, index) => {
@@ -224,7 +246,9 @@ export function SessionMetricsTimelineComponent({
                 </Button>
                 <Button
                   size="sm"
-                  variant={selectedMetric === "loadTime" ? "default" : "outline"}
+                  variant={
+                    selectedMetric === "loadTime" ? "default" : "outline"
+                  }
                   onClick={() => setSelectedMetric("loadTime")}
                   className="flex items-center space-x-1"
                 >
@@ -314,13 +338,24 @@ export function SessionMetricsTimelineComponent({
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Average:</span>
-                    <span className={getPerformanceIndicator(stats.avg.fps, "fps") === "good" ? "text-green-600" : getPerformanceIndicator(stats.avg.fps, "fps") === "warning" ? "text-yellow-600" : "text-red-600"}>
+                    <span
+                      className={
+                        getPerformanceIndicator(stats.avg.fps, "fps") === "good"
+                          ? "text-green-600"
+                          : getPerformanceIndicator(stats.avg.fps, "fps") ===
+                              "warning"
+                            ? "text-yellow-600"
+                            : "text-red-600"
+                      }
+                    >
                       {stats.avg.fps.toFixed(1)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Range:</span>
-                    <span>{stats.min.fps.toFixed(1)} - {stats.max.fps.toFixed(1)}</span>
+                    <span>
+                      {stats.min.fps.toFixed(1)} - {stats.max.fps.toFixed(1)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -334,13 +369,28 @@ export function SessionMetricsTimelineComponent({
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Average:</span>
-                    <span className={getPerformanceIndicator(stats.avg.memory, "memory") === "good" ? "text-green-600" : getPerformanceIndicator(stats.avg.memory, "memory") === "warning" ? "text-yellow-600" : "text-red-600"}>
+                    <span
+                      className={
+                        getPerformanceIndicator(stats.avg.memory, "memory") ===
+                        "good"
+                          ? "text-green-600"
+                          : getPerformanceIndicator(
+                                stats.avg.memory,
+                                "memory"
+                              ) === "warning"
+                            ? "text-yellow-600"
+                            : "text-red-600"
+                      }
+                    >
                       {stats.avg.memory.toFixed(0)}MB
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Range:</span>
-                    <span>{stats.min.memory.toFixed(0)} - {stats.max.memory.toFixed(0)}MB</span>
+                    <span>
+                      {stats.min.memory.toFixed(0)} -{" "}
+                      {stats.max.memory.toFixed(0)}MB
+                    </span>
                   </div>
                 </div>
               </div>
@@ -354,13 +404,24 @@ export function SessionMetricsTimelineComponent({
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Average:</span>
-                    <span className={getPerformanceIndicator(stats.avg.cpu, "cpu") === "good" ? "text-green-600" : getPerformanceIndicator(stats.avg.cpu, "cpu") === "warning" ? "text-yellow-600" : "text-red-600"}>
+                    <span
+                      className={
+                        getPerformanceIndicator(stats.avg.cpu, "cpu") === "good"
+                          ? "text-green-600"
+                          : getPerformanceIndicator(stats.avg.cpu, "cpu") ===
+                              "warning"
+                            ? "text-yellow-600"
+                            : "text-red-600"
+                      }
+                    >
                       {stats.avg.cpu.toFixed(0)}%
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Range:</span>
-                    <span>{stats.min.cpu.toFixed(0)} - {stats.max.cpu.toFixed(0)}%</span>
+                    <span>
+                      {stats.min.cpu.toFixed(0)} - {stats.max.cpu.toFixed(0)}%
+                    </span>
                   </div>
                 </div>
               </div>
@@ -374,13 +435,30 @@ export function SessionMetricsTimelineComponent({
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Average:</span>
-                    <span className={getPerformanceIndicator(stats.avg.loadTime, "loadTime") === "good" ? "text-green-600" : getPerformanceIndicator(stats.avg.loadTime, "loadTime") === "warning" ? "text-yellow-600" : "text-red-600"}>
+                    <span
+                      className={
+                        getPerformanceIndicator(
+                          stats.avg.loadTime,
+                          "loadTime"
+                        ) === "good"
+                          ? "text-green-600"
+                          : getPerformanceIndicator(
+                                stats.avg.loadTime,
+                                "loadTime"
+                              ) === "warning"
+                            ? "text-yellow-600"
+                            : "text-red-600"
+                      }
+                    >
                       {(stats.avg.loadTime / 1000).toFixed(1)}s
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Range:</span>
-                    <span>{(stats.min.loadTime / 1000).toFixed(1)} - {(stats.max.loadTime / 1000).toFixed(1)}s</span>
+                    <span>
+                      {(stats.min.loadTime / 1000).toFixed(1)} -{" "}
+                      {(stats.max.loadTime / 1000).toFixed(1)}s
+                    </span>
                   </div>
                 </div>
               </div>

@@ -96,18 +96,21 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
                       getSessionStatus(session) === "Active"
                         ? "bg-green-500"
                         : getSessionStatus(session) === "Completed"
-                        ? "bg-blue-500"
-                        : "bg-gray-500"
+                          ? "bg-blue-500"
+                          : "bg-gray-500"
                     }`}
                     title={`${getSessionStatus(session)} Session`}
                   />
                   <div>
                     <div className="font-medium text-sm flex items-center space-x-2">
-                      <span>{session.device_type} • {session.app_version}</span>
+                      <span>
+                        {session.device_type} • {session.app_version}
+                      </span>
                       <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      User: {session.anonymous_user_id.slice(0, 8)}... • Session: {session.id.slice(0, 8)}...
+                      User: {session.anonymous_user_id.slice(0, 8)}... •
+                      Session: {session.id.slice(0, 8)}...
                     </div>
                   </div>
                 </div>

@@ -74,13 +74,11 @@ export async function getSessionDetails(
       : null
 
     // Get unique screens visited
-    const uniqueScreens = [
-      ...new Set(
-        sessionMetrics
-          .map(m => (m.context as any)?.screen_name)
-          .filter(Boolean)
-      ),
-    ]
+    const uniqueScreens = Array.from(
+      new Set(
+        sessionMetrics.map(m => (m.context as any)?.screen_name).filter(Boolean)
+      )
+    )
 
     // Calculate health indicators
     const healthIndicators = calculateHealthIndicators(sessionMetrics)
@@ -159,10 +157,22 @@ export async function getSessionMetrics(
 
       const timelinePoint: SessionMetricsTimeline = {
         timestamp,
-        fps: fpsMetrics.length > 0 ? average(fpsMetrics.map(m => m.metric_value)) : 0,
-        memory_usage: memoryMetrics.length > 0 ? average(memoryMetrics.map(m => m.metric_value)) : 0,
-        cpu_usage: cpuMetrics.length > 0 ? average(cpuMetrics.map(m => m.metric_value)) : 0,
-        load_time: loadTimeMetrics.length > 0 ? average(loadTimeMetrics.map(m => m.metric_value)) : 0,
+        fps:
+          fpsMetrics.length > 0
+            ? average(fpsMetrics.map(m => m.metric_value))
+            : 0,
+        memory_usage:
+          memoryMetrics.length > 0
+            ? average(memoryMetrics.map(m => m.metric_value))
+            : 0,
+        cpu_usage:
+          cpuMetrics.length > 0
+            ? average(cpuMetrics.map(m => m.metric_value))
+            : 0,
+        load_time:
+          loadTimeMetrics.length > 0
+            ? average(loadTimeMetrics.map(m => m.metric_value))
+            : 0,
         screen_name: screenName,
         metric_count: metricsGroup.length,
       }
@@ -250,10 +260,18 @@ function calculateHealthIndicators(metrics: PerformanceMetric[]) {
   )
 
   return {
-    avgFps: fpsMetrics.length > 0 ? average(fpsMetrics.map(m => m.metric_value)) : 0,
-    avgMemory: memoryMetrics.length > 0 ? average(memoryMetrics.map(m => m.metric_value)) : 0,
-    avgCpu: cpuMetrics.length > 0 ? average(cpuMetrics.map(m => m.metric_value)) : 0,
-    avgLoadTime: loadTimeMetrics.length > 0 ? average(loadTimeMetrics.map(m => m.metric_value)) : 0,
+    avgFps:
+      fpsMetrics.length > 0 ? average(fpsMetrics.map(m => m.metric_value)) : 0,
+    avgMemory:
+      memoryMetrics.length > 0
+        ? average(memoryMetrics.map(m => m.metric_value))
+        : 0,
+    avgCpu:
+      cpuMetrics.length > 0 ? average(cpuMetrics.map(m => m.metric_value)) : 0,
+    avgLoadTime:
+      loadTimeMetrics.length > 0
+        ? average(loadTimeMetrics.map(m => m.metric_value))
+        : 0,
   }
 }
 
@@ -272,7 +290,8 @@ function calculatePerformanceScore(healthIndicators: {
   const loadTimeScore = Math.max(0, 100 - (avgLoadTime / 5000) * 100)
 
   // Weighted average
-  const score = (fpsScore * 0.3 + memoryScore * 0.25 + cpuScore * 0.25 + loadTimeScore * 0.2)
+  const score =
+    fpsScore * 0.3 + memoryScore * 0.25 + cpuScore * 0.25 + loadTimeScore * 0.2
 
   return Math.round(Math.max(0, Math.min(100, score)))
 }
@@ -371,8 +390,7 @@ function detectPerformanceIssues(
   })
 
   return issues.sort(
-    (a, b) =>
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   )
 }
 
@@ -402,7 +420,11 @@ function calculatePerformanceTrends(metrics: SessionMetricsTimeline[]) {
     loadTime: average(secondHalf.map(m => m.load_time)),
   }
 
-  const getTrend = (before: number, after: number, higherIsBetter: boolean) => {
+  const getTrend = (
+    before: number,
+    after: number,
+    higherIsBetter: boolean
+  ): "improving" | "stable" | "declining" => {
     const change = after - before
     const threshold = before * 0.1 // 10% change threshold
 
@@ -417,7 +439,11 @@ function calculatePerformanceTrends(metrics: SessionMetricsTimeline[]) {
 
   const fpsTrend = getTrend(firstHalfAvg.fps, secondHalfAvg.fps, true)
   const memoryTrend = getTrend(firstHalfAvg.memory, secondHalfAvg.memory, false)
-  const loadTimeTrend = getTrend(firstHalfAvg.loadTime, secondHalfAvg.loadTime, false)
+  const loadTimeTrend = getTrend(
+    firstHalfAvg.loadTime,
+    secondHalfAvg.loadTime,
+    false
+  )
 
   // Overall trend based on majority
   const trends = [fpsTrend, memoryTrend, loadTimeTrend]
@@ -453,18 +479,20 @@ function calculateScreenPerformance(metrics: SessionMetricsTimeline[]) {
   })
 
   // Calculate performance for each screen
-  return Array.from(screenMetrics.entries()).map(([screenName, screenData]) => {
-    const issues = detectPerformanceIssues(screenData)
+  return Array.from(screenMetrics.entries())
+    .map(([screenName, screenData]) => {
+      const issues = detectPerformanceIssues(screenData)
 
-    return {
-      screenName,
-      visitCount: screenData.length,
-      avgFps: average(screenData.map(m => m.fps)),
-      avgMemory: average(screenData.map(m => m.memory_usage)),
-      avgLoadTime: average(screenData.map(m => m.load_time)),
-      issueCount: issues.length,
-    }
-  }).sort((a, b) => b.visitCount - a.visitCount)
+      return {
+        screenName,
+        visitCount: screenData.length,
+        avgFps: average(screenData.map(m => m.fps)),
+        avgMemory: average(screenData.map(m => m.memory_usage)),
+        avgLoadTime: average(screenData.map(m => m.load_time)),
+        issueCount: issues.length,
+      }
+    })
+    .sort((a, b) => b.visitCount - a.visitCount)
 }
 
 function average(numbers: number[]): number {
@@ -474,8 +502,6 @@ function average(numbers: number[]): number {
 
 function roundToNearestInterval(timestamp: string, intervalMs: number): string {
   const date = new Date(timestamp)
-  const rounded = new Date(
-    Math.round(date.getTime() / intervalMs) * intervalMs
-  )
+  const rounded = new Date(Math.round(date.getTime() / intervalMs) * intervalMs)
   return rounded.toISOString()
 }

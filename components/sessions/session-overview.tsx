@@ -101,7 +101,9 @@ export function SessionOverview({ session }: SessionOverviewProps) {
             </div>
             <div className="space-y-1">
               <p className="text-muted-foreground">User ID</p>
-              <p className="font-mono text-xs">{session.anonymous_user_id.slice(0, 8)}...</p>
+              <p className="font-mono text-xs">
+                {session.anonymous_user_id.slice(0, 8)}...
+              </p>
             </div>
             <div className="space-y-1">
               <p className="text-muted-foreground">Duration</p>
@@ -121,7 +123,9 @@ export function SessionOverview({ session }: SessionOverviewProps) {
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Started</span>
               <div className="text-right">
-                <p className="font-medium">{formatDate(session.session_start)}</p>
+                <p className="font-medium">
+                  {formatDate(session.session_start)}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {formatRelativeTime(session.session_start)}
                 </p>
@@ -132,7 +136,9 @@ export function SessionOverview({ session }: SessionOverviewProps) {
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Ended</span>
                 <div className="text-right">
-                  <p className="font-medium">{formatDate(session.session_end)}</p>
+                  <p className="font-medium">
+                    {formatDate(session.session_end)}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {formatRelativeTime(session.session_end)}
                   </p>
@@ -142,17 +148,23 @@ export function SessionOverview({ session }: SessionOverviewProps) {
 
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Total Metrics</span>
-              <span className="font-medium">{session.totalMetrics.toLocaleString()}</span>
+              <span className="font-medium">
+                {session.totalMetrics.toLocaleString()}
+              </span>
             </div>
 
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Screens Visited</span>
-              <span className="font-medium">{session.uniqueScreens.length}</span>
+              <span className="font-medium">
+                {session.uniqueScreens.length}
+              </span>
             </div>
 
             {session.uniqueScreens.length > 0 && (
               <div className="mt-2">
-                <p className="text-xs text-muted-foreground mb-1">Screen List:</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  Screen List:
+                </p>
                 <div className="flex flex-wrap gap-1">
                   {session.uniqueScreens.slice(0, 3).map((screen, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
