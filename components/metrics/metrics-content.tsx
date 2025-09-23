@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { PerformanceChart } from "@/components/charts/performance-chart"
+import { InteractiveChart, MultiSeriesChart } from "@/components/charts"
 import { MetricCard } from "@/components/charts/metric-card"
 import { DataFreshness } from "@/components/ui/data-freshness"
 import { RefreshSettings } from "@/components/settings/refresh-settings"
@@ -174,19 +174,25 @@ export function MetricsContent({
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
-            <PerformanceChart
+            <InteractiveChart
               data={trends}
               title="FPS Performance"
               metric="fps"
-              unit=" FPS"
-              height="h-64"
+              chartType="line"
+              height={300}
+              enableBrush={true}
+              enableZoom={true}
+              enableExport={true}
             />
-            <PerformanceChart
+            <InteractiveChart
               data={trends}
               title="CPU Usage"
               metric="cpu_usage"
-              unit="%"
-              height="h-64"
+              chartType="area"
+              height={300}
+              enableBrush={true}
+              enableZoom={true}
+              enableExport={true}
             />
           </div>
         </CardContent>
@@ -198,12 +204,54 @@ export function MetricsContent({
           <CardTitle>Memory Usage Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          <PerformanceChart
+          <InteractiveChart
             data={trends}
             title="Memory Usage Trends"
             metric="memory_usage"
-            unit=" MB"
-            height="h-64"
+            chartType="area"
+            height={300}
+            enableBrush={true}
+            enableZoom={true}
+            enableExport={true}
+            enableAnomalyDetection={true}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Multi-Series Performance Comparison */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Metrics Comparison</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MultiSeriesChart
+            datasets={[
+              {
+                name: "FPS",
+                data: trends,
+                metric: "fps",
+                color: "#10b981",
+              },
+              {
+                name: "CPU Usage",
+                data: trends,
+                metric: "cpu_usage",
+                color: "#ef4444",
+              },
+              {
+                name: "Memory Usage",
+                data: trends,
+                metric: "memory_usage",
+                color: "#f59e0b",
+              },
+            ]}
+            title="All Metrics Comparison"
+            height={400}
+            chartType="line"
+            enableBrush={true}
+            enableZoom={true}
+            enableExport={true}
+            enableLegend={true}
           />
         </CardContent>
       </Card>

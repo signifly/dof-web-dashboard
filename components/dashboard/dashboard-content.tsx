@@ -7,7 +7,7 @@ import {
 } from "@/components/performance/performance-summary-cards"
 import { PlatformBreakdown } from "@/components/performance/platform-breakdown"
 import { RecentSessions } from "@/components/performance/recent-sessions"
-import { PerformanceChart } from "@/components/charts/performance-chart"
+import { InteractiveChart } from "@/components/charts"
 import { PerformanceTiers } from "@/components/analytics/performance-tiers"
 import { FpsDistribution } from "@/components/analytics/fps-distribution"
 import { MemoryPressure } from "@/components/analytics/memory-pressure"
@@ -110,13 +110,16 @@ export function DashboardContent({
       {/* Main Charts Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-4 space-y-4">
-          <PerformanceChart
+          <InteractiveChart
             data={trends}
             title="FPS Performance Trends"
             metric="fps"
-            unit=" FPS"
-            height="h-64"
-            enableRealtime={true}
+            chartType="line"
+            height={300}
+            enableBrush={true}
+            enableZoom={true}
+            enableExport={true}
+            enableAnomalyDetection={true}
           />
         </div>
 
@@ -129,13 +132,15 @@ export function DashboardContent({
       <div className="grid gap-4 md:grid-cols-2">
         <PlatformBreakdown data={summary.platformBreakdown} />
 
-        <PerformanceChart
+        <InteractiveChart
           data={trends}
           title="Memory Usage Trends"
           metric="memory_usage"
-          unit=" MB"
-          height="h-48"
-          enableRealtime={true}
+          chartType="area"
+          height={250}
+          enableBrush={true}
+          enableZoom={true}
+          enableExport={true}
         />
       </div>
 

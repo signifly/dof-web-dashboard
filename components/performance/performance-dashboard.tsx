@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PerformanceSummaryCards } from "./performance-summary-cards"
 import { SessionOverview } from "./session-overview"
-import { PerformanceOverviewChart } from "@/components/charts/performance-overview-chart"
+import { InteractiveChart } from "@/components/charts"
 import {
   getPerformanceSummary,
   getPerformanceTrends,
@@ -25,10 +25,16 @@ async function PerformanceData() {
           </CardHeader>
           <CardContent>
             {trends.length > 0 ? (
-              <PerformanceOverviewChart
+              <InteractiveChart
                 data={trends}
+                metric="fps"
+                chartType="line"
+                title="Performance Trends"
                 height={250}
-                showAllMetrics={false} // Simplified view for dashboard
+                enableBrush={true}
+                enableZoom={true}
+                enableExport={true}
+                enableAnomalyDetection={true}
               />
             ) : (
               <div className="h-[250px] flex items-center justify-center text-muted-foreground">
