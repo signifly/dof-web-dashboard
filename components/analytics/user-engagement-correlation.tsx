@@ -51,10 +51,6 @@ export function UserEngagementCorrelation({
       performanceData.map(p => p.memory_usage),
       engagementData.map(e => e.userInteractions)
     ),
-    loadTimeVsScreenViews: calculateCorrelation(
-      performanceData.map(p => p.load_time),
-      engagementData.map(e => e.screenViews)
-    ),
   }
 
   // Performance segments analysis
@@ -67,7 +63,7 @@ export function UserEngagementCorrelation({
           <CardTitle>Performance-Engagement Correlation Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="text-center p-4 bg-blue-900/20 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
                 {(correlations.fpsVsSessionDuration * 100).toFixed(1)}%
@@ -86,14 +82,6 @@ export function UserEngagementCorrelation({
               </div>
             </div>
 
-            <div className="text-center p-4 bg-orange-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {Math.abs(correlations.loadTimeVsScreenViews * 100).toFixed(1)}%
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Load Time vs Screen Views Correlation
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -164,19 +152,6 @@ export function UserEngagementCorrelation({
               </div>
             </div>
 
-            <div className="p-3 bg-green-900/20 rounded-lg">
-              <div className="font-medium text-green-900">Load Time Impact</div>
-              <div className="text-sm text-green-700">
-                Load times under 1s result in{" "}
-                {(
-                  ((segments[0]?.avgScreenViews || 0) /
-                    (segments[2]?.avgScreenViews || 1)) *
-                    100 -
-                  100
-                ).toFixed(0)}
-                % more screen exploration
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>

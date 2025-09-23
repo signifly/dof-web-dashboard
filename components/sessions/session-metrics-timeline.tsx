@@ -16,7 +16,7 @@ interface SessionMetricsTimelineProps {
   isLive?: boolean
 }
 
-type MetricType = "fps" | "memory" | "cpu" | "loadTime" | "all"
+type MetricType = "fps" | "memory" | "cpu" | "all"
 
 export function SessionMetricsTimelineComponent({
   metrics,
@@ -51,7 +51,6 @@ export function SessionMetricsTimelineComponent({
       fps: metric.fps,
       memory_usage: metric.memory_usage,
       cpu_usage: metric.cpu_usage,
-      load_time: metric.load_time,
       screen_name: metric.screen_name,
     }))
   }
@@ -76,12 +75,6 @@ export function SessionMetricsTimelineComponent({
         color: "#ef4444",
         unit: "%",
       },
-      loadTime: {
-        key: "load_time",
-        name: "Load Time",
-        color: "#8b5cf6",
-        unit: "ms",
-      },
     }
 
     switch (selectedMetric) {
@@ -91,8 +84,6 @@ export function SessionMetricsTimelineComponent({
         return [baseConfig.memory]
       case "cpu":
         return [baseConfig.cpu]
-      case "loadTime":
-        return [baseConfig.loadTime]
       case "all":
       default:
         return Object.values(baseConfig)
@@ -107,44 +98,37 @@ export function SessionMetricsTimelineComponent({
       metrics.reduce((sum, m) => sum + m.memory_usage, 0) / metrics.length
     const avgCpu =
       metrics.reduce((sum, m) => sum + m.cpu_usage, 0) / metrics.length
-    const avgLoadTime =
-      metrics.reduce((sum, m) => sum + m.load_time, 0) / metrics.length
 
     const maxFps = Math.max(...metrics.map(m => m.fps))
     const maxMemory = Math.max(...metrics.map(m => m.memory_usage))
     const maxCpu = Math.max(...metrics.map(m => m.cpu_usage))
-    const maxLoadTime = Math.max(...metrics.map(m => m.load_time))
 
     const minFps = Math.min(...metrics.map(m => m.fps))
     const minMemory = Math.min(...metrics.map(m => m.memory_usage))
     const minCpu = Math.min(...metrics.map(m => m.cpu_usage))
-    const minLoadTime = Math.min(...metrics.map(m => m.load_time))
 
     return {
       avg: {
         fps: avgFps,
         memory: avgMemory,
         cpu: avgCpu,
-        loadTime: avgLoadTime,
       },
       max: {
         fps: maxFps,
         memory: maxMemory,
         cpu: maxCpu,
-        loadTime: maxLoadTime,
       },
       min: {
         fps: minFps,
         memory: minMemory,
         cpu: minCpu,
-        loadTime: minLoadTime,
       },
     }
   }
 
   const getPerformanceIndicator = (
     value: number,
-    type: "fps" | "memory" | "cpu" | "loadTime"
+    type: "fps" | "memory" | "cpu"
   ) => {
     let status: "good" | "warning" | "danger" = "good"
 
@@ -160,10 +144,6 @@ export function SessionMetricsTimelineComponent({
       case "cpu":
         if (value > 80) status = "danger"
         else if (value > 60) status = "warning"
-        break
-      case "loadTime":
-        if (value > 3000) status = "danger"
-        else if (value > 2000) status = "warning"
         break
     }
 
@@ -244,17 +224,6 @@ export function SessionMetricsTimelineComponent({
                   <Cpu className="h-3 w-3" />
                   <span>CPU</span>
                 </Button>
-                <Button
-                  size="sm"
-                  variant={
-                    selectedMetric === "loadTime" ? "default" : "outline"
-                  }
-                  onClick={() => setSelectedMetric("loadTime")}
-                  className="flex items-center space-x-1"
-                >
-                  <Clock className="h-3 w-3" />
-                  <span>Load</span>
-                </Button>
               </div>
 
               {/* Time Range Filter */}
@@ -328,7 +297,7 @@ export function SessionMetricsTimelineComponent({
             <CardTitle>Performance Statistics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-3 gap-6">
               {/* FPS Stats */}
               <div className="space-y-2">
                 <h4 className="text-sm font-medium flex items-center space-x-2">
@@ -426,42 +395,6 @@ export function SessionMetricsTimelineComponent({
                 </div>
               </div>
 
-              {/* Load Time Stats */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium flex items-center space-x-2">
-                  <Clock className="h-4 w-4" />
-                  <span>Load Time</span>
-                </h4>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Average:</span>
-                    <span
-                      className={
-                        getPerformanceIndicator(
-                          stats.avg.loadTime,
-                          "loadTime"
-                        ) === "good"
-                          ? "text-green-600"
-                          : getPerformanceIndicator(
-                                stats.avg.loadTime,
-                                "loadTime"
-                              ) === "warning"
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }
-                    >
-                      {(stats.avg.loadTime / 1000).toFixed(1)}s
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Range:</span>
-                    <span>
-                      {(stats.min.loadTime / 1000).toFixed(1)} -{" "}
-                      {(stats.max.loadTime / 1000).toFixed(1)}s
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>

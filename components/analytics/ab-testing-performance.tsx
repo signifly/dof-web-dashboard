@@ -15,7 +15,6 @@ interface ABTestVariant {
   users: number
   avgFps: number
   avgMemory: number
-  avgLoadTime: number
   avgCpu: number
   conversionRate: number
   retentionRate: number
@@ -41,8 +40,6 @@ const generateABTests = (performanceData: MetricsTrend[]): ABTest[] => {
   const avgFps = basePerf.reduce((sum, p) => sum + p.fps, 0) / basePerf.length
   const avgMemory =
     basePerf.reduce((sum, p) => sum + p.memory_usage, 0) / basePerf.length
-  const avgLoadTime =
-    basePerf.reduce((sum, p) => sum + p.load_time, 0) / basePerf.length
   const avgCpu =
     basePerf.reduce((sum, p) => sum + p.cpu_usage, 0) / basePerf.length
 
@@ -64,7 +61,6 @@ const generateABTests = (performanceData: MetricsTrend[]): ABTest[] => {
           users: 5000,
           avgFps: avgFps * 0.95,
           avgMemory: avgMemory,
-          avgLoadTime: avgLoadTime,
           avgCpu: avgCpu,
           conversionRate: 12.4,
           retentionRate: 78.2,
@@ -78,7 +74,6 @@ const generateABTests = (performanceData: MetricsTrend[]): ABTest[] => {
           users: 2500,
           avgFps: avgFps * 1.08,
           avgMemory: avgMemory * 0.95,
-          avgLoadTime: avgLoadTime * 1.02,
           avgCpu: avgCpu * 0.92,
           conversionRate: 13.1,
           retentionRate: 79.8,
@@ -92,7 +87,6 @@ const generateABTests = (performanceData: MetricsTrend[]): ABTest[] => {
           users: 2500,
           avgFps: avgFps * 1.15,
           avgMemory: avgMemory * 0.88,
-          avgLoadTime: avgLoadTime * 0.95,
           avgCpu: avgCpu * 0.85,
           conversionRate: 14.2,
           retentionRate: 82.1,
@@ -116,7 +110,6 @@ const generateABTests = (performanceData: MetricsTrend[]): ABTest[] => {
           users: 3000,
           avgFps: avgFps,
           avgMemory: avgMemory,
-          avgLoadTime: avgLoadTime,
           avgCpu: avgCpu,
           conversionRate: 13.8,
           retentionRate: 80.1,
@@ -136,58 +129,6 @@ const generateABTests = (performanceData: MetricsTrend[]): ABTest[] => {
           conversionRate: 14.5,
           retentionRate: 81.7,
           crashRate: 1.8,
-          isControl: false,
-        },
-      ],
-    },
-    {
-      id: "test-003",
-      name: "Load Time Optimization",
-      status: "planned",
-      startDate: "2024-03-01",
-      primaryMetric: "Load Time",
-      significance: 0,
-      variants: [
-        {
-          id: "control",
-          name: "Control (Current Loading)",
-          description: "Current asset loading strategy",
-          users: 0,
-          avgFps: avgFps,
-          avgMemory: avgMemory,
-          avgLoadTime: avgLoadTime,
-          avgCpu: avgCpu,
-          conversionRate: 13.8,
-          retentionRate: 80.1,
-          crashRate: 2.3,
-          isControl: true,
-        },
-        {
-          id: "variant-a",
-          name: "Progressive Loading",
-          description: "Load critical assets first, then stream remaining",
-          users: 0,
-          avgFps: avgFps * 0.98,
-          avgMemory: avgMemory * 1.05,
-          avgLoadTime: avgLoadTime * 0.65,
-          avgCpu: avgCpu * 1.08,
-          conversionRate: 15.2,
-          retentionRate: 83.4,
-          crashRate: 2.1,
-          isControl: false,
-        },
-        {
-          id: "variant-b",
-          name: "Lazy Loading",
-          description: "Load assets only when needed",
-          users: 0,
-          avgFps: avgFps * 1.02,
-          avgMemory: avgMemory * 0.92,
-          avgLoadTime: avgLoadTime * 0.78,
-          avgCpu: avgCpu * 0.95,
-          conversionRate: 14.7,
-          retentionRate: 82.8,
-          crashRate: 2.0,
           isControl: false,
         },
       ],
@@ -227,10 +168,6 @@ export function ABTestingPerformance({
       case "Memory Usage":
         variantValue = control.avgMemory // Inverted - lower is better
         controlValue = variant.avgMemory
-        break
-      case "Load Time":
-        variantValue = control.avgLoadTime // Inverted - lower is better
-        controlValue = variant.avgLoadTime
         break
       default:
         return 0
@@ -373,14 +310,6 @@ export function ABTestingPerformance({
                             </div>
                             <div>
                               <div className="text-muted-foreground">
-                                Load Time
-                              </div>
-                              <div className="font-medium">
-                                {variant.avgLoadTime.toFixed(0)}ms
-                              </div>
-                            </div>
-                            <div>
-                              <div className="text-muted-foreground">
                                 Conversion
                               </div>
                               <div className="font-medium">
@@ -432,13 +361,6 @@ export function ABTestingPerformance({
               </div>
             </div>
 
-            <div className="p-4 bg-orange-900/20 rounded-lg">
-              <div className="font-medium text-orange-900">Upcoming Tests</div>
-              <div className="text-sm text-orange-700 mt-1">
-                Progressive Loading test scheduled for March 1st. Expected to
-                reduce initial load times by 35% based on preliminary analysis.
-              </div>
-            </div>
 
             <div className="p-4 bg-purple-900/20 rounded-lg">
               <div className="font-medium text-purple-900">
@@ -446,7 +368,7 @@ export function ABTestingPerformance({
               </div>
               <div className="text-sm text-purple-700 mt-1">
                 A/B testing has led to cumulative improvements: +18% FPS, -20%
-                memory usage, -15% load times. User retention increased by 4.2%
+                memory usage. User retention increased by 4.2%
                 following these optimizations.
               </div>
             </div>

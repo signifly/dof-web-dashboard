@@ -206,7 +206,7 @@ export function SessionPerformanceAnalysisComponent({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Zap className="h-4 w-4" />
@@ -241,22 +241,6 @@ export function SessionPerformanceAnalysisComponent({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4" />
-                <span className="text-sm font-medium">Load Time</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                {getTrendIcon(analysis.performanceTrends.loadTime)}
-                <span
-                  className={`text-sm font-medium ${getTrendColor(
-                    analysis.performanceTrends.loadTime
-                  )}`}
-                >
-                  {analysis.performanceTrends.loadTime}
-                </span>
-              </div>
-            </div>
 
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
@@ -311,7 +295,7 @@ export function SessionPerformanceAnalysisComponent({
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-muted-foreground">Avg FPS:</span>
                         <span className="ml-2 font-medium">
@@ -324,12 +308,6 @@ export function SessionPerformanceAnalysisComponent({
                         </span>
                         <span className="ml-2 font-medium">
                           {screen.avgMemory.toFixed(0)}MB
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Avg Load:</span>
-                        <span className="ml-2 font-medium">
-                          {(screen.avgLoadTime / 1000).toFixed(1)}s
                         </span>
                       </div>
                     </div>

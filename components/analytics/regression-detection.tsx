@@ -34,7 +34,6 @@ interface BuildPerformance {
   timestamp: string
   avgFps: number
   avgMemory: number
-  avgLoadTime: number
   avgCpu: number
   regressionScore: number
   status: "passed" | "failed" | "warning"
@@ -102,30 +101,6 @@ const generateRegressionData = (builds: BuildPerformance[]) => {
     })
   }
 
-  // Generate load time regression alert if there's a significant increase
-  if (
-    latestBuild.avgLoadTime - previousBuild.avgLoadTime >
-    previousBuild.avgLoadTime * 0.2
-  ) {
-    alerts.push({
-      id: "alert-loadtime",
-      severity:
-        latestBuild.avgLoadTime - previousBuild.avgLoadTime >
-        previousBuild.avgLoadTime * 0.35
-          ? "critical"
-          : "warning",
-      metric: "Load Time",
-      change:
-        ((latestBuild.avgLoadTime - previousBuild.avgLoadTime) /
-          previousBuild.avgLoadTime) *
-        100,
-      baseline: previousBuild.avgLoadTime,
-      current: latestBuild.avgLoadTime,
-      buildInfo: latestBuild,
-      affectedDevices: latestBuild.platforms || ["Unknown"],
-      status: "new",
-    })
-  }
 
   return { builds, alerts }
 }
@@ -294,9 +269,7 @@ export function RegressionDetection({
                             {alert.baseline}
                             {alert.metric === "FPS"
                               ? " FPS"
-                              : alert.metric === "Memory Usage"
-                                ? " MB"
-                                : " ms"}
+                              : " MB"}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -305,9 +278,7 @@ export function RegressionDetection({
                             {alert.current}
                             {alert.metric === "FPS"
                               ? " FPS"
-                              : alert.metric === "Memory Usage"
-                                ? " MB"
-                                : " ms"}
+                              : " MB"}
                           </span>
                         </div>
                         <div className="flex justify-between font-medium">
@@ -416,10 +387,6 @@ export function RegressionDetection({
                       <div className="text-muted-foreground">MB</div>
                     </div>
                     <div className="text-center">
-                      <div className="font-medium">{build.avgLoadTime}</div>
-                      <div className="text-muted-foreground">ms</div>
-                    </div>
-                    <div className="text-center">
                       <div className="font-medium">
                         {build.avgCpu === 0 ? "N/A" : `${build.avgCpu}%*`}
                       </div>
@@ -463,8 +430,7 @@ export function RegressionDetection({
               </div>
               <div className="text-sm text-green-700 mt-1">
                 • FPS regression {">"}5% = Warning, {">"}10% = Critical • Memory
-                increase {">"}15% = Warning, {">"}25% = Critical • Load time
-                increase {">"}20% = Warning, {">"}35% = Critical
+                increase {">"}15% = Warning, {">"}25% = Critical
               </div>
             </div>
 
