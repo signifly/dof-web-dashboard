@@ -238,29 +238,6 @@ export function DeviceOverview({ device }: DeviceOverviewProps) {
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                Average Load Time
-              </span>
-              <div className="flex items-center space-x-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    device.avgLoadTime <= 500
-                      ? "bg-green-500"
-                      : device.avgLoadTime <= 1000
-                        ? "bg-yellow-500"
-                        : device.avgLoadTime <= 2000
-                          ? "bg-orange-500"
-                          : "bg-red-500"
-                  }`}
-                />
-                <span className="font-medium">
-                  {device.avgLoadTime > 0
-                    ? `${device.avgLoadTime.toFixed(0)} ms`
-                    : "N/A"}
-                </span>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>

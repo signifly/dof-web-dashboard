@@ -290,42 +290,6 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
         </Card>
       </div>
 
-      {/* Load Time Performance */}
-      {chartData.filter(d => d.loadTime > 0).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Load Time Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData.filter(d => d.loadTime > 0)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="timestamp" tick={{ fontSize: 12 }} />
-                  <YAxis
-                    label={{ value: "ms", angle: -90, position: "insideLeft" }}
-                    tick={{ fontSize: 12 }}
-                  />
-                  <Tooltip
-                    labelFormatter={label => `Time: ${label}`}
-                    formatter={(value: number) => [
-                      `${value.toFixed(0)} ms`,
-                      "Load Time",
-                    ]}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="loadTime"
-                    stroke="#8b5cf6"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Screen Usage Breakdown */}
       {screenData.length > 1 && (
@@ -373,7 +337,6 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                   <th className="text-left p-2">Screen</th>
                   <th className="text-left p-2">FPS</th>
                   <th className="text-left p-2">Memory</th>
-                  <th className="text-left p-2">Load Time</th>
                   <th className="text-left p-2">Status</th>
                 </tr>
               </thead>
@@ -414,11 +377,6 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                       <td className="p-2">
                         {metric.memory > 0
                           ? `${metric.memory.toFixed(0)} MB`
-                          : "N/A"}
-                      </td>
-                      <td className="p-2">
-                        {metric.loadTime > 0
-                          ? `${metric.loadTime.toFixed(0)} ms`
                           : "N/A"}
                       </td>
                       <td className="p-2">
