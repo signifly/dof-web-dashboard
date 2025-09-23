@@ -20,8 +20,9 @@ jest.mock("@/lib/utils/refresh-config", () => ({
   })),
 }))
 
-const mockUseInteractionDetector = require("@/lib/hooks/use-interaction-detector")
-  .useInteractionDetector as jest.MockedFunction<any>
+const mockUseInteractionDetector =
+  require("@/lib/hooks/use-interaction-detector")
+    .useInteractionDetector as jest.MockedFunction<any>
 
 describe("useSmartRefresh", () => {
   let mockFetchFn: jest.Mock
@@ -147,7 +148,7 @@ describe("useSmartRefresh", () => {
 
     // Check that setTimeout was called with the active interval (30000ms)
     const setTimeoutCall = mockSetTimeout.mock.calls.find(
-      (call) => call[1] === 30000
+      call => call[1] === 30000
     )
     expect(setTimeoutCall).toBeDefined()
   })
@@ -338,7 +339,7 @@ describe("useSmartRefresh", () => {
     let abortController: AbortController | null = null
     mockFetchFn.mockImplementation(() => {
       abortController = new AbortController()
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         setTimeout(() => resolve({ data: "test" }), 1000)
       })
     })
@@ -377,7 +378,7 @@ describe("useSmartRefresh", () => {
 
     // Should use background interval when page is not visible
     const backgroundIntervalCall = mockSetTimeout.mock.calls.find(
-      (call) => call[1] === 600000 // background interval
+      call => call[1] === 600000 // background interval
     )
     expect(backgroundIntervalCall).toBeDefined()
   })
@@ -427,9 +428,7 @@ describe("useSmartRefresh", () => {
     )
 
     // Should use summary interval (300000ms)
-    let summaryCall = mockSetTimeout.mock.calls.find(
-      (call) => call[1] === 300000
-    )
+    let summaryCall = mockSetTimeout.mock.calls.find(call => call[1] === 300000)
     expect(summaryCall).toBeDefined()
 
     mockSetTimeout.mockClear()
@@ -438,7 +437,7 @@ describe("useSmartRefresh", () => {
     rerender({ type: "active" as const })
 
     // Should use active interval (30000ms)
-    let activeCall = mockSetTimeout.mock.calls.find((call) => call[1] === 30000)
+    let activeCall = mockSetTimeout.mock.calls.find(call => call[1] === 30000)
     expect(activeCall).toBeDefined()
   })
 })

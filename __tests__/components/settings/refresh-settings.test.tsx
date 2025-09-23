@@ -101,7 +101,9 @@ describe("RefreshSettings", () => {
     render(<RefreshSettings sections={["global"]} />)
 
     expect(screen.getByText("Global Settings")).toBeInTheDocument()
-    expect(screen.getByLabelText("Pause on User Interaction")).toBeInTheDocument()
+    expect(
+      screen.getByLabelText("Pause on User Interaction")
+    ).toBeInTheDocument()
     expect(screen.getByLabelText("Auto-refresh Enabled")).toBeInTheDocument()
   })
 
@@ -229,9 +231,7 @@ describe("RefreshSettings", () => {
   })
 
   it("should apply custom className", () => {
-    const { container } = render(
-      <RefreshSettings className="custom-class" />
-    )
+    const { container } = render(<RefreshSettings className="custom-class" />)
 
     expect(container.firstChild).toHaveClass("custom-class")
   })
@@ -263,7 +263,7 @@ describe("RefreshSettings", () => {
     // Mock localStorage
     Object.defineProperty(window, "localStorage", {
       value: {
-        getItem: jest.fn((key) => {
+        getItem: jest.fn(key => {
           if (key === "dof-refresh-preferences") {
             return JSON.stringify(mockGlobalSettings)
           }

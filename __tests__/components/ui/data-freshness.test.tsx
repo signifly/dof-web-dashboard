@@ -15,24 +15,14 @@ describe("DataFreshness", () => {
   it("should render with basic props", () => {
     const lastUpdated = new Date("2023-01-01T12:00:00Z")
 
-    render(
-      <DataFreshness
-        lastUpdated={lastUpdated}
-        isRefreshing={false}
-      />
-    )
+    render(<DataFreshness lastUpdated={lastUpdated} isRefreshing={false} />)
 
     expect(screen.getByText("Live")).toBeInTheDocument()
     expect(screen.getByText(/Last updated/)).toBeInTheDocument()
   })
 
   it("should show updating status when refreshing", () => {
-    render(
-      <DataFreshness
-        lastUpdated={new Date()}
-        isRefreshing={true}
-      />
-    )
+    render(<DataFreshness lastUpdated={new Date()} isRefreshing={true} />)
 
     expect(screen.getByText("Updating")).toBeInTheDocument()
   })
@@ -82,42 +72,22 @@ describe("DataFreshness", () => {
 
     // Test "just now"
     const justNow = new Date("2023-01-01T11:59:50Z") // 10 seconds ago
-    render(
-      <DataFreshness
-        lastUpdated={justNow}
-        isRefreshing={false}
-      />
-    )
+    render(<DataFreshness lastUpdated={justNow} isRefreshing={false} />)
     expect(screen.getByText(/just now/)).toBeInTheDocument()
 
     // Test minutes
     const twoMinutesAgo = new Date("2023-01-01T11:58:00Z")
-    render(
-      <DataFreshness
-        lastUpdated={twoMinutesAgo}
-        isRefreshing={false}
-      />
-    )
+    render(<DataFreshness lastUpdated={twoMinutesAgo} isRefreshing={false} />)
     expect(screen.getByText(/2m ago/)).toBeInTheDocument()
 
     // Test hours
     const twoHoursAgo = new Date("2023-01-01T10:00:00Z")
-    render(
-      <DataFreshness
-        lastUpdated={twoHoursAgo}
-        isRefreshing={false}
-      />
-    )
+    render(<DataFreshness lastUpdated={twoHoursAgo} isRefreshing={false} />)
     expect(screen.getByText(/2h ago/)).toBeInTheDocument()
 
     // Test days
     const twoDaysAgo = new Date("2022-12-30T12:00:00Z")
-    render(
-      <DataFreshness
-        lastUpdated={twoDaysAgo}
-        isRefreshing={false}
-      />
-    )
+    render(<DataFreshness lastUpdated={twoDaysAgo} isRefreshing={false} />)
     expect(screen.getByText(/2d ago/)).toBeInTheDocument()
   })
 
@@ -228,12 +198,7 @@ describe("DataFreshness", () => {
   })
 
   it("should handle null lastUpdated", () => {
-    render(
-      <DataFreshness
-        lastUpdated={null}
-        isRefreshing={false}
-      />
-    )
+    render(<DataFreshness lastUpdated={null} isRefreshing={false} />)
 
     expect(screen.getByText("No data")).toBeInTheDocument()
   })
@@ -301,12 +266,7 @@ describe("DataFreshness", () => {
   })
 
   it("should show spinning icon when refreshing", () => {
-    render(
-      <DataFreshness
-        lastUpdated={new Date()}
-        isRefreshing={true}
-      />
-    )
+    render(<DataFreshness lastUpdated={new Date()} isRefreshing={true} />)
 
     // The refresh icon should have the animate-spin class
     const refreshIcons = document.querySelectorAll(".animate-spin")
@@ -335,12 +295,7 @@ describe("DataFreshness", () => {
     const lastUpdated = new Date("2023-01-01T11:59:00Z") // 1 minute ago
     jest.setSystemTime(initialTime)
 
-    render(
-      <DataFreshness
-        lastUpdated={lastUpdated}
-        isRefreshing={false}
-      />
-    )
+    render(<DataFreshness lastUpdated={lastUpdated} isRefreshing={false} />)
 
     expect(screen.getByText(/1m ago/)).toBeInTheDocument()
 

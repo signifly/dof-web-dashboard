@@ -86,7 +86,7 @@ describe("useInteractionDetector", () => {
 
     // Get the mousemove event handler
     const mousemoveHandler = mockAddEventListener.mock.calls.find(
-      (call) => call[0] === "mousemove"
+      call => call[0] === "mousemove"
     )?.[1]
 
     expect(mousemoveHandler).toBeDefined()
@@ -167,7 +167,7 @@ describe("useInteractionDetector", () => {
     const { result } = renderHook(() => useInteractionDetector())
 
     const mousemoveHandler = mockAddEventListener.mock.calls.find(
-      (call) => call[0] === "mousemove"
+      call => call[0] === "mousemove"
     )?.[1]
 
     const initialActivity = result.current.lastActivity
@@ -206,9 +206,7 @@ describe("useInteractionDetector", () => {
   })
 
   it("should work with empty events array", () => {
-    const { result } = renderHook(() =>
-      useInteractionDetector({ events: [] })
-    )
+    const { result } = renderHook(() => useInteractionDetector({ events: [] }))
 
     expect(mockAddEventListener).not.toHaveBeenCalled()
     expect(result.current.isUserActive).toBe(true)
@@ -218,10 +216,10 @@ describe("useInteractionDetector", () => {
     const { result } = renderHook(() => useInteractionDetector())
 
     const mousemoveHandler = mockAddEventListener.mock.calls.find(
-      (call) => call[0] === "mousemove"
+      call => call[0] === "mousemove"
     )?.[1]
     const keydownHandler = mockAddEventListener.mock.calls.find(
-      (call) => call[0] === "keydown"
+      call => call[0] === "keydown"
     )?.[1]
 
     // Advance time to make user inactive

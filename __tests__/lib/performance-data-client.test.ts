@@ -97,9 +97,7 @@ describe("performance-data-client", () => {
 
       const result = await getPerformanceTrendsClient()
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        "/api/performance/trends?limit=50"
-      )
+      expect(mockFetch).toHaveBeenCalledWith("/api/performance/trends?limit=50")
       expect(result).toEqual(mockTrends)
     })
 
@@ -150,7 +148,9 @@ describe("performance-data-client", () => {
 
       await getPerformanceTrendsClient(-10)
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/performance/trends?limit=-10")
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/performance/trends?limit=-10"
+      )
     })
   })
 
@@ -297,7 +297,7 @@ describe("performance-data-client", () => {
     })
 
     it("should execute both requests in parallel", async () => {
-      const summaryPromise = new Promise((resolve) =>
+      const summaryPromise = new Promise(resolve =>
         setTimeout(
           () =>
             resolve({
@@ -308,7 +308,7 @@ describe("performance-data-client", () => {
         )
       )
 
-      const trendsPromise = new Promise((resolve) =>
+      const trendsPromise = new Promise(resolve =>
         setTimeout(
           () =>
             resolve({

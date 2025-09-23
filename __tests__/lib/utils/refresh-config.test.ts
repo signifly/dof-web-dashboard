@@ -155,7 +155,9 @@ describe("refresh-config", () => {
     it("should use custom grace period", () => {
       const customGracePeriod = 10000
       expect(shouldPauseRefresh(true, true, 5000, customGracePeriod)).toBe(true)
-      expect(shouldPauseRefresh(true, true, 15000, customGracePeriod)).toBe(false)
+      expect(shouldPauseRefresh(true, true, 15000, customGracePeriod)).toBe(
+        false
+      )
     })
   })
 
