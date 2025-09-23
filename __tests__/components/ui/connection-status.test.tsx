@@ -57,12 +57,7 @@ describe("ConnectionStatus", () => {
 
   it("should call onReconnect when reconnect button is clicked", () => {
     const error = new Error("Connection failed")
-    render(
-      <ConnectionStatus
-        {...defaultProps}
-        error={error}
-      />
-    )
+    render(<ConnectionStatus {...defaultProps} error={error} />)
 
     const reconnectButton = screen.getByText("Reconnect")
     fireEvent.click(reconnectButton)

@@ -55,6 +55,25 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
     return "bg-red-900/200"
   }
 
+  const getSessionStatus = (session: PerformanceSession) => {
+    // If session has an end time, it's completed
+    if (session.session_end) {
+      return "Completed"
+    }
+
+    // If no end time, check how long ago it started
+    const startTime = new Date(session.session_start).getTime()
+    const now = new Date().getTime()
+    const hoursAgo = (now - startTime) / (1000 * 60 * 60)
+
+    // Consider sessions "stale" if they started more than 2 hours ago without ending
+    if (hoursAgo > 2) {
+      return "Stale"
+    }
+
+    return "Active"
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -84,7 +103,7 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
 
               <div className="text-right">
                 <div className="text-sm font-medium">
-                  {session.session_end ? "Completed" : "Active"}
+                  {getSessionStatus(session)}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {formatDate(session.session_start)}

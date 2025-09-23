@@ -1,7 +1,9 @@
 "use client"
 
 import React from "react"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { PerformanceSession } from "@/lib/performance-data"
 
 interface DeviceProfile {
@@ -106,16 +108,16 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
               return (
                 <div
                   key={device.deviceId}
-                  className="p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                  className="p-4 rounded-lg border hover:bg-muted/50 hover:border-primary/50 transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-start space-x-3">
+                    <div className="flex items-start space-x-3 flex-1">
                       <div
                         className={`w-4 h-4 rounded-full mt-1 ${getPerformanceColor(device.avgFps)}`}
                         title={`${device.avgFps.toFixed(1)} FPS`}
                       />
-                      <div>
-                        <div className="font-medium">
+                      <div className="flex-1">
+                        <div className="font-medium group-hover:text-primary transition-colors">
                           Device{" "}
                           {device.deviceId
                             ? device.deviceId.slice(0, 8)
@@ -133,16 +135,28 @@ export function DeviceProfiling({ devices }: DeviceProfilingProps) {
                       </div>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end space-y-2">
                       <div
                         className={`px-3 py-1 rounded-full text-xs font-medium ${getRiskColor(device.riskLevel)}`}
                       >
                         {getRiskIcon(device.riskLevel)}{" "}
                         {device.riskLevel.toUpperCase()} RISK
                       </div>
-                      <div className="text-sm text-muted-foreground mt-1">
+                      <div className="text-sm text-muted-foreground">
                         Score: {performanceScore}/100
                       </div>
+                      <Link
+                        href={`/devices/${encodeURIComponent(device.deviceId)}`}
+                        className="inline-block"
+                      >
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          View Details
+                        </Button>
+                      </Link>
                     </div>
                   </div>
 

@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/client"
 jest.unmock("../../../lib/hooks/use-realtime-performance")
 import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
 
-const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>
+const mockCreateClient = createClient as jest.MockedFunction<
+  typeof createClient
+>
 
 describe("useRealtimePerformance", () => {
   let mockChannel: any
@@ -55,9 +57,7 @@ describe("useRealtimePerformance", () => {
       },
     ]
 
-    const { result } = renderHook(() =>
-      useRealtimePerformance({ initialData })
-    )
+    const { result } = renderHook(() => useRealtimePerformance({ initialData }))
 
     expect(result.current.data).toEqual(initialData)
   })
@@ -65,7 +65,9 @@ describe("useRealtimePerformance", () => {
   it("should set up realtime subscription on mount", () => {
     renderHook(() => useRealtimePerformance())
 
-    expect(mockSupabase.channel).toHaveBeenCalledWith("performance_metrics_realtime")
+    expect(mockSupabase.channel).toHaveBeenCalledWith(
+      "performance_metrics_realtime"
+    )
     expect(mockChannel.on).toHaveBeenCalledWith(
       "postgres_changes",
       {

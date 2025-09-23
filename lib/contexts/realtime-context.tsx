@@ -1,6 +1,12 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState, useRef } from "react"
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MetricsTrend } from "@/lib/performance-data"
 import { RealtimeChannel } from "@supabase/supabase-js"
@@ -13,7 +19,9 @@ interface RealtimeContextValue {
   reconnect: () => void
 }
 
-const RealtimeContext = createContext<RealtimeContextValue | undefined>(undefined)
+const RealtimeContext = createContext<RealtimeContextValue | undefined>(
+  undefined
+)
 
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<MetricsTrend[]>([])
@@ -41,7 +49,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             schema: "public",
             table: "performance_metrics",
           },
-          (payload) => {
+          payload => {
             console.log("Realtime update received:", payload)
 
             // Transform the new metric into trend format
@@ -51,7 +59,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
 
               setData(prevData => {
                 // Find or create data point for this timestamp
-                const existingIndex = prevData.findIndex(d => d.timestamp === timestamp)
+                const existingIndex = prevData.findIndex(
+                  d => d.timestamp === timestamp
+                )
 
                 if (existingIndex >= 0) {
                   // Update existing data point
@@ -85,10 +95,24 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
                   const newPoint: MetricsTrend = {
                     timestamp,
                     fps: metric.metric_type === "fps" ? metric.metric_value : 0,
-                    memory_usage: metric.metric_type === "memory_usage" || metric.metric_type === "memory" ? metric.metric_value : 0,
-                    cpu_usage: metric.metric_type === "cpu_usage" || metric.metric_type === "cpu" ? metric.metric_value : 0,
-                    load_time: metric.metric_type === "navigation_time" || metric.metric_type === "screen_load" || metric.metric_type === "load_time" ? metric.metric_value : 0,
-                    screen_name: (metric.context as any)?.screen_name || "Unknown"
+                    memory_usage:
+                      metric.metric_type === "memory_usage" ||
+                      metric.metric_type === "memory"
+                        ? metric.metric_value
+                        : 0,
+                    cpu_usage:
+                      metric.metric_type === "cpu_usage" ||
+                      metric.metric_type === "cpu"
+                        ? metric.metric_value
+                        : 0,
+                    load_time:
+                      metric.metric_type === "navigation_time" ||
+                      metric.metric_type === "screen_load" ||
+                      metric.metric_type === "load_time"
+                        ? metric.metric_value
+                        : 0,
+                    screen_name:
+                      (metric.context as any)?.screen_name || "Unknown",
                   }
 
                   return [...prevData, newPoint].slice(-50) // Keep last 50 points
@@ -99,7 +123,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
             }
           }
         )
-        .subscribe((status) => {
+        .subscribe(status => {
           console.log("Realtime subscription status:", status)
 
           if (status === "SUBSCRIBED") {
@@ -119,7 +143,9 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       channelRef.current = channel
     } catch (err) {
       console.error("Error setting up realtime:", err)
-      setError(err instanceof Error ? err : new Error("Failed to setup realtime"))
+      setError(
+        err instanceof Error ? err : new Error("Failed to setup realtime")
+      )
       setIsConnected(false)
     }
   }

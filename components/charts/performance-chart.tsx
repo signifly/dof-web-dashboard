@@ -26,7 +26,8 @@ export const PerformanceChart = React.memo(function PerformanceChart({
   // Get shared realtime data if enabled, fallback to provided data
   const { data: realtimeData, isConnected, error, reconnect } = useRealtime()
 
-  const chartData = enableRealtime && realtimeData.length > 0 ? realtimeData : data
+  const chartData =
+    enableRealtime && realtimeData.length > 0 ? realtimeData : data
 
   if (!chartData || chartData.length === 0) {
     return (
