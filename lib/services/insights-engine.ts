@@ -5,6 +5,16 @@ import {
   PerformanceSummary,
   MetricsTrend,
 } from "@/lib/performance-data"
+import { getRoutePerformanceAnalysis } from "@/lib/route-performance-data"
+import {
+  detectRoutePerformanceAnomalies,
+  compareRoutesAgainstGlobalPerformance,
+  analyzeRoutePerformanceTrends,
+  identifyProblematicRoutes,
+  RouteAnomalyDetection,
+  RouteComparison,
+  RouteTrendAnalysis,
+} from "@/lib/utils/route-performance-correlation"
 import { StatisticalAnalysisUtils } from "@/lib/utils/statistical-analysis"
 import { PerformanceScoringEngine } from "@/lib/utils/performance-scoring"
 import { RecommendationEngine } from "./recommendation-engine"
@@ -17,6 +27,7 @@ import {
   InsightsEngineConfig,
   TrendAnalysis,
 } from "@/types/insights"
+import { RoutePerformanceAnalysis } from "@/types/route-performance"
 
 export class PerformanceInsightsEngine {
   private statisticalAnalysis = StatisticalAnalysisUtils
@@ -74,16 +85,20 @@ export class PerformanceInsightsEngine {
     const analysisStart = Date.now()
 
     // 1. Fetch performance data from existing functions
-    const [performanceData, trendData, deviceData] = await Promise.all([
-      getPerformanceSummary(),
-      getPerformanceTrends(),
-      getDevicePerformanceData(),
-    ])
+    const [performanceData, trendData, deviceData, routeData] =
+      await Promise.all([
+        getPerformanceSummary(),
+        getPerformanceTrends(),
+        getDevicePerformanceData(),
+        getRoutePerformanceAnalysis(),
+      ])
 
     console.log("🔍 Performance Data:", {
       performanceData,
       trendDataLength: trendData.length,
       deviceDataLength: deviceData.length,
+      routeDataRoutesCount: routeData.routes.length,
+      routeDataSessionsCount: routeData.summary.totalSessions,
     })
 
     // 2. Apply time range filter if specified
@@ -110,12 +125,13 @@ export class PerformanceInsightsEngine {
       trends
     )
 
-    // 7. Generate insights
+    // 7. Generate insights (including route performance insights)
     const insights = [
       ...this.createTrendInsights(trends),
       ...this.createAnomalyInsights(anomalies),
       ...this.createOpportunityInsights(optimizationOpportunities),
       ...this.createPerformanceInsights(performanceData, performanceScore),
+      ...this.createRoutePerformanceInsights(routeData, performanceData),
     ]
 
     // 8. Generate recommendations using recommendation engine
@@ -480,6 +496,177 @@ export class PerformanceInsightsEngine {
     }
 
     return insights
+  }
+
+  /**
+   * Create route performance insights
+   */
+  private createRoutePerformanceInsights(
+    routeAnalysis: RoutePerformanceAnalysis,
+    globalPerformance: PerformanceSummary
+  ): PerformanceInsight[] {
+    const insights: PerformanceInsight[] = []
+
+    // Skip if no route data available
+    if (!routeAnalysis.routes.length) {
+      return insights
+    }
+
+    // 1. Route Performance Anomalies
+    const routeAnomalies = detectRoutePerformanceAnomalies(routeAnalysis)
+    insights.push(...this.createRouteAnomalyInsights(routeAnomalies))
+
+    // 2. Route vs Global Performance
+    const routeComparisons =
+      compareRoutesAgainstGlobalPerformance(routeAnalysis)
+    insights.push(...this.createRouteComparisonInsights(routeComparisons))
+
+    // 3. Route Performance Degradation/Improvement Trends
+    const routeTrends = analyzeRoutePerformanceTrends(routeAnalysis)
+    insights.push(...this.createRouteTrendInsights(routeTrends))
+
+    return insights.slice(0, 10) // Limit route insights to prevent overwhelming
+  }
+
+  /**
+   * Create insights from route anomaly detections
+   */
+  private createRouteAnomalyInsights(
+    anomalies: RouteAnomalyDetection[]
+  ): PerformanceInsight[] {
+    return anomalies.slice(0, 5).map(anomaly => ({
+      id: `route_anomaly_${anomaly.route_pattern}_${anomaly.metric_type}_${Date.now()}`,
+      type: "route_performance_anomaly" as const,
+      severity: anomaly.anomaly_severity,
+      title: `${anomaly.route_name} Route ${anomaly.metric_type.toUpperCase()} Anomaly`,
+      description: `Route "${anomaly.route_pattern}" shows unusual ${anomaly.metric_type} performance: ${anomaly.current_value.toFixed(1)} vs expected ${anomaly.expected_value.toFixed(1)} (${anomaly.deviation_from_norm > 0 ? "+" : ""}${anomaly.deviation_from_norm.toFixed(1)}% deviation)`,
+      confidence: anomaly.sessions_count >= 10 ? 0.9 : 0.7,
+      impact:
+        anomaly.anomaly_severity === "critical"
+          ? "high"
+          : anomaly.anomaly_severity === "high"
+            ? "medium"
+            : "low",
+      category: this.mapMetricToCategory(anomaly.metric_type),
+      detected_at: new Date().toISOString(),
+      data_context: {
+        metric_type: anomaly.metric_type,
+        value: anomaly.current_value,
+        baseline: anomaly.expected_value,
+        deviation: anomaly.deviation_from_norm,
+        affected_sessions: anomaly.sessions_count,
+        affected_devices: anomaly.unique_devices,
+        route_context: {
+          route_name: anomaly.route_name,
+          route_pattern: anomaly.route_pattern,
+          affected_routes: [anomaly.route_pattern],
+          route_specific_metrics: {
+            sessions_count: anomaly.sessions_count,
+            unique_devices: anomaly.unique_devices,
+            avg_screen_duration: 0, // Will be populated by correlation utility
+          },
+        },
+      },
+    }))
+  }
+
+  /**
+   * Create insights from route vs global performance comparisons
+   */
+  private createRouteComparisonInsights(
+    comparisons: RouteComparison[]
+  ): PerformanceInsight[] {
+    return comparisons.slice(0, 3).map(comparison => ({
+      id: `route_comparison_${comparison.route_pattern}_${comparison.metric_type}_${Date.now()}`,
+      type: "route_vs_global_performance" as const,
+      severity:
+        comparison.deviation_percentage > 50
+          ? "high"
+          : comparison.deviation_percentage > 30
+            ? "medium"
+            : "low",
+      title: `${comparison.route_name} Route ${comparison.comparison_type === "underperforming" ? "Underperforms" : "Outperforms"} App Average`,
+      description: `Route "${comparison.route_pattern}" ${comparison.comparison_type === "underperforming" ? "underperforms" : "outperforms"} app average ${comparison.metric_type} by ${comparison.deviation_percentage.toFixed(1)}%`,
+      confidence: comparison.confidence,
+      impact:
+        comparison.deviation_percentage > 40
+          ? "high"
+          : comparison.deviation_percentage > 20
+            ? "medium"
+            : "low",
+      category: this.mapMetricToCategory(comparison.metric_type),
+      detected_at: new Date().toISOString(),
+      data_context: {
+        metric_type: comparison.metric_type,
+        value: comparison.deviation_percentage,
+        baseline: 0,
+        deviation:
+          comparison.comparison_type === "underperforming"
+            ? -comparison.deviation_percentage
+            : comparison.deviation_percentage,
+        affected_sessions: comparison.sessions_count,
+        route_context: {
+          route_name: comparison.route_name,
+          route_pattern: comparison.route_pattern,
+          affected_routes: [comparison.route_pattern],
+          route_specific_metrics: {
+            sessions_count: comparison.sessions_count,
+            unique_devices: 0, // Will be populated by correlation utility
+            avg_screen_duration: 0,
+          },
+        },
+      },
+    }))
+  }
+
+  /**
+   * Create insights from route performance trends
+   */
+  private createRouteTrendInsights(
+    trends: RouteTrendAnalysis[]
+  ): PerformanceInsight[] {
+    return trends
+      .filter(trend => trend.trend_significance !== "low")
+      .slice(0, 3)
+      .map(trend => ({
+        id: `route_trend_${trend.route_pattern}_${trend.metric_type}_${Date.now()}`,
+        type: "route_performance_degradation" as const,
+        severity:
+          trend.trend_significance === "high" &&
+          trend.trend_direction === "degrading"
+            ? "high"
+            : "medium",
+        title: `${trend.route_name} Route Performance ${trend.trend_direction === "degrading" ? "Declining" : "Improving"}`,
+        description: `Route "${trend.route_pattern}" shows ${trend.trend_significance} ${trend.trend_direction} trend in ${trend.metric_type} performance over time (${trend.sessions_analyzed} sessions analyzed)`,
+        confidence: Math.min(0.9, 0.5 + (trend.sessions_analyzed / 20) * 0.4), // Higher confidence with more sessions
+        impact: trend.trend_significance === "high" ? "high" : "medium",
+        category: this.mapMetricToCategory(trend.metric_type),
+        detected_at: new Date().toISOString(),
+        data_context: {
+          metric_type: trend.metric_type,
+          value: trend.trend_strength,
+          baseline: 0,
+          deviation:
+            trend.trend_direction === "degrading"
+              ? -trend.trend_strength
+              : trend.trend_strength,
+          affected_sessions: trend.sessions_analyzed,
+          time_window: {
+            start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            end: new Date().toISOString(),
+          },
+          route_context: {
+            route_name: trend.route_name,
+            route_pattern: trend.route_pattern,
+            affected_routes: [trend.route_pattern],
+            route_specific_metrics: {
+              sessions_count: trend.sessions_analyzed,
+              unique_devices: 0, // Will be populated by correlation utility
+              avg_screen_duration: 0,
+            },
+          },
+        },
+      }))
   }
 
   /**
