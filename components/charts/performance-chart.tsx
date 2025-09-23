@@ -3,7 +3,7 @@
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MetricsTrend } from "@/lib/performance-data"
-import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
+import { useRealtime } from "@/lib/contexts/realtime-context"
 import { ConnectionStatusBadge } from "@/components/ui/connection-status"
 
 interface PerformanceChartProps {
@@ -23,19 +23,10 @@ export const PerformanceChart = React.memo(function PerformanceChart({
   height = "h-64",
   enableRealtime = false,
 }: PerformanceChartProps) {
-  // Use realtime data if enabled, fallback to provided data
-  const {
-    data: realtimeData,
-    isConnected,
-    lastUpdate,
-    error,
-    reconnect,
-  } = useRealtimePerformance({
-    initialData: data,
-    maxDataPoints: 100,
-  })
+  // Get shared realtime data if enabled, fallback to provided data
+  const { data: realtimeData, isConnected, error, reconnect } = useRealtime()
 
-  const chartData = enableRealtime ? realtimeData : data
+  const chartData = enableRealtime && realtimeData.length > 0 ? realtimeData : data
 
   if (!chartData || chartData.length === 0) {
     return (

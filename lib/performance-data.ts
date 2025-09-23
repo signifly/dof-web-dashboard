@@ -1,4 +1,4 @@
-import { createServiceClient } from "@/lib/supabase/server"
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
 
 export type PerformanceMetric = Tables<"performance_metrics">
@@ -38,7 +38,7 @@ export interface SessionPerformance {
  * Get overall performance summary statistics
  */
 export async function getPerformanceSummary(): Promise<PerformanceSummary> {
-  const supabase = createServiceClient()
+  const supabase = createClient()
 
   try {
     // Get session summary data
@@ -231,7 +231,7 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
 export async function getPerformanceTrends(
   limit = 100
 ): Promise<MetricsTrend[]> {
-  const supabase = createServiceClient()
+  const supabase = createClient()
 
   try {
     // Get all performance metrics with normalized schema
@@ -258,7 +258,7 @@ export async function getPerformanceTrends(
           memory_usage: 0,
           cpu_usage: 0,
           load_time: 0,
-          screen_name: metric.context?.screen_name || "Unknown",
+          screen_name: (metric.context as any)?.screen_name || "Unknown",
         })
       }
 
@@ -270,13 +270,18 @@ export async function getPerformanceTrends(
           point.fps = metric.metric_value
           break
         case "memory_usage":
+        case "memory":
           point.memory_usage = metric.metric_value
+          break
+        case "cpu_usage":
+        case "cpu":
+          point.cpu_usage = metric.metric_value
           break
         case "navigation_time":
         case "screen_load":
+        case "load_time":
           point.load_time = metric.metric_value
           break
-        // No CPU metrics in this schema, keeping default 0
       }
     })
 
@@ -293,7 +298,7 @@ export async function getPerformanceTrends(
 export async function getSessionPerformance(
   sessionId: string
 ): Promise<SessionPerformance | null> {
-  const supabase = createServiceClient()
+  const supabase = createClient()
 
   // Get session details
   const { data: session, error: sessionError } = await supabase
@@ -329,7 +334,7 @@ export async function getSessionPerformance(
         memory_usage: 0,
         cpu_usage: 0,
         load_time: 0,
-        screen_name: metric.context?.screen_name || "Unknown",
+        screen_name: (metric.context as any)?.screen_name || "Unknown",
       })
     }
 
@@ -340,10 +345,16 @@ export async function getSessionPerformance(
         point.fps = metric.metric_value
         break
       case "memory_usage":
+      case "memory":
         point.memory_usage = metric.metric_value
+        break
+      case "cpu_usage":
+      case "cpu":
+        point.cpu_usage = metric.metric_value
         break
       case "navigation_time":
       case "screen_load":
+      case "load_time":
         point.load_time = metric.metric_value
         break
     }
@@ -365,7 +376,7 @@ export async function getRecentSessions(
   limit = 20,
   offset = 0
 ): Promise<PerformanceSession[]> {
-  const supabase = createServiceClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from("performance_sessions")
@@ -386,7 +397,7 @@ export async function getRecentSessions(
 export async function getMetricsByScreen(
   screenName?: string
 ): Promise<PerformanceMetric[]> {
-  const supabase = createServiceClient()
+  const supabase = createClient()
 
   try {
     let query = supabase
@@ -417,7 +428,7 @@ export async function getMetricsByScreen(
  * Get unique screen names for filtering
  */
 export async function getScreenNames(): Promise<string[]> {
-  const supabase = createServiceClient()
+  const supabase = createClient()
 
   try {
     const { data, error } = await supabase

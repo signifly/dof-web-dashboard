@@ -34,6 +34,7 @@ export default async function DashboardPage() {
                 metric="fps"
                 unit=" FPS"
                 height="h-64"
+                enableRealtime={true}
               />
             </div>
 
@@ -51,6 +52,7 @@ export default async function DashboardPage() {
               metric="memory_usage"
               unit=" MB"
               height="h-48"
+              enableRealtime={true}
             />
           </div>
 

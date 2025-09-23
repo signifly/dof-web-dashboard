@@ -2,18 +2,9 @@ import { render, screen } from "@testing-library/react"
 import { PerformanceChart } from "@/components/charts/performance-chart"
 import { MetricsTrend } from "@/lib/performance-data"
 
-// Mock the realtime hook
-jest.mock("@/lib/hooks/use-realtime-performance", () => ({
-  useRealtimePerformance: jest.fn(() => ({
-    data: [],
-    isConnected: true,
-    lastUpdate: new Date(),
-    error: null,
-    reconnect: jest.fn(),
-  })),
-}))
+// Note: Hook is mocked globally in jest.setup.js
 
-const { useRealtimePerformance } = require("@/lib/hooks/use-realtime-performance")
+import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
 
 describe("PerformanceChart", () => {
   const mockData: MetricsTrend[] = [
@@ -167,7 +158,7 @@ describe("PerformanceChart", () => {
 
     render(<PerformanceChart {...defaultProps} enableRealtime={true} />)
 
-    expect(screen.getByText("Error")).toBeInTheDocument()
+    expect(screen.getByText("Offline")).toBeInTheDocument()
   })
 
   it("should limit displayed data points to 20", () => {

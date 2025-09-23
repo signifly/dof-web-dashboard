@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
+import { useRealtime } from "@/lib/contexts/realtime-context"
 import { ConnectionStatus } from "@/components/ui/connection-status"
 
 const navigationItems = [
@@ -38,10 +38,8 @@ export function Header({
 }: HeaderProps) {
   const pathname = usePathname()
 
-  // Monitor realtime connection status
-  const { isConnected, lastUpdate, error, reconnect } = useRealtimePerformance({
-    maxDataPoints: 1, // Minimal data since we only need connection status
-  })
+  // Get shared realtime connection status
+  const { isConnected, lastUpdate, error, reconnect } = useRealtime()
 
   return (
     <Card className="border-b">

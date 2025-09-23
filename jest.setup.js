@@ -77,6 +77,17 @@ jest.mock("./lib/supabase/server", () => ({
   })),
 }))
 
+// Mock the realtime performance hook
+jest.mock("./lib/hooks/use-realtime-performance", () => ({
+  useRealtimePerformance: jest.fn(() => ({
+    data: [],
+    isConnected: true,
+    lastUpdate: new Date("2023-01-01T12:00:00Z"),
+    error: null,
+    reconnect: jest.fn(),
+  })),
+}))
+
 // Global test utilities
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),

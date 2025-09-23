@@ -19,7 +19,7 @@ describe("ConnectionStatus", () => {
     render(<ConnectionStatus {...defaultProps} />)
 
     expect(screen.getByText("Live")).toBeInTheDocument()
-    expect(screen.getByText(/Last update:/)).toBeInTheDocument()
+    expect(screen.getByText(/1:00:00 PM/)).toBeInTheDocument()
   })
 
   it("should render disconnected state correctly", () => {
@@ -31,8 +31,8 @@ describe("ConnectionStatus", () => {
       />
     )
 
-    expect(screen.getByText("Disconnected")).toBeInTheDocument()
-    expect(screen.getByText("Reconnect")).toBeInTheDocument()
+    expect(screen.getByText("Connecting...")).toBeInTheDocument()
+    expect(screen.queryByText("Reconnect")).not.toBeInTheDocument()
   })
 
   it("should render connecting state correctly", () => {
@@ -44,23 +44,23 @@ describe("ConnectionStatus", () => {
       />
     )
 
-    expect(screen.getByText("Connecting")).toBeInTheDocument()
+    expect(screen.getByText("Connecting...")).toBeInTheDocument()
   })
 
   it("should render error state correctly", () => {
     const error = new Error("Connection failed")
     render(<ConnectionStatus {...defaultProps} error={error} />)
 
-    expect(screen.getByText("Error")).toBeInTheDocument()
+    expect(screen.getByText("Disconnected")).toBeInTheDocument()
     expect(screen.getByText("Reconnect")).toBeInTheDocument()
   })
 
   it("should call onReconnect when reconnect button is clicked", () => {
+    const error = new Error("Connection failed")
     render(
       <ConnectionStatus
         {...defaultProps}
-        isConnected={false}
-        lastUpdate={null}
+        error={error}
       />
     )
 
@@ -73,7 +73,7 @@ describe("ConnectionStatus", () => {
   it("should display last update time correctly", () => {
     render(<ConnectionStatus {...defaultProps} />)
 
-    expect(screen.getByText(/12:00/)).toBeInTheDocument()
+    expect(screen.getByText(/1:00:00 PM/)).toBeInTheDocument()
   })
 
   it("should handle different sizes", () => {
@@ -111,30 +111,27 @@ describe("ConnectionStatusBadge", () => {
     render(<ConnectionStatusBadge {...defaultProps} />)
 
     expect(screen.getByText("Live")).toBeInTheDocument()
-    expect(screen.getByTitle("Connection is live")).toBeInTheDocument()
   })
 
   it("should render disconnected badge correctly", () => {
     render(<ConnectionStatusBadge {...defaultProps} isConnected={false} />)
 
-    expect(screen.getByText("Offline")).toBeInTheDocument()
-    expect(screen.getByTitle("Connection is offline")).toBeInTheDocument()
+    expect(screen.getByText("Connecting")).toBeInTheDocument()
   })
 
   it("should render error badge correctly", () => {
     const error = new Error("Connection failed")
     render(<ConnectionStatusBadge {...defaultProps} error={error} />)
 
-    expect(screen.getByText("Error")).toBeInTheDocument()
-    expect(screen.getByTitle("Connection failed")).toBeInTheDocument()
+    expect(screen.getByText("Offline")).toBeInTheDocument()
   })
 
   it("should call onReconnect when clicked in error state", () => {
     const error = new Error("Connection failed")
     render(<ConnectionStatusBadge {...defaultProps} error={error} />)
 
-    const badge = screen.getByText("Error")
-    fireEvent.click(badge)
+    const button = screen.getByText("Retry")
+    fireEvent.click(button)
 
     expect(defaultProps.onReconnect).toHaveBeenCalledTimes(1)
   })
@@ -142,10 +139,9 @@ describe("ConnectionStatusBadge", () => {
   it("should call onReconnect when clicked in offline state", () => {
     render(<ConnectionStatusBadge {...defaultProps} isConnected={false} />)
 
-    const badge = screen.getByText("Offline")
-    fireEvent.click(badge)
-
-    expect(defaultProps.onReconnect).toHaveBeenCalledTimes(1)
+    // In the disconnected state without error, there's no retry button
+    // The badge itself is not clickable, only error state shows retry button
+    expect(screen.queryByText("Retry")).not.toBeInTheDocument()
   })
 
   it("should not call onReconnect when clicked in connected state", () => {

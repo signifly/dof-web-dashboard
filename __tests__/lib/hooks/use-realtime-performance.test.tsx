@@ -1,9 +1,9 @@
 import { renderHook, act, waitFor } from "@testing-library/react"
-import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
 import { createClient } from "@/lib/supabase/client"
 
-// Mock the Supabase client
-jest.mock("@/lib/supabase/client")
+// Unmock the hook for this test file since we want to test the actual implementation
+jest.unmock("../../../lib/hooks/use-realtime-performance")
+import { useRealtimePerformance } from "@/lib/hooks/use-realtime-performance"
 
 const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>
 
@@ -12,6 +12,8 @@ describe("useRealtimePerformance", () => {
   let mockSupabase: any
 
   beforeEach(() => {
+    jest.useFakeTimers()
+
     mockChannel = {
       on: jest.fn().mockReturnThis(),
       subscribe: jest.fn(),
@@ -28,6 +30,7 @@ describe("useRealtimePerformance", () => {
 
   afterEach(() => {
     jest.clearAllMocks()
+    jest.useRealTimers()
   })
 
   it("should initialize with default values", () => {
@@ -62,7 +65,7 @@ describe("useRealtimePerformance", () => {
   it("should set up realtime subscription on mount", () => {
     renderHook(() => useRealtimePerformance())
 
-    expect(mockSupabase.channel).toHaveBeenCalledWith("performance_metrics")
+    expect(mockSupabase.channel).toHaveBeenCalledWith("performance_metrics_realtime")
     expect(mockChannel.on).toHaveBeenCalledWith(
       "postgres_changes",
       {
@@ -115,10 +118,18 @@ describe("useRealtimePerformance", () => {
       dataCallback(newMetric)
     })
 
-    await waitFor(() => {
-      expect(result.current.data.length).toBeGreaterThan(0)
-      expect(result.current.lastUpdate).not.toBe(null)
+    // Fast-forward timers to trigger the processing interval (2 seconds)
+    act(() => {
+      jest.advanceTimersByTime(2000)
     })
+
+    await waitFor(
+      () => {
+        expect(result.current.data.length).toBeGreaterThan(0)
+        expect(result.current.lastUpdate).not.toBe(null)
+      },
+      { timeout: 3000 }
+    )
   })
 
   it("should handle reconnection", async () => {
