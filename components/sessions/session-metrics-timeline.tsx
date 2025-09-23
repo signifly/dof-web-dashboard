@@ -51,6 +51,7 @@ export function SessionMetricsTimelineComponent({
       fps: metric.fps,
       memory_usage: metric.memory_usage,
       cpu_usage: metric.cpu_usage,
+      load_time: 0, // Not used anymore but required by MetricsTrend type
       screen_name: metric.screen_name,
     }))
   }

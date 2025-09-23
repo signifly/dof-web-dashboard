@@ -907,3 +907,72 @@ export async function getDevicePerformanceData(): Promise<DeviceProfile[]> {
     return []
   }
 }
+
+/**
+ * Debug function to analyze metric types in the database
+ */
+export async function debugMetricTypes() {
+  try {
+    const supabase = createClient()
+
+    // Get sample metrics to analyze types
+    const { data: metrics, error } = await supabase
+      .from("performance_metrics")
+      .select("metric_type, metric_value")
+      .limit(1000)
+
+    if (error) {
+      return {
+        totalMetrics: 0,
+        error: `Database error: ${error.message}`,
+        metricTypes: [],
+      }
+    }
+
+    if (!metrics || metrics.length === 0) {
+      return {
+        totalMetrics: 0,
+        error: "No metrics found in database",
+        metricTypes: [],
+      }
+    }
+
+    // Analyze metric types
+    const typeCounts = new Map<string, number>()
+    const typeExamples = new Map<string, number[]>()
+
+    metrics.forEach(metric => {
+      const type = metric.metric_type
+      typeCounts.set(type, (typeCounts.get(type) || 0) + 1)
+
+      if (!typeExamples.has(type)) {
+        typeExamples.set(type, [])
+      }
+      const examples = typeExamples.get(type)!
+      if (examples.length < 5) {
+        examples.push(metric.metric_value)
+      }
+    })
+
+    const metricTypes = Array.from(typeCounts.entries()).map(
+      ([type, count]) => ({
+        type,
+        count,
+        examples: typeExamples.get(type) || [],
+      })
+    )
+
+    return {
+      totalMetrics: metrics.length,
+      error: null,
+      metricTypes,
+    }
+  } catch (error) {
+    console.error("Debug function error:", error)
+    return {
+      totalMetrics: 0,
+      error: error instanceof Error ? error.message : "Unknown error",
+      metricTypes: [],
+    }
+  }
+}

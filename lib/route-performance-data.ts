@@ -152,23 +152,31 @@ export async function correlateRoutePerformance(
 
   if (!session) return []
 
-  const screenTimeEvents = metrics
-    ?.filter(m => m.metric_type === "screen_time")
-    .map(m => ({
-      ...parseScreenTimeContext(m.context),
-      timestamp: m.timestamp,
-      metricId: m.id,
-    }))
-    .filter(Boolean)
-    .sort((a, b) => {
-      const aTime = (a as ScreenTimeContext & { timestamp: string; metricId: string })?.screenStartTime || 0
-      const bTime = (b as ScreenTimeContext & { timestamp: string; metricId: string })?.screenStartTime || 0
-      return aTime - bTime
-    }) as Array<ScreenTimeContext & { timestamp: string; metricId: string }> || []
+  const screenTimeEvents =
+    (metrics
+      ?.filter(m => m.metric_type === "screen_time")
+      .map(m => ({
+        ...parseScreenTimeContext(m.context),
+        timestamp: m.timestamp,
+        metricId: m.id,
+      }))
+      .filter(Boolean)
+      .sort((a, b) => {
+        const aTime =
+          (a as ScreenTimeContext & { timestamp: string; metricId: string })
+            ?.screenStartTime || 0
+        const bTime =
+          (b as ScreenTimeContext & { timestamp: string; metricId: string })
+            ?.screenStartTime || 0
+        return aTime - bTime
+      }) as Array<
+      ScreenTimeContext & { timestamp: string; metricId: string }
+    >) || []
 
-  const performanceMetrics = metrics?.filter(m =>
-    ["fps", "memory_usage", "cpu_usage"].includes(m.metric_type)
-  ) || []
+  const performanceMetrics =
+    metrics?.filter(m =>
+      ["fps", "memory_usage", "cpu_usage"].includes(m.metric_type)
+    ) || []
 
   const routeSessions: RoutePerformanceSession[] = []
 
