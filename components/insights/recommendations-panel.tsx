@@ -1,8 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { PerformanceRecommendation } from "@/types/insights"
 import {
   Lightbulb,
@@ -16,6 +24,8 @@ import {
   Cpu,
   HardDrive,
   Zap,
+  Eye,
+  X,
 } from "lucide-react"
 
 interface RecommendationsPanelProps {
@@ -25,6 +35,23 @@ interface RecommendationsPanelProps {
 export function RecommendationsPanel({
   recommendations,
 }: RecommendationsPanelProps) {
+  const [dismissedRecommendations, setDismissedRecommendations] = useState<Set<string>>(new Set())
+  const [selectedRecommendation, setSelectedRecommendation] = useState<PerformanceRecommendation | null>(null)
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+
+  const handleDismiss = (recommendationId: string) => {
+    setDismissedRecommendations(prev => new Set(prev).add(recommendationId))
+  }
+
+  const handleViewDetails = (recommendation: PerformanceRecommendation) => {
+    setSelectedRecommendation(recommendation)
+    setIsDetailsOpen(true)
+  }
+
+  // Filter out dismissed recommendations
+  const visibleRecommendations = recommendations.filter(
+    rec => !dismissedRecommendations.has(rec.id)
+  )
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "performance":
@@ -101,7 +128,7 @@ export function RecommendationsPanel({
     }
   }
 
-  if (recommendations.length === 0) {
+  if (visibleRecommendations.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -125,13 +152,13 @@ export function RecommendationsPanel({
           <Lightbulb className="h-5 w-5" />
           AI Recommendations
           <Badge variant="secondary" className="ml-2">
-            {recommendations.length}
+            {visibleRecommendations.length}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {recommendations.map(recommendation => (
+          {visibleRecommendations.map(recommendation => (
             <div
               key={recommendation.id}
               className="border rounded-lg p-4 space-y-4 hover:bg-muted/50 transition-colors"
@@ -258,17 +285,22 @@ export function RecommendationsPanel({
               {/* Action Buttons (if status is pending) */}
               {recommendation.status === "pending" && (
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" className="h-7 text-xs">
-                    Start Implementation
-                  </Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => handleViewDetails(recommendation)}
+                  >
+                    <Eye className="h-3 w-3 mr-1" />
                     View Details
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-7 text-xs text-muted-foreground"
+                    onClick={() => handleDismiss(recommendation.id)}
                   >
+                    <X className="h-3 w-3 mr-1" />
                     Dismiss
                   </Button>
                 </div>
@@ -277,6 +309,100 @@ export function RecommendationsPanel({
           ))}
         </div>
       </CardContent>
+
+      {/* Details Modal */}
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5" />
+              {selectedRecommendation?.title}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedRecommendation?.description}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedRecommendation && (
+            <div className="space-y-6">
+              {/* Recommendation Details */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Category:</span>
+                  <div className="flex items-center gap-1 mt-1">
+                    {getCategoryIcon(selectedRecommendation.category)}
+                    <span className="capitalize">{selectedRecommendation.category}</span>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Priority Score:</span>
+                  <div className={`font-medium mt-1 ${getPriorityColor(selectedRecommendation.priority_score)}`}>
+                    {selectedRecommendation.priority_score.toFixed(1)}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Impact:</span>
+                  <div className="mt-1">
+                    <Badge className={getImpactColor(selectedRecommendation.impact)}>
+                      {selectedRecommendation.impact} impact
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Effort:</span>
+                  <div className={`px-2 py-1 rounded-md border text-xs mt-1 inline-block ${getEffortColor(selectedRecommendation.effort)}`}>
+                    {selectedRecommendation.effort} effort
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Implementation Time:</span>
+                  <div className="mt-1 text-sm">{selectedRecommendation.implementation_time}</div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Estimated Improvement:</span>
+                  <div className="mt-1 text-sm text-green-600 font-medium">
+                    {selectedRecommendation.estimated_improvement}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Steps */}
+              <div>
+                <h4 className="font-medium mb-3">Action Steps:</h4>
+                <div className="space-y-3">
+                  {selectedRecommendation.actionable_steps.map((step, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium">
+                        {index + 1}
+                      </div>
+                      <p className="text-sm leading-relaxed">{step}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Related Metrics */}
+              {selectedRecommendation.related_metrics.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2">Related Metrics:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRecommendation.related_metrics.map((metric, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {metric.replace("_", " ")}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Creation Date */}
+              <div className="pt-4 border-t text-xs text-muted-foreground">
+                Created: {formatCreatedAt(selectedRecommendation.created_at)}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

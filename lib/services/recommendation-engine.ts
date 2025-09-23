@@ -27,6 +27,8 @@ export class RecommendationEngine {
     for (const insight of insights) {
       const applicableRules = this.rules.filter(rule => rule.condition(insight))
 
+      console.log(`🔍 Insight "${insight.title}" (${insight.type}/${insight.category}/${insight.severity}) matched ${applicableRules.length} rules`)
+
       for (const rule of applicableRules) {
         const baseRecommendation = rule.recommendation(insight)
         const priorityScore = this.calculatePriorityScore(
@@ -36,7 +38,9 @@ export class RecommendationEngine {
           rule
         )
 
-        if (priorityScore >= 2.0) {
+        console.log(`   Rule "${rule.name}" priority score: ${priorityScore}`)
+
+        if (priorityScore >= 1.5) {
           // Minimum priority threshold
           recommendations.push({
             id: crypto.randomUUID(),
@@ -134,6 +138,35 @@ export class RecommendationEngine {
         }),
         priority_weight: 2.0,
         category: ["performance", "critical"],
+      },
+
+      {
+        id: "fps_anomaly_high",
+        name: "High FPS Anomaly",
+        description: "Investigation needed for significant FPS drops",
+        condition: insight =>
+          insight.type === "anomaly" &&
+          insight.category === "performance" &&
+          insight.severity === "high",
+        recommendation: insight => ({
+          title: "Investigate FPS Performance Anomaly",
+          description: `High FPS anomaly detected (${insight.data_context.value.toFixed(1)} FPS). Performance investigation recommended.`,
+          category: "performance",
+          impact: "medium",
+          effort: "medium",
+          actionable_steps: [
+            "Profile the affected session to identify performance bottlenecks",
+            "Check for memory pressure during the anomaly period",
+            "Review GPU and CPU usage patterns",
+            "Implement additional monitoring for similar anomalies",
+            "Consider performance optimization based on findings",
+          ],
+          estimated_improvement: "10-15% FPS stability improvement",
+          related_metrics: ["fps", "memory_usage", "cpu_usage"],
+          implementation_time: "2-3 hours",
+        }),
+        priority_weight: 1.5,
+        category: ["performance"],
       },
 
       // Memory Optimization Rules
