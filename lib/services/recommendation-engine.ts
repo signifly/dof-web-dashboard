@@ -3,6 +3,10 @@ import {
   PerformanceRecommendation,
   RecommendationRule,
   OptimizationOpportunity,
+  ProactiveRecommendation,
+  PerformancePrediction,
+  SeasonalPattern,
+  EarlyWarningAlert,
 } from "@/types/insights"
 import { PerformanceSummary } from "@/lib/performance-data"
 import { RoutePerformanceAnalysis } from "@/types/route-performance"
@@ -948,5 +952,358 @@ export class RecommendationEngine {
       seen.add(key)
       return true
     })
+  }
+
+  /**
+   * Enhanced Proactive Recommendations for Issue #30
+   * Generate recommendations based on predictions and early warnings
+   */
+
+  /**
+   * Generate proactive recommendations based on predictions and seasonal patterns
+   */
+  async generateProactiveRecommendations(
+    predictions: PerformancePrediction[],
+    seasonalPatterns: SeasonalPattern[],
+    earlyWarnings: EarlyWarningAlert[]
+  ): Promise<ProactiveRecommendation[]> {
+    const proactiveRecommendations: ProactiveRecommendation[] = []
+
+    // 1. Generate prediction-based recommendations
+    const predictionRecommendations = this.generatePredictionBasedRecommendations(predictions)
+    proactiveRecommendations.push(...predictionRecommendations)
+
+    // 2. Generate seasonal preparation recommendations
+    const seasonalRecommendations = this.generateSeasonalPreparationRecommendations(seasonalPatterns)
+    proactiveRecommendations.push(...seasonalRecommendations)
+
+    // 3. Generate early warning recommendations
+    const earlyWarningRecommendations = this.generateEarlyWarningRecommendations(earlyWarnings)
+    proactiveRecommendations.push(...earlyWarningRecommendations)
+
+    // Sort by prevention priority and confidence
+    return proactiveRecommendations
+      .sort((a, b) => {
+        const priorityWeight = { critical: 4, high: 3, medium: 2, low: 1 }
+        const priorityDiff = priorityWeight[b.prevention_priority] - priorityWeight[a.prevention_priority]
+        if (priorityDiff !== 0) return priorityDiff
+        return b.priority_score - a.priority_score
+      })
+      .slice(0, 8) // Limit to top 8 proactive recommendations
+  }
+
+  /**
+   * Generate recommendations based on performance predictions
+   */
+  private generatePredictionBasedRecommendations(
+    predictions: PerformancePrediction[]
+  ): ProactiveRecommendation[] {
+    const recommendations: ProactiveRecommendation[] = []
+
+    predictions.forEach(prediction => {
+      if (prediction.probability_of_issue > 0.5) {
+        const preventionPriority = this.calculatePreventionPriority(
+          prediction.probability_of_issue,
+          prediction.predicted_value
+        )
+
+        // Memory spike prediction
+        if (prediction.metric_type.includes("memory") && prediction.predicted_value > 400) {
+          recommendations.push({
+            id: crypto.randomUUID(),
+            insight_id: `prediction_${prediction.prediction_id}`,
+            title: "Proactive Memory Optimization",
+            description: `Prediction models indicate potential memory issues. Current trend suggests memory usage will reach ${prediction.predicted_value.toFixed(0)}MB. Implement preventive measures now.`,
+            category: "memory",
+            impact: "high",
+            effort: "medium",
+            priority_score: this.calculateProactivePriorityScore(prediction),
+            actionable_steps: [
+              "Implement memory cleanup routines for predicted problem areas",
+              "Add memory usage monitoring with alerts at 75% of predicted spike",
+              "Review and optimize data structures in memory-intensive operations",
+              "Implement progressive loading to reduce memory pressure during peak times"
+            ],
+            estimated_improvement: "Prevent predicted memory issues entirely",
+            related_metrics: ["memory_usage", "performance_score"],
+            implementation_time: "4-6 hours",
+            status: "pending",
+            created_at: new Date().toISOString(),
+            prediction_based: true,
+            predicted_impact_date: this.calculatePredictedImpactDate(prediction.time_horizon),
+            prevention_priority: preventionPriority,
+            early_warning_threshold: prediction.predicted_value * 0.8,
+            monitoring_recommendations: [
+              "Set up memory usage alerts at 80% of predicted peak",
+              "Monitor memory allocation patterns hourly",
+              "Track memory cleanup effectiveness",
+              "Review memory-intensive operations during predicted timeframe"
+            ]
+          })
+        }
+
+        // FPS degradation prediction
+        if (prediction.metric_type.includes("fps") && prediction.predicted_value < 45) {
+          recommendations.push({
+            id: crypto.randomUUID(),
+            insight_id: `prediction_${prediction.prediction_id}`,
+            title: "Proactive FPS Optimization",
+            description: `Frame rate prediction indicates potential performance degradation. FPS may drop to ${prediction.predicted_value.toFixed(1)}. Take preventive action now.`,
+            category: "performance",
+            impact: prediction.predicted_value < 30 ? "high" : "medium",
+            effort: "medium",
+            priority_score: this.calculateProactivePriorityScore(prediction),
+            actionable_steps: [
+              "Optimize rendering pipeline before predicted degradation occurs",
+              "Implement frame rate monitoring with early warning alerts",
+              "Review and optimize draw calls and GPU-intensive operations",
+              "Prepare adaptive quality settings for predicted low-performance periods"
+            ],
+            estimated_improvement: `Maintain FPS above ${Math.max(45, prediction.predicted_value + 15)}`,
+            related_metrics: ["fps", "rendering_performance"],
+            implementation_time: "2-4 hours",
+            status: "pending",
+            created_at: new Date().toISOString(),
+            prediction_based: true,
+            predicted_impact_date: this.calculatePredictedImpactDate(prediction.time_horizon),
+            prevention_priority: preventionPriority,
+            early_warning_threshold: prediction.predicted_value + 10,
+            monitoring_recommendations: [
+              "Monitor FPS metrics every 15 minutes during predicted timeframe",
+              "Set up automated alerts for FPS drops below 50",
+              "Track rendering performance optimization effectiveness",
+              "Monitor GPU usage patterns leading up to predicted issue"
+            ]
+          })
+        }
+
+        // Route-specific performance prediction
+        if (prediction.route_pattern && prediction.predicted_value < 60) {
+          recommendations.push({
+            id: crypto.randomUUID(),
+            insight_id: `prediction_${prediction.prediction_id}`,
+            title: `Proactive Route Optimization: ${prediction.route_pattern}`,
+            description: `Route performance prediction indicates potential issues for ${prediction.route_pattern}. Performance score may drop to ${prediction.predicted_value.toFixed(0)}. Optimize before impact occurs.`,
+            category: "performance",
+            impact: "medium",
+            effort: "medium",
+            priority_score: this.calculateProactivePriorityScore(prediction),
+            actionable_steps: [
+              `Implement preloading for ${prediction.route_pattern} route`,
+              "Add route-specific performance monitoring",
+              "Optimize critical path for this route",
+              "Consider caching strategies for route-specific data"
+            ],
+            estimated_improvement: "Prevent route performance degradation",
+            related_metrics: ["route_performance", "screen_duration"],
+            implementation_time: "3-5 hours",
+            status: "pending",
+            created_at: new Date().toISOString(),
+            prediction_based: true,
+            predicted_impact_date: this.calculatePredictedImpactDate(prediction.time_horizon),
+            prevention_priority: preventionPriority,
+            early_warning_threshold: prediction.predicted_value + 15,
+            monitoring_recommendations: [
+              `Monitor ${prediction.route_pattern} route performance closely`,
+              "Set up route-specific performance alerts",
+              "Track user experience metrics for this route",
+              "Monitor resource usage patterns specific to this route"
+            ]
+          })
+        }
+      }
+    })
+
+    return recommendations
+  }
+
+  /**
+   * Generate seasonal preparation recommendations
+   */
+  private generateSeasonalPreparationRecommendations(
+    seasonalPatterns: SeasonalPattern[]
+  ): ProactiveRecommendation[] {
+    const recommendations: ProactiveRecommendation[] = []
+
+    seasonalPatterns.forEach(pattern => {
+      if (pattern.confidence > 0.7 && pattern.seasonal_strength > 0.3) {
+        const nextPeakDate = new Date(pattern.next_predicted_peak)
+        const now = new Date()
+        const hoursToNextPeak = (nextPeakDate.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+        // Only recommend preparation if peak is within 72 hours
+        if (hoursToNextPeak > 0 && hoursToNextPeak <= 72) {
+          recommendations.push({
+            id: crypto.randomUUID(),
+            insight_id: `seasonal_${pattern.pattern_id}`,
+            title: `Prepare for Seasonal ${pattern.pattern_type} Peak`,
+            description: `Seasonal analysis predicts ${pattern.metric_type} peak ${pattern.pattern_type === "daily" ? "today" : pattern.pattern_type === "weekly" ? "this week" : "this month"}. Prepare optimization strategies now.`,
+            category: "performance",
+            impact: pattern.seasonal_strength > 0.5 ? "high" : "medium",
+            effort: "low",
+            priority_score: 3.5 + pattern.confidence,
+            actionable_steps: [
+              `Prepare for increased ${pattern.metric_type} during ${pattern.pattern_type} peak`,
+              "Review server capacity for predicted peak period",
+              "Pre-optimize high-traffic areas identified in seasonal patterns",
+              "Set up enhanced monitoring during predicted peak times"
+            ],
+            estimated_improvement: "Prevent 20-30% performance degradation during seasonal peaks",
+            related_metrics: [pattern.metric_type],
+            implementation_time: "1-2 hours",
+            status: "pending",
+            created_at: new Date().toISOString(),
+            prediction_based: true,
+            predicted_impact_date: pattern.next_predicted_peak,
+            prevention_priority: "medium",
+            early_warning_threshold: pattern.amplitude * 0.7,
+            monitoring_recommendations: [
+              `Monitor ${pattern.metric_type} closely during predicted peak period`,
+              "Set up automated scaling during peak windows",
+              "Track seasonal optimization effectiveness",
+              "Monitor user experience during seasonal variations"
+            ],
+            seasonal_context: {
+              pattern_type: pattern.pattern_type === "hourly" ? "daily" : pattern.pattern_type,
+              next_occurrence: pattern.next_predicted_peak,
+              historical_impact: pattern.amplitude
+            }
+          })
+        }
+      }
+    })
+
+    return recommendations
+  }
+
+  /**
+   * Generate early warning-based recommendations
+   */
+  private generateEarlyWarningRecommendations(
+    earlyWarnings: EarlyWarningAlert[]
+  ): ProactiveRecommendation[] {
+    const recommendations: ProactiveRecommendation[] = []
+
+    earlyWarnings.forEach(warning => {
+      if (warning.confidence > 0.6) {
+        recommendations.push({
+          id: crypto.randomUUID(),
+          insight_id: `early_warning_${warning.id}`,
+          title: `Early Warning: ${warning.type.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}`,
+          description: `Early warning system detected potential ${warning.type.replace("_", " ")} in ${warning.time_to_issue}. Take preventive action now.`,
+          category: this.mapAlertTypeToCategory(warning.type),
+          impact: warning.severity === "critical" ? "high" : "medium",
+          effort: "medium",
+          priority_score: this.calculateEarlyWarningPriorityScore(warning),
+          actionable_steps: warning.prevention_recommendations,
+          estimated_improvement: "Prevent predicted performance issues",
+          related_metrics: this.getRelatedMetricsForAlertType(warning.type),
+          implementation_time: warning.severity === "critical" ? "Immediate" : "2-4 hours",
+          status: "pending",
+          created_at: new Date().toISOString(),
+          prediction_based: true,
+          predicted_impact_date: warning.predicted_issue_date,
+          prevention_priority: warning.severity === "critical" ? "critical" : "high",
+          early_warning_threshold: 0.8, // Generic threshold
+          monitoring_recommendations: warning.monitoring_suggestions
+        })
+      }
+    })
+
+    return recommendations
+  }
+
+  /**
+   * Helper methods for proactive recommendations
+   */
+  private calculatePreventionPriority(
+    probabilityOfIssue: number,
+    predictedValue: number
+  ): "critical" | "high" | "medium" | "low" {
+    if (probabilityOfIssue > 0.8 && predictedValue < 30) return "critical"
+    if (probabilityOfIssue > 0.6 && predictedValue < 50) return "high"
+    if (probabilityOfIssue > 0.4) return "medium"
+    return "low"
+  }
+
+  private calculateProactivePriorityScore(prediction: PerformancePrediction): number {
+    const baseScore = 3.0
+    const probabilityWeight = prediction.probability_of_issue * 2
+    const severityWeight = prediction.predicted_value < 30 ? 2 : prediction.predicted_value < 50 ? 1.5 : 1
+    const timeUrgencyWeight = this.calculateTimeUrgencyWeight(prediction.time_horizon)
+
+    return baseScore + probabilityWeight + severityWeight + timeUrgencyWeight
+  }
+
+  private calculateEarlyWarningPriorityScore(warning: EarlyWarningAlert): number {
+    const severityWeight = { critical: 4, high: 3, medium: 2, low: 1 }[warning.severity]
+    const confidenceWeight = warning.confidence * 2
+    const timeUrgencyWeight = this.calculateTimeUrgencyFromString(warning.time_to_issue)
+
+    return 2.0 + severityWeight + confidenceWeight + timeUrgencyWeight
+  }
+
+  private calculateTimeUrgencyWeight(timeHorizon: string): number {
+    switch (timeHorizon) {
+      case "1h": return 2.0
+      case "24h": return 1.5
+      case "7d": return 1.0
+      case "30d": return 0.5
+      default: return 1.0
+    }
+  }
+
+  private calculateTimeUrgencyFromString(timeToIssue: string): number {
+    if (timeToIssue.includes("hour")) {
+      const hours = parseInt(timeToIssue)
+      if (hours <= 2) return 2.0
+      if (hours <= 12) return 1.5
+      if (hours <= 24) return 1.0
+      return 0.5
+    }
+    if (timeToIssue.includes("day")) {
+      const days = parseInt(timeToIssue)
+      if (days <= 1) return 1.0
+      if (days <= 3) return 0.5
+      return 0.2
+    }
+    return 0.5
+  }
+
+  private calculatePredictedImpactDate(timeHorizon: string): string {
+    const now = new Date()
+    const hours = this.parseTimeHorizon(timeHorizon)
+    const impactDate = new Date(now.getTime() + hours * 60 * 60 * 1000)
+    return impactDate.toISOString()
+  }
+
+  private parseTimeHorizon(timeHorizon: string): number {
+    switch (timeHorizon) {
+      case "1h": return 1
+      case "24h": return 24
+      case "7d": return 24 * 7
+      case "30d": return 24 * 30
+      default: return 24
+    }
+  }
+
+  private mapAlertTypeToCategory(
+    alertType: string
+  ): "performance" | "memory" | "cpu" | "rendering" {
+    if (alertType.includes("memory")) return "memory"
+    if (alertType.includes("fps")) return "rendering"
+    if (alertType.includes("cpu")) return "cpu"
+    return "performance"
+  }
+
+  private getRelatedMetricsForAlertType(alertType: string): string[] {
+    const metricMap: { [key: string]: string[] } = {
+      performance_degradation: ["performance_score", "overall_health"],
+      memory_spike: ["memory_usage", "heap_size"],
+      fps_drop: ["fps", "frame_time", "rendering_performance"],
+      seasonal_peak: ["seasonal_metrics", "traffic_patterns"]
+    }
+
+    return metricMap[alertType] || ["performance_score"]
   }
 }

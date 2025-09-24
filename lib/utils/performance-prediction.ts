@@ -7,6 +7,15 @@ import {
   PredictionResult,
   LinearRegressionResult,
 } from "@/types/route-analytics"
+import {
+  PerformancePrediction,
+  PerformancePredictionModel,
+  SeasonalPattern,
+  TimeSeriesDecomposition,
+  PredictionFactor,
+} from "@/types/insights"
+import { TimeSeriesAnalysis } from "./statistical-analysis"
+import { MetricsTrend } from "@/lib/performance-data"
 
 export class PerformancePredictionEngine {
   /**
@@ -244,5 +253,360 @@ export class PerformancePredictionEngine {
     const variance =
       squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length
     return Math.sqrt(variance)
+  }
+
+  /**
+   * Enhanced Prediction Methods for Issue #30
+   * Multiple prediction models with seasonal awareness
+   */
+
+  /**
+   * Predict using multiple models and ensemble results
+   */
+  async predictWithEnsemble(
+    route: RoutePerformanceData,
+    appAverages: { avgFps: number; avgMemory: number; avgCpu: number },
+    historicalTrends?: MetricsTrend[],
+    models: ("linear_regression" | "exponential_smoothing" | "seasonal_decomposition")[] = [
+      "linear_regression",
+      "exponential_smoothing"
+    ]
+  ): Promise<PerformancePrediction> {
+    const predictions: { [key: string]: PredictionResult } = {}
+    const modelWeights: { [key: string]: number } = {
+      linear_regression: 0.4,
+      exponential_smoothing: 0.4,
+      seasonal_decomposition: 0.2
+    }
+
+    // Generate predictions from each model
+    for (const modelType of models) {
+      try {
+        switch (modelType) {
+          case "linear_regression":
+            predictions[modelType] = this.predictForHorizon(route.sessions, 7)
+            break
+          case "exponential_smoothing":
+            predictions[modelType] = await this.predictWithTimeSeriesAnalysis(route, "7d")
+            break
+          case "seasonal_decomposition":
+            if (historicalTrends) {
+              predictions[modelType] = await this.predictWithSeasonalDecomposition(route, historicalTrends)
+            }
+            break
+        }
+      } catch (error) {
+        console.warn(`Failed to generate prediction with ${modelType}:`, error)
+      }
+    }
+
+    // Ensemble the predictions
+    const validPredictions = Object.entries(predictions).filter(([_, pred]) => pred.predictedScore > 0)
+
+    if (validPredictions.length === 0) {
+      // Fallback to single linear regression
+      const fallback = this.predictForHorizon(route.sessions, 7)
+      return this.formatPredictionResult(route, fallback, "linear_regression")
+    }
+
+    // Weighted average ensemble
+    let weightedScore = 0
+    let totalWeight = 0
+    let confidenceMin = Infinity
+    let confidenceMax = -Infinity
+
+    validPredictions.forEach(([modelType, prediction]) => {
+      const weight = modelWeights[modelType] || 0.1
+      weightedScore += prediction.predictedScore * weight
+      totalWeight += weight
+      confidenceMin = Math.min(confidenceMin, prediction.confidenceInterval[0])
+      confidenceMax = Math.max(confidenceMax, prediction.confidenceInterval[1])
+    })
+
+    const ensemblePrediction: PredictionResult = {
+      predictedScore: weightedScore / totalWeight,
+      confidenceInterval: [confidenceMin, confidenceMax],
+      model: "ensemble",
+      rSquared: validPredictions.reduce((sum, [_, pred]) => sum + (pred.rSquared || 0), 0) / validPredictions.length
+    }
+
+    return this.formatPredictionResult(route, ensemblePrediction, "ensemble", validPredictions.map(([model]) => model))
+  }
+
+  /**
+   * Time series prediction with exponential smoothing
+   */
+  async predictWithTimeSeriesAnalysis(
+    route: RoutePerformanceData,
+    timeHorizon: "1d" | "7d" | "30d"
+  ): Promise<PredictionResult> {
+    const sessions = route.sessions.sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+
+    if (sessions.length < 5) {
+      return {
+        predictedScore: 50,
+        confidenceInterval: [30, 70],
+        model: "insufficient_data_exponential",
+      }
+    }
+
+    // Calculate performance scores for each session
+    const performanceScores = sessions.map(session => {
+      const fpsScore = Math.min(100, (session.avgFps / 60) * 100)
+      const memoryScore = Math.max(0, 100 - (session.avgMemory / 1000) * 100)
+      const cpuScore = Math.max(0, 100 - session.avgCpu)
+      return (fpsScore + memoryScore + cpuScore) / 3
+    })
+
+    // Apply exponential smoothing
+    const horizonDays = timeHorizon === "1d" ? 1 : timeHorizon === "7d" ? 7 : 30
+    const alpha = Math.max(0.1, 1 / horizonDays) // Adaptive smoothing parameter
+    const smoothed = TimeSeriesAnalysis.exponentialSmoothing(performanceScores, alpha, 1)
+
+    const predictedScore = smoothed[smoothed.length - 1]
+
+    // Calculate confidence interval based on recent volatility
+    const recentScores = performanceScores.slice(-Math.min(10, performanceScores.length))
+    const volatility = this.standardDeviation(recentScores)
+    const marginOfError = Math.min(volatility * 2, 30) // Cap at 30 points
+
+    return {
+      predictedScore: Math.max(0, Math.min(100, predictedScore)),
+      confidenceInterval: [
+        Math.max(0, predictedScore - marginOfError),
+        Math.min(100, predictedScore + marginOfError)
+      ],
+      model: "exponential_smoothing",
+      rSquared: this.calculateExponentialSmoothingAccuracy(performanceScores, smoothed.slice(0, -1))
+    }
+  }
+
+  /**
+   * Seasonal pattern-based prediction
+   */
+  async predictWithSeasonalDecomposition(
+    route: RoutePerformanceData,
+    historicalTrends: MetricsTrend[],
+    seasonalPeriod: number = 7
+  ): Promise<PredictionResult> {
+    if (historicalTrends.length < seasonalPeriod * 2) {
+      return {
+        predictedScore: 50,
+        confidenceInterval: [30, 70],
+        model: "insufficient_data_seasonal",
+      }
+    }
+
+    // Perform seasonal decomposition
+    const decomposition = TimeSeriesAnalysis.seasonalDecomposition(
+      historicalTrends,
+      seasonalPeriod,
+      "fps"
+    )
+
+    if (decomposition.forecast.length === 0) {
+      return {
+        predictedScore: 50,
+        confidenceInterval: [30, 70],
+        model: "seasonal_decomposition_failed",
+      }
+    }
+
+    // Use the first forecast value (next period)
+    const forecastValue = decomposition.forecast[0]
+
+    // Convert FPS forecast to performance score
+    const predictedScore = Math.min(100, (forecastValue / 60) * 100)
+
+    // Calculate confidence based on seasonal strength and trend strength
+    const confidence = (decomposition.seasonal_strength + decomposition.trend_strength) / 2
+    const marginOfError = (1 - confidence) * 25 // Higher uncertainty = larger margin
+
+    return {
+      predictedScore: Math.max(0, Math.min(100, predictedScore)),
+      confidenceInterval: [
+        Math.max(0, predictedScore - marginOfError),
+        Math.min(100, predictedScore + marginOfError)
+      ],
+      model: "seasonal_decomposition",
+      rSquared: confidence
+    }
+  }
+
+  /**
+   * Identify seasonal patterns for a route
+   */
+  detectSeasonalPatterns(
+    sessions: RoutePerformanceSession[],
+    historicalTrends?: MetricsTrend[]
+  ): SeasonalPattern[] {
+    if (historicalTrends && historicalTrends.length >= 24) {
+      // Use historical trends for more comprehensive pattern detection
+      return TimeSeriesAnalysis.detectSeasonalPatterns(
+        historicalTrends,
+        ["daily", "weekly"],
+        "fps"
+      )
+    }
+
+    // Fallback: Convert sessions to trend data for pattern detection
+    if (sessions.length < 24) return []
+
+    const trendData: MetricsTrend[] = sessions.map(session => ({
+      timestamp: session.timestamp,
+      fps: session.avgFps,
+      memory_usage: session.avgMemory,
+      cpu_usage: session.avgCpu,
+      screen_name: "route_session",
+      load_time: session.screenDuration || 1000
+    }))
+
+    return TimeSeriesAnalysis.detectSeasonalPatterns(
+      trendData,
+      ["daily", "weekly"],
+      "fps"
+    )
+  }
+
+  /**
+   * Generate comprehensive performance predictions with multiple models
+   */
+  async generateComprehensivePredictions(
+    route: RoutePerformanceData,
+    appAverages: { avgFps: number; avgMemory: number; avgCpu: number },
+    historicalTrends?: MetricsTrend[]
+  ): Promise<PerformancePrediction[]> {
+    const predictions: PerformancePrediction[] = []
+    const timeHorizons: ("1h" | "24h" | "7d" | "30d")[] = ["24h", "7d", "30d"]
+
+    for (const horizon of timeHorizons) {
+      try {
+        const ensemblePrediction = await this.predictWithEnsemble(
+          route,
+          appAverages,
+          historicalTrends,
+          ["linear_regression", "exponential_smoothing", "seasonal_decomposition"]
+        )
+
+        predictions.push({
+          prediction_id: `${route.routePattern}_${horizon}_${Date.now()}`,
+          metric_type: "performance_score",
+          route_pattern: route.routePattern,
+          predicted_value: ensemblePrediction.predicted_performance_score,
+          confidence_interval: ensemblePrediction.confidence_interval,
+          time_horizon: horizon,
+          probability_of_issue: this.calculateProbabilityOfIssue(ensemblePrediction.predicted_performance_score),
+          contributing_factors: ensemblePrediction.contributing_factors.map(factor => ({
+            factor_name: factor,
+            impact_weight: 1.0 / ensemblePrediction.contributing_factors.length,
+            description: this.getFactorDescription(factor)
+          })),
+          recommended_actions: this.generatePredictiveActions(ensemblePrediction.predicted_performance_score),
+          model_used: ensemblePrediction.prediction_model,
+          seasonal_adjustment: historicalTrends ? this.calculateSeasonalAdjustment(historicalTrends) : undefined
+        })
+      } catch (error) {
+        console.warn(`Failed to generate prediction for ${horizon}:`, error)
+      }
+    }
+
+    return predictions
+  }
+
+  /**
+   * Helper methods for enhanced predictions
+   */
+  private formatPredictionResult(
+    route: RoutePerformanceData,
+    prediction: PredictionResult,
+    modelType: string,
+    modelsUsed: string[] = []
+  ): PerformancePrediction {
+    return {
+      prediction_id: `${route.routePattern}_${modelType}_${Date.now()}`,
+      metric_type: "performance_score",
+      route_pattern: route.routePattern,
+      predicted_value: prediction.predictedScore,
+      confidence_interval: prediction.confidenceInterval,
+      time_horizon: "7d",
+      probability_of_issue: this.calculateProbabilityOfIssue(prediction.predictedScore),
+      contributing_factors: this.identifyContributingFactors(route, {
+        avgFps: 0,
+        avgMemory: 0,
+        avgCpu: 0
+      }).map(factor => ({
+        factor_name: factor,
+        impact_weight: 1.0,
+        description: this.getFactorDescription(factor)
+      })),
+      recommended_actions: this.generatePredictiveActions(prediction.predictedScore),
+      model_used: modelsUsed.length > 0 ? modelsUsed.join(", ") : modelType
+    }
+  }
+
+  private calculateProbabilityOfIssue(predictedScore: number): number {
+    if (predictedScore < 30) return 0.9
+    if (predictedScore < 50) return 0.7
+    if (predictedScore < 70) return 0.4
+    if (predictedScore < 80) return 0.2
+    return 0.05
+  }
+
+  private getFactorDescription(factor: string): string {
+    const descriptions: { [key: string]: string } = {
+      "Below average FPS performance": "Frame rate is consistently below application average",
+      "High memory usage pattern": "Memory consumption exceeds typical usage patterns",
+      "Elevated CPU usage": "CPU utilization is higher than expected for this route",
+      "Declining performance trend": "Performance metrics show deteriorating trend",
+      "Limited device diversity in data": "Insufficient device variety may affect prediction accuracy"
+    }
+
+    return descriptions[factor] || factor
+  }
+
+  private generatePredictiveActions(predictedScore: number): string[] {
+    if (predictedScore < 50) {
+      return [
+        "Immediate performance optimization required",
+        "Review and optimize critical path performance",
+        "Consider caching strategies for frequently accessed data",
+        "Implement performance monitoring alerts"
+      ]
+    } else if (predictedScore < 70) {
+      return [
+        "Monitor performance closely for degradation",
+        "Implement preventive optimizations",
+        "Review resource usage patterns",
+        "Consider performance testing under load"
+      ]
+    } else {
+      return [
+        "Continue monitoring performance trends",
+        "Maintain current optimization strategies",
+        "Consider proactive improvements for future scaling"
+      ]
+    }
+  }
+
+  private calculateExponentialSmoothingAccuracy(
+    actual: number[],
+    predicted: number[]
+  ): number {
+    if (actual.length !== predicted.length || actual.length === 0) return 0
+
+    const mse = actual.reduce((sum, actualVal, i) => {
+      const error = actualVal - predicted[i]
+      return sum + error * error
+    }, 0) / actual.length
+
+    const variance = this.standardDeviation(actual) ** 2
+    return variance > 0 ? Math.max(0, 1 - mse / variance) : 0
+  }
+
+  private calculateSeasonalAdjustment(historicalTrends: MetricsTrend[]): number {
+    const decomposition = TimeSeriesAnalysis.seasonalDecomposition(historicalTrends, 7, "fps")
+    return decomposition.seasonal_strength
   }
 }

@@ -399,8 +399,8 @@ describe("StatisticalAnalysisUtils", () => {
 
       if (patterns.length > 0) {
         expect(patterns[0].pattern_type).toBe("daily")
-        expect(patterns[0].peak_times).toBeDefined()
-        expect(patterns[0].low_times).toBeDefined()
+        expect(patterns[0].peak_periods).toBeDefined()
+        expect(patterns[0].low_periods).toBeDefined()
         expect(patterns[0].confidence).toBeGreaterThan(0)
         expect(patterns[0].amplitude).toBeGreaterThan(0)
       }
