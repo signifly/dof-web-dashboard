@@ -8,6 +8,7 @@ import {
 import { RoutePerformancePrediction } from "@/types/route-analytics"
 import { PerformancePredictionEngine } from "@/lib/utils/performance-prediction"
 import { TimeSeriesAnalysis } from "@/lib/utils/statistical-analysis"
+import { EARLY_WARNING_THRESHOLDS, PERFORMANCE_SCORING, ALERT_SEVERITY_THRESHOLDS, DEGRADATION_DETECTION } from "@/constants/performance"
 
 /**
  * Early Warning Engine for Issue #30
@@ -20,11 +21,11 @@ export class EarlyWarningEngine {
   constructor(thresholds?: Partial<EarlyWarningThresholds>) {
     this.predictionEngine = new PerformancePredictionEngine()
     this.thresholds = {
-      fps_degradation_threshold: 45, // Alert if FPS predicted to drop below 45
-      memory_spike_threshold: 500, // Alert if memory predicted to exceed 500MB
-      cpu_spike_threshold: 80, // Alert if CPU predicted to exceed 80%
-      confidence_threshold: 0.6, // Only alert if confidence > 60%
-      time_horizon_days: 2, // Look ahead 2 days for early warning
+      fps_degradation_threshold: EARLY_WARNING_THRESHOLDS.FPS_DEGRADATION_THRESHOLD,
+      memory_spike_threshold: EARLY_WARNING_THRESHOLDS.MEMORY_SPIKE_THRESHOLD,
+      cpu_spike_threshold: EARLY_WARNING_THRESHOLDS.CPU_SPIKE_THRESHOLD,
+      confidence_threshold: EARLY_WARNING_THRESHOLDS.CONFIDENCE_THRESHOLD,
+      time_horizon_days: EARLY_WARNING_THRESHOLDS.TIME_HORIZON_DAYS,
       ...thresholds,
     }
   }
@@ -94,7 +95,7 @@ export class EarlyWarningEngine {
     predictions.forEach(prediction => {
       if (
         prediction.probability_of_issue > 0.5 &&
-        prediction.predicted_value < 60 && // Performance score below 60
+        prediction.predicted_value < ALERT_SEVERITY_THRESHOLDS.MEDIUM_PERFORMANCE_SCORE && // Performance score below 60
         this.calculateConfidenceFromInterval(prediction.confidence_interval) >
           this.thresholds.confidence_threshold
       ) {
@@ -149,11 +150,11 @@ export class EarlyWarningEngine {
 
     routePredictions.forEach(prediction => {
       if (
-        prediction.predicted_performance_score < 50 &&
+        prediction.predicted_performance_score < ALERT_SEVERITY_THRESHOLDS.HIGH_PERFORMANCE_SCORE &&
         prediction.forecast_accuracy > this.thresholds.confidence_threshold
       ) {
         const severity =
-          prediction.predicted_performance_score < 30 ? "critical" : "high"
+          prediction.predicted_performance_score < ALERT_SEVERITY_THRESHOLDS.CRITICAL_PERFORMANCE_SCORE ? "critical" : "high"
 
         alerts.push({
           id: `route_perf_${prediction.route_pattern}_${Date.now()}`,
@@ -298,14 +299,14 @@ export class EarlyWarningEngine {
         prediction.metric_type === "fps" &&
         prediction.predicted_value <
           this.thresholds.fps_degradation_threshold &&
-        prediction.predicted_value < currentPerformance.avgFps * 0.8 // 20% drop
+        prediction.predicted_value < currentPerformance.avgFps * DEGRADATION_DETECTION.FPS_DROP_THRESHOLD // 20% drop
       ) {
         const confidence = this.calculateConfidenceFromInterval(
           prediction.confidence_interval
         )
 
         if (confidence > this.thresholds.confidence_threshold) {
-          const severity = prediction.predicted_value < 30 ? "critical" : "high"
+          const severity = prediction.predicted_value < ALERT_SEVERITY_THRESHOLDS.CRITICAL_PERFORMANCE_SCORE ? "critical" : "high"
 
           alerts.push({
             id: `fps_drop_${prediction.prediction_id}_${Date.now()}`,

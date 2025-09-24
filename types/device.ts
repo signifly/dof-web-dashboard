@@ -104,32 +104,5 @@ export interface DeviceAnalytics {
   }
 }
 
-// Health score calculation weights
-export const HEALTH_SCORE_WEIGHTS = {
-  fps: 0.4, // 40% - Frame rate performance
-  memory: 0.25, // 25% - Memory efficiency
-  loadTime: 0.25, // 25% - Load time performance
-  stability: 0.1, // 10% - Crash rate and session stability
-} as const
-
-// Performance thresholds for health calculation
-export const PERFORMANCE_THRESHOLDS = {
-  fps: {
-    excellent: 55,
-    good: 45,
-    fair: 30,
-    poor: 20,
-  },
-  memory: {
-    excellent: 200, // MB - lower is better
-    good: 400,
-    fair: 600,
-    poor: 800,
-  },
-  loadTime: {
-    excellent: 500, // ms - lower is better
-    good: 1000,
-    fair: 2000,
-    poor: 3000,
-  },
-} as const
+// Re-export performance constants from centralized constants folder
+export { HEALTH_SCORE_WEIGHTS, PERFORMANCE_THRESHOLDS } from '@/constants/performance'
