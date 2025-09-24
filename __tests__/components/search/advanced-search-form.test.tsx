@@ -305,6 +305,11 @@ describe("AdvancedSearchForm", () => {
       metrics: { fps: { min: 30, max: 60 } },
     }
 
-    render(<AdvancedSearchForm onSearch={mockOnSearch} initialQuery={preset} />)
+    render(
+      <AdvancedSearchForm
+        onSearch={mockOnSearch}
+        initialQuery={preset}
+      />
+    )
   })
 })
