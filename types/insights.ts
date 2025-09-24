@@ -300,7 +300,11 @@ export interface RouteRecommendation extends PerformanceRecommendation {
 // Predictive Models and Early Warning Types for Issue #30
 export interface PerformancePredictionModel {
   model_id: string
-  model_type: "linear_regression" | "time_series" | "seasonal_decomposition" | "exponential_smoothing"
+  model_type:
+    | "linear_regression"
+    | "time_series"
+    | "seasonal_decomposition"
+    | "exponential_smoothing"
   target_metric: "fps" | "memory_usage" | "cpu_usage" | "route_performance"
   training_period: string
   accuracy_score: number
@@ -330,7 +334,11 @@ export interface PredictionFactor {
 
 export interface EarlyWarningAlert {
   id: string
-  type: "performance_degradation" | "memory_spike" | "fps_drop" | "seasonal_peak"
+  type:
+    | "performance_degradation"
+    | "memory_spike"
+    | "fps_drop"
+    | "seasonal_peak"
   predicted_issue_date: string
   time_to_issue: string
   confidence: number
@@ -338,7 +346,11 @@ export interface EarlyWarningAlert {
   severity: "critical" | "high" | "medium" | "low"
   prevention_recommendations: string[]
   monitoring_suggestions: string[]
-  prediction_basis: "trend_analysis" | "seasonal_pattern" | "anomaly_detection" | "model_ensemble"
+  prediction_basis:
+    | "trend_analysis"
+    | "seasonal_pattern"
+    | "anomaly_detection"
+    | "model_ensemble"
 }
 
 export interface EarlyWarningThresholds {

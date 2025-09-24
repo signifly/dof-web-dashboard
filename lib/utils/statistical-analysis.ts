@@ -373,12 +373,31 @@ export class StatisticalAnalysisUtils {
           .map(({ hour }) => `${hour}:00`)
 
         patterns.push({
+          pattern_id: `daily_${Date.now()}`,
           pattern_type: "daily",
+          metric_type: "fps",
           confidence: Math.min(amplitude / mean, 1),
-          peak_times: peakHours,
-          low_times: lowHours,
+          peak_periods: peakHours.map(hour => ({
+            start: hour,
+            end: hour,
+            average_value: mean + amplitude * 0.5,
+            frequency: 1,
+          })),
+          low_periods: lowHours.map(hour => ({
+            start: hour,
+            end: hour,
+            average_value: mean - amplitude * 0.5,
+            frequency: 1,
+          })),
           amplitude,
-          significance: amplitude / mean,
+          next_predicted_peak: new Date(
+            Date.now() + 24 * 60 * 60 * 1000
+          ).toISOString(),
+          next_predicted_low: new Date(
+            Date.now() + 12 * 60 * 60 * 1000
+          ).toISOString(),
+          seasonal_strength: amplitude / mean,
+          detection_method: "pattern_matching",
         })
       }
     }
@@ -476,20 +495,31 @@ export class TimeSeriesAnalysis {
    */
   static detectSeasonalPatterns(
     data: MetricsTrend[],
-    patternTypes: ("hourly" | "daily" | "weekly" | "monthly")[] = ["daily", "weekly"],
-    metric: keyof Pick<MetricsTrend, "fps" | "memory_usage" | "cpu_usage"> = "fps"
+    patternTypes: ("hourly" | "daily" | "weekly" | "monthly")[] = [
+      "daily",
+      "weekly",
+    ],
+    metric: keyof Pick<
+      MetricsTrend,
+      "fps" | "memory_usage" | "cpu_usage"
+    > = "fps"
   ): SeasonalPattern[] {
     if (data.length < 24) return [] // Need minimum data for pattern detection
 
     const patterns: SeasonalPattern[] = []
 
     // Sort data by timestamp
-    const sortedData = [...data].sort((a, b) =>
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    const sortedData = [...data].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
 
     for (const patternType of patternTypes) {
-      const pattern = this.detectSinglePatternType(sortedData, patternType, metric)
+      const pattern = this.detectSinglePatternType(
+        sortedData,
+        patternType,
+        metric
+      )
       if (pattern) {
         patterns.push(pattern)
       }
@@ -580,7 +610,10 @@ export class TimeSeriesAnalysis {
   static seasonalDecomposition(
     data: MetricsTrend[],
     seasonalPeriod: number = 7, // Default: weekly pattern
-    metric: keyof Pick<MetricsTrend, "fps" | "memory_usage" | "cpu_usage"> = "fps"
+    metric: keyof Pick<
+      MetricsTrend,
+      "fps" | "memory_usage" | "cpu_usage"
+    > = "fps"
   ): TimeSeriesDecomposition {
     const values = data.map(d => d[metric] as number).filter(v => !isNaN(v))
 
@@ -592,7 +625,7 @@ export class TimeSeriesAnalysis {
         forecast: [],
         seasonal_periods: [seasonalPeriod],
         trend_strength: 0,
-        seasonal_strength: 0
+        seasonal_strength: 0,
       }
     }
 
@@ -600,12 +633,14 @@ export class TimeSeriesAnalysis {
     const trend = this.calculateCenteredMovingAverage(values, seasonalPeriod)
 
     // Calculate seasonal component
-    const detrended = values.map((val, i) => val - (trend[i] || trend[trend.length - 1]))
+    const detrended = values.map(
+      (val, i) => val - (trend[i] || trend[trend.length - 1])
+    )
     const seasonal = this.extractSeasonalComponent(detrended, seasonalPeriod)
 
     // Calculate residual
-    const residual = values.map((val, i) =>
-      val - (trend[i] || 0) - (seasonal[i % seasonalPeriod] || 0)
+    const residual = values.map(
+      (val, i) => val - (trend[i] || 0) - (seasonal[i % seasonalPeriod] || 0)
     )
 
     // Generate forecast
@@ -620,7 +655,11 @@ export class TimeSeriesAnalysis {
 
     // Calculate strength metrics
     const trendStrength = this.calculateTrendStrength(values, trend)
-    const seasonalStrength = this.calculateSeasonalStrength(values, seasonal, seasonalPeriod)
+    const seasonalStrength = this.calculateSeasonalStrength(
+      values,
+      seasonal,
+      seasonalPeriod
+    )
 
     return {
       trend,
@@ -629,7 +668,7 @@ export class TimeSeriesAnalysis {
       forecast,
       seasonal_periods: [seasonalPeriod],
       trend_strength: trendStrength,
-      seasonal_strength: seasonalStrength
+      seasonal_strength: seasonalStrength,
     }
   }
 
@@ -647,22 +686,28 @@ export class TimeSeriesAnalysis {
     if (Object.keys(groupedData).length < periods / 2) return null
 
     // Calculate statistics for each period
-    const periodStats: { [key: string]: { avg: number; count: number; values: number[] } } = {}
+    const periodStats: {
+      [key: string]: { avg: number; count: number; values: number[] }
+    } = {}
 
     for (const [period, values] of Object.entries(groupedData)) {
       const validValues = values.filter(v => !isNaN(v))
       if (validValues.length > 0) {
         periodStats[period] = {
-          avg: validValues.reduce((sum, val) => sum + val, 0) / validValues.length,
+          avg:
+            validValues.reduce((sum, val) => sum + val, 0) / validValues.length,
           count: validValues.length,
-          values: validValues
+          values: validValues,
         }
       }
     }
 
     const avgValues = Object.values(periodStats).map(stat => stat.avg)
-    const overallMean = avgValues.reduce((sum, val) => sum + val, 0) / avgValues.length
-    const variance = avgValues.reduce((sum, val) => sum + (val - overallMean) ** 2, 0) / avgValues.length
+    const overallMean =
+      avgValues.reduce((sum, val) => sum + val, 0) / avgValues.length
+    const variance =
+      avgValues.reduce((sum, val) => sum + (val - overallMean) ** 2, 0) /
+      avgValues.length
     const amplitude = Math.sqrt(variance)
 
     // Check if pattern is significant
@@ -680,20 +725,24 @@ export class TimeSeriesAnalysis {
           start: this.formatPeriodTime(period, patternType, true),
           end: this.formatPeriodTime(period, patternType, false),
           average_value: stats.avg,
-          frequency: stats.count
+          frequency: stats.count,
         })
       } else if (stats.avg < overallMean - threshold) {
         lowPeriods.push({
           start: this.formatPeriodTime(period, patternType, true),
           end: this.formatPeriodTime(period, patternType, false),
           average_value: stats.avg,
-          frequency: stats.count
+          frequency: stats.count,
         })
       }
     }
 
     // Calculate confidence based on data quality and pattern strength
-    const dataQuality = Math.min(1, Object.values(periodStats).reduce((sum, stat) => sum + stat.count, 0) / (periods * 5))
+    const dataQuality = Math.min(
+      1,
+      Object.values(periodStats).reduce((sum, stat) => sum + stat.count, 0) /
+        (periods * 5)
+    )
     const patternStrength = Math.min(1, significance * 2)
     const confidence = (dataQuality + patternStrength) / 2
 
@@ -712,20 +761,27 @@ export class TimeSeriesAnalysis {
       next_predicted_peak: nextPeak,
       next_predicted_low: nextLow,
       seasonal_strength: significance,
-      detection_method: "pattern_matching"
+      detection_method: "pattern_matching",
     }
   }
 
   /**
    * Helper methods for seasonal analysis
    */
-  private static getPeriodsForPatternType(patternType: "hourly" | "daily" | "weekly" | "monthly"): number {
+  private static getPeriodsForPatternType(
+    patternType: "hourly" | "daily" | "weekly" | "monthly"
+  ): number {
     switch (patternType) {
-      case "hourly": return 24
-      case "daily": return 7
-      case "weekly": return 4
-      case "monthly": return 12
-      default: return 7
+      case "hourly":
+        return 24
+      case "daily":
+        return 7
+      case "weekly":
+        return 4
+      case "monthly":
+        return 12
+      default:
+        return 7
     }
   }
 
@@ -782,14 +838,35 @@ export class TimeSeriesAnalysis {
 
     switch (patternType) {
       case "hourly":
-        return `${period.padStart(2, '0')}:${isStart ? '00' : '59'}`
+        return `${period.padStart(2, "0")}:${isStart ? "00" : "59"}`
       case "daily":
-        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        const dayNames = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ]
         return dayNames[periodNum] || period
       case "weekly":
         return `Week ${period} of month`
       case "monthly":
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        const monthNames = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ]
         return monthNames[periodNum] || period
       default:
         return period
@@ -810,13 +887,20 @@ export class TimeSeriesAnalysis {
     switch (patternType) {
       case "hourly":
         const nextHour = new Date(now)
-        nextHour.setHours(parseInt(mostFrequent.start.split(':')[0]), 0, 0, 0)
+        nextHour.setHours(parseInt(mostFrequent.start.split(":")[0]), 0, 0, 0)
         if (nextHour <= now) nextHour.setDate(nextHour.getDate() + 1)
         return nextHour.toISOString()
       case "daily":
         const nextDay = new Date(now)
-        const targetDay = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-          .indexOf(mostFrequent.start)
+        const targetDay = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ].indexOf(mostFrequent.start)
         if (targetDay === -1) return "Next occurrence of " + mostFrequent.start
 
         const daysUntilTarget = (targetDay - now.getDay() + 7) % 7 || 7
@@ -827,7 +911,10 @@ export class TimeSeriesAnalysis {
     }
   }
 
-  private static calculateCenteredMovingAverage(data: number[], period: number): number[] {
+  private static calculateCenteredMovingAverage(
+    data: number[],
+    period: number
+  ): number[] {
     const result: number[] = []
     const halfPeriod = Math.floor(period / 2)
 
@@ -842,7 +929,10 @@ export class TimeSeriesAnalysis {
     return result
   }
 
-  private static extractSeasonalComponent(detrended: number[], period: number): number[] {
+  private static extractSeasonalComponent(
+    detrended: number[],
+    period: number
+  ): number[] {
     const seasonal: number[] = new Array(period).fill(0)
     const counts: number[] = new Array(period).fill(0)
 
@@ -863,13 +953,22 @@ export class TimeSeriesAnalysis {
     return seasonal
   }
 
-  private static calculateTrendStrength(original: number[], trend: number[]): number {
+  private static calculateTrendStrength(
+    original: number[],
+    trend: number[]
+  ): number {
     if (original.length === 0 || trend.length === 0) return 0
 
-    const originalVariance = StatisticalAnalysisUtils.calculateStatistics(original).standard_deviation ** 2
-    const trendVariance = StatisticalAnalysisUtils.calculateStatistics(trend).standard_deviation ** 2
+    const originalVariance =
+      StatisticalAnalysisUtils.calculateStatistics(original)
+        .standard_deviation ** 2
+    const trendVariance =
+      StatisticalAnalysisUtils.calculateStatistics(trend).standard_deviation **
+      2
 
-    return originalVariance > 0 ? Math.min(1, trendVariance / originalVariance) : 0
+    return originalVariance > 0
+      ? Math.min(1, trendVariance / originalVariance)
+      : 0
   }
 
   private static calculateSeasonalStrength(
@@ -882,9 +981,15 @@ export class TimeSeriesAnalysis {
     // Expand seasonal component to match original length
     const expandedSeasonal = original.map((_, i) => seasonal[i % period] || 0)
 
-    const originalVariance = StatisticalAnalysisUtils.calculateStatistics(original).standard_deviation ** 2
-    const seasonalVariance = StatisticalAnalysisUtils.calculateStatistics(expandedSeasonal).standard_deviation ** 2
+    const originalVariance =
+      StatisticalAnalysisUtils.calculateStatistics(original)
+        .standard_deviation ** 2
+    const seasonalVariance =
+      StatisticalAnalysisUtils.calculateStatistics(expandedSeasonal)
+        .standard_deviation ** 2
 
-    return originalVariance > 0 ? Math.min(1, seasonalVariance / originalVariance) : 0
+    return originalVariance > 0
+      ? Math.min(1, seasonalVariance / originalVariance)
+      : 0
   }
 }

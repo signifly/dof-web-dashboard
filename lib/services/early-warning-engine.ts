@@ -42,7 +42,8 @@ export class EarlyWarningEngine {
     const alerts: EarlyWarningAlert[] = []
 
     // 1. Performance degradation alerts from predictions
-    const degradationAlerts = this.checkPerformanceDegradationAlerts(predictions)
+    const degradationAlerts =
+      this.checkPerformanceDegradationAlerts(predictions)
     alerts.push(...degradationAlerts)
 
     // 2. Route-specific performance alerts
@@ -50,12 +51,18 @@ export class EarlyWarningEngine {
     alerts.push(...routeAlerts)
 
     // 3. Seasonal peak alerts
-    const seasonalAlerts = this.checkSeasonalPeakAlerts(seasonalPatterns, currentPerformance)
+    const seasonalAlerts = this.checkSeasonalPeakAlerts(
+      seasonalPatterns,
+      currentPerformance
+    )
     alerts.push(...seasonalAlerts)
 
     // 4. Memory spike alerts from trend analysis
     if (historicalTrends) {
-      const memoryAlerts = this.checkMemorySpikeAlerts(historicalTrends, currentPerformance)
+      const memoryAlerts = this.checkMemorySpikeAlerts(
+        historicalTrends,
+        currentPerformance
+      )
       alerts.push(...memoryAlerts)
     }
 
@@ -68,7 +75,8 @@ export class EarlyWarningEngine {
       .filter(alert => this.isAlertValid(alert))
       .sort((a, b) => {
         const severityWeight = { critical: 4, high: 3, medium: 2, low: 1 }
-        const severityDiff = severityWeight[b.severity] - severityWeight[a.severity]
+        const severityDiff =
+          severityWeight[b.severity] - severityWeight[a.severity]
         if (severityDiff !== 0) return severityDiff
         return b.confidence - a.confidence
       })
@@ -87,30 +95,43 @@ export class EarlyWarningEngine {
       if (
         prediction.probability_of_issue > 0.5 &&
         prediction.predicted_value < 60 && // Performance score below 60
-        this.calculateConfidenceFromInterval(prediction.confidence_interval) > this.thresholds.confidence_threshold
+        this.calculateConfidenceFromInterval(prediction.confidence_interval) >
+          this.thresholds.confidence_threshold
       ) {
         const timeToIssue = this.calculateTimeToIssue(prediction.time_horizon)
-        const severity = this.calculateSeverity(prediction.probability_of_issue, prediction.predicted_value)
+        const severity = this.calculateSeverity(
+          prediction.probability_of_issue,
+          prediction.predicted_value
+        )
 
         alerts.push({
           id: `perf_degradation_${prediction.prediction_id}_${Date.now()}`,
           type: "performance_degradation",
-          predicted_issue_date: this.calculatePredictedIssueDate(prediction.time_horizon),
+          predicted_issue_date: this.calculatePredictedIssueDate(
+            prediction.time_horizon
+          ),
           time_to_issue: timeToIssue,
-          confidence: this.calculateConfidenceFromInterval(prediction.confidence_interval),
-          affected_routes: prediction.route_pattern ? [prediction.route_pattern] : undefined,
+          confidence: this.calculateConfidenceFromInterval(
+            prediction.confidence_interval
+          ),
+          affected_routes: prediction.route_pattern
+            ? [prediction.route_pattern]
+            : undefined,
           severity,
-          prevention_recommendations: this.generatePreventionRecommendations("performance_degradation", {
-            predicted_value: prediction.predicted_value,
-            current_performance: prediction.predicted_value + 20 // Estimate current as better
-          }),
+          prevention_recommendations: this.generatePreventionRecommendations(
+            "performance_degradation",
+            {
+              predicted_value: prediction.predicted_value,
+              current_performance: prediction.predicted_value + 20, // Estimate current as better
+            }
+          ),
           monitoring_suggestions: [
             "Monitor performance metrics every hour until risk passes",
             "Set up automated alerts for performance threshold breaches",
             "Prepare rollback strategies for recent deployments",
-            "Review resource usage patterns for anomalies"
+            "Review resource usage patterns for anomalies",
           ],
-          prediction_basis: "trend_analysis"
+          prediction_basis: "trend_analysis",
         })
       }
     })
@@ -131,24 +152,30 @@ export class EarlyWarningEngine {
         prediction.predicted_performance_score < 50 &&
         prediction.forecast_accuracy > this.thresholds.confidence_threshold
       ) {
-        const severity = prediction.predicted_performance_score < 30 ? "critical" : "high"
+        const severity =
+          prediction.predicted_performance_score < 30 ? "critical" : "high"
 
         alerts.push({
           id: `route_perf_${prediction.route_pattern}_${Date.now()}`,
           type: "performance_degradation",
-          predicted_issue_date: this.calculatePredictedIssueDate(prediction.prediction_horizon),
-          time_to_issue: this.calculateTimeToIssue(prediction.prediction_horizon),
+          predicted_issue_date: this.calculatePredictedIssueDate(
+            prediction.prediction_horizon
+          ),
+          time_to_issue: this.calculateTimeToIssue(
+            prediction.prediction_horizon
+          ),
           confidence: prediction.forecast_accuracy,
           affected_routes: [prediction.route_pattern],
           severity,
-          prevention_recommendations: this.generateRouteSpecificRecommendations(prediction),
+          prevention_recommendations:
+            this.generateRouteSpecificRecommendations(prediction),
           monitoring_suggestions: [
             `Focus monitoring on ${prediction.route_pattern} route`,
             "Check route-specific resource usage patterns",
             "Review recent route-specific deployments or changes",
-            "Consider temporary route optimization measures"
+            "Consider temporary route optimization measures",
           ],
-          prediction_basis: prediction.prediction_model as any
+          prediction_basis: prediction.prediction_model as any,
         })
       }
     })
@@ -181,14 +208,15 @@ export class EarlyWarningEngine {
             time_to_issue: this.formatTimeToIssue(hoursToNextPeak),
             confidence: pattern.confidence,
             severity: pattern.seasonal_strength > 0.5 ? "high" : "medium",
-            prevention_recommendations: this.generateSeasonalPreparationRecommendations(pattern),
+            prevention_recommendations:
+              this.generateSeasonalPreparationRecommendations(pattern),
             monitoring_suggestions: [
               `Monitor ${pattern.metric_type} closely during predicted peak period`,
               "Prepare additional resources for increased load",
               "Review historical performance during similar peak periods",
-              "Set up enhanced alerting during peak window"
+              "Set up enhanced alerting during peak window",
             ],
-            prediction_basis: "seasonal_pattern"
+            prediction_basis: "seasonal_pattern",
           })
         }
       }
@@ -212,14 +240,21 @@ export class EarlyWarningEngine {
       .filter(val => !isNaN(val) && val > 0)
 
     if (memoryValues.length >= 10) {
-      const smoothed = TimeSeriesAnalysis.exponentialSmoothing(memoryValues, 0.3, 3)
+      const smoothed = TimeSeriesAnalysis.exponentialSmoothing(
+        memoryValues,
+        0.3,
+        3
+      )
       const nextPredictedMemory = smoothed[smoothed.length - 1]
 
       if (
         nextPredictedMemory > this.thresholds.memory_spike_threshold &&
         nextPredictedMemory > currentPerformance.avgMemory * 1.5 // 50% increase
       ) {
-        const severity = nextPredictedMemory > this.thresholds.memory_spike_threshold * 1.5 ? "critical" : "high"
+        const severity =
+          nextPredictedMemory > this.thresholds.memory_spike_threshold * 1.5
+            ? "critical"
+            : "high"
 
         alerts.push({
           id: `memory_spike_${Date.now()}`,
@@ -228,17 +263,20 @@ export class EarlyWarningEngine {
           time_to_issue: "24 hours",
           confidence: this.calculateTrendConfidence(memoryValues),
           severity,
-          prevention_recommendations: this.generatePreventionRecommendations("memory_spike", {
-            predicted_value: nextPredictedMemory,
-            current_performance: currentPerformance.avgMemory
-          }),
+          prevention_recommendations: this.generatePreventionRecommendations(
+            "memory_spike",
+            {
+              predicted_value: nextPredictedMemory,
+              current_performance: currentPerformance.avgMemory,
+            }
+          ),
           monitoring_suggestions: [
             "Monitor memory usage every 15 minutes",
             "Identify memory-intensive processes or routes",
             "Prepare memory cleanup procedures",
-            "Review recent changes that might affect memory usage"
+            "Review recent changes that might affect memory usage",
           ],
-          prediction_basis: "trend_analysis"
+          prediction_basis: "trend_analysis",
         })
       }
     }
@@ -258,10 +296,13 @@ export class EarlyWarningEngine {
     predictions.forEach(prediction => {
       if (
         prediction.metric_type === "fps" &&
-        prediction.predicted_value < this.thresholds.fps_degradation_threshold &&
+        prediction.predicted_value <
+          this.thresholds.fps_degradation_threshold &&
         prediction.predicted_value < currentPerformance.avgFps * 0.8 // 20% drop
       ) {
-        const confidence = this.calculateConfidenceFromInterval(prediction.confidence_interval)
+        const confidence = this.calculateConfidenceFromInterval(
+          prediction.confidence_interval
+        )
 
         if (confidence > this.thresholds.confidence_threshold) {
           const severity = prediction.predicted_value < 30 ? "critical" : "high"
@@ -269,22 +310,29 @@ export class EarlyWarningEngine {
           alerts.push({
             id: `fps_drop_${prediction.prediction_id}_${Date.now()}`,
             type: "fps_drop",
-            predicted_issue_date: this.calculatePredictedIssueDate(prediction.time_horizon),
+            predicted_issue_date: this.calculatePredictedIssueDate(
+              prediction.time_horizon
+            ),
             time_to_issue: this.calculateTimeToIssue(prediction.time_horizon),
             confidence,
-            affected_routes: prediction.route_pattern ? [prediction.route_pattern] : undefined,
+            affected_routes: prediction.route_pattern
+              ? [prediction.route_pattern]
+              : undefined,
             severity,
-            prevention_recommendations: this.generatePreventionRecommendations("fps_drop", {
-              predicted_value: prediction.predicted_value,
-              current_performance: currentPerformance.avgFps
-            }),
+            prevention_recommendations: this.generatePreventionRecommendations(
+              "fps_drop",
+              {
+                predicted_value: prediction.predicted_value,
+                current_performance: currentPerformance.avgFps,
+              }
+            ),
             monitoring_suggestions: [
               "Monitor FPS metrics in real-time",
               "Check GPU and rendering performance",
               "Review draw call optimization opportunities",
-              "Prepare frame rate optimization strategies"
+              "Prepare frame rate optimization strategies",
             ],
-            prediction_basis: "model_ensemble"
+            prediction_basis: "model_ensemble",
           })
         }
       }
@@ -325,16 +373,21 @@ export class EarlyWarningEngine {
     const hours = this.parseTimeHorizon(timeHorizon)
     if (hours < 24) return `${hours} hours`
     const days = Math.floor(hours / 24)
-    return `${days} day${days > 1 ? 's' : ''}`
+    return `${days} day${days > 1 ? "s" : ""}`
   }
 
   private parseTimeHorizon(timeHorizon: string): number {
     switch (timeHorizon) {
-      case "1h": return 1
-      case "24h": return 24
-      case "7d": return 24 * 7
-      case "30d": return 24 * 30
-      default: return 24
+      case "1h":
+        return 1
+      case "24h":
+        return 24
+      case "7d":
+        return 24 * 7
+      case "30d":
+        return 24 * 30
+      default:
+        return 24
     }
   }
 
@@ -343,11 +396,13 @@ export class EarlyWarningEngine {
     if (hours < 24) return `${Math.round(hours)} hours`
     const days = Math.floor(hours / 24)
     const remainingHours = Math.round(hours % 24)
-    if (remainingHours === 0) return `${days} day${days > 1 ? 's' : ''}`
-    return `${days} day${days > 1 ? 's' : ''} and ${remainingHours} hours`
+    if (remainingHours === 0) return `${days} day${days > 1 ? "s" : ""}`
+    return `${days} day${days > 1 ? "s" : ""} and ${remainingHours} hours`
   }
 
-  private calculateConfidenceFromInterval(confidenceInterval: [number, number]): number {
+  private calculateConfidenceFromInterval(
+    confidenceInterval: [number, number]
+  ): number {
     const range = confidenceInterval[1] - confidenceInterval[0]
     const midpoint = (confidenceInterval[1] + confidenceInterval[0]) / 2
 
@@ -378,20 +433,20 @@ export class EarlyWarningEngine {
         "Review and optimize critical performance bottlenecks",
         "Implement caching strategies for frequently accessed data",
         "Consider horizontal scaling if possible",
-        "Review recent deployments for performance regressions"
+        "Review recent deployments for performance regressions",
       ],
       memory_spike: [
         "Implement memory cleanup procedures immediately",
         "Review memory-intensive operations and optimize",
         "Consider implementing memory pooling or recycling",
-        "Monitor for memory leaks in recent code changes"
+        "Monitor for memory leaks in recent code changes",
       ],
       fps_drop: [
         "Optimize rendering pipeline and draw calls",
         "Review GPU-intensive operations",
         "Implement frame rate limiting or adaptive quality",
-        "Check for background processes affecting rendering"
-      ]
+        "Check for background processes affecting rendering",
+      ],
     }
 
     const recommendations = [...(baseRecommendations[alertType] || [])]
@@ -399,7 +454,9 @@ export class EarlyWarningEngine {
     // Add severity-specific recommendations
     const severityRatio = context.current_performance / context.predicted_value
     if (severityRatio > 2) {
-      recommendations.unshift("URGENT: Immediate intervention required - predicted severe degradation")
+      recommendations.unshift(
+        "URGENT: Immediate intervention required - predicted severe degradation"
+      )
     }
 
     return recommendations
@@ -411,7 +468,7 @@ export class EarlyWarningEngine {
     const recommendations = [
       `Optimize performance for route: ${prediction.route_pattern}`,
       "Review route-specific resource usage patterns",
-      "Consider route-level caching or preloading strategies"
+      "Consider route-level caching or preloading strategies",
     ]
 
     prediction.contributing_factors.forEach(factor => {
@@ -435,7 +492,7 @@ export class EarlyWarningEngine {
     const recommendations = [
       `Prepare for predicted ${pattern.pattern_type} peak in ${pattern.metric_type}`,
       "Scale resources in advance of peak period",
-      "Review historical mitigation strategies from similar peaks"
+      "Review historical mitigation strategies from similar peaks",
     ]
 
     switch (pattern.pattern_type) {
@@ -446,7 +503,9 @@ export class EarlyWarningEngine {
         recommendations.push("Plan weekend/weekday performance adjustments")
         break
       case "monthly":
-        recommendations.push("Coordinate with business calendar for peak planning")
+        recommendations.push(
+          "Coordinate with business calendar for peak planning"
+        )
         break
     }
 

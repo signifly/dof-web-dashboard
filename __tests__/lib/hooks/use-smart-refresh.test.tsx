@@ -434,7 +434,7 @@ describe("useSmartRefresh", () => {
     mockSetTimeout.mockClear()
 
     // Change to active type
-    rerender({ type: "active" as const })
+    rerender({ type: "summary" as const })
 
     // Should use active interval (30000ms)
     let activeCall = mockSetTimeout.mock.calls.find(call => call[1] === 30000)

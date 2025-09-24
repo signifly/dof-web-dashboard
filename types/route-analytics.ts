@@ -1,7 +1,11 @@
 import {
   RoutePerformanceData,
   RoutePerformanceSession,
+  RoutePerformanceAnalysis,
 } from "./route-performance"
+
+// Re-export for convenience
+export type { RoutePerformanceAnalysis }
 
 // Core advanced analytics interfaces
 export interface RouteCorrelationAnalysis {

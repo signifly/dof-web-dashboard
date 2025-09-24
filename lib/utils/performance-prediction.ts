@@ -267,16 +267,17 @@ export class PerformancePredictionEngine {
     route: RoutePerformanceData,
     appAverages: { avgFps: number; avgMemory: number; avgCpu: number },
     historicalTrends?: MetricsTrend[],
-    models: ("linear_regression" | "exponential_smoothing" | "seasonal_decomposition")[] = [
-      "linear_regression",
-      "exponential_smoothing"
-    ]
+    models: (
+      | "linear_regression"
+      | "exponential_smoothing"
+      | "seasonal_decomposition"
+    )[] = ["linear_regression", "exponential_smoothing"]
   ): Promise<PerformancePrediction> {
     const predictions: { [key: string]: PredictionResult } = {}
     const modelWeights: { [key: string]: number } = {
       linear_regression: 0.4,
       exponential_smoothing: 0.4,
-      seasonal_decomposition: 0.2
+      seasonal_decomposition: 0.2,
     }
 
     // Generate predictions from each model
@@ -287,11 +288,18 @@ export class PerformancePredictionEngine {
             predictions[modelType] = this.predictForHorizon(route.sessions, 7)
             break
           case "exponential_smoothing":
-            predictions[modelType] = await this.predictWithTimeSeriesAnalysis(route, "7d")
+            predictions[modelType] = await this.predictWithTimeSeriesAnalysis(
+              route,
+              "7d"
+            )
             break
           case "seasonal_decomposition":
             if (historicalTrends) {
-              predictions[modelType] = await this.predictWithSeasonalDecomposition(route, historicalTrends)
+              predictions[modelType] =
+                await this.predictWithSeasonalDecomposition(
+                  route,
+                  historicalTrends
+                )
             }
             break
         }
@@ -301,7 +309,9 @@ export class PerformancePredictionEngine {
     }
 
     // Ensemble the predictions
-    const validPredictions = Object.entries(predictions).filter(([_, pred]) => pred.predictedScore > 0)
+    const validPredictions = Object.entries(predictions).filter(
+      ([_, pred]) => pred.predictedScore > 0
+    )
 
     if (validPredictions.length === 0) {
       // Fallback to single linear regression
@@ -327,10 +337,19 @@ export class PerformancePredictionEngine {
       predictedScore: weightedScore / totalWeight,
       confidenceInterval: [confidenceMin, confidenceMax],
       model: "ensemble",
-      rSquared: validPredictions.reduce((sum, [_, pred]) => sum + (pred.rSquared || 0), 0) / validPredictions.length
+      rSquared:
+        validPredictions.reduce(
+          (sum, [_, pred]) => sum + (pred.rSquared || 0),
+          0
+        ) / validPredictions.length,
     }
 
-    return this.formatPredictionResult(route, ensemblePrediction, "ensemble", validPredictions.map(([model]) => model))
+    return this.formatPredictionResult(
+      route,
+      ensemblePrediction,
+      "ensemble",
+      validPredictions.map(([model]) => model)
+    )
   }
 
   /**
@@ -341,7 +360,8 @@ export class PerformancePredictionEngine {
     timeHorizon: "1d" | "7d" | "30d"
   ): Promise<PredictionResult> {
     const sessions = route.sessions.sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
 
     if (sessions.length < 5) {
@@ -363,12 +383,18 @@ export class PerformancePredictionEngine {
     // Apply exponential smoothing
     const horizonDays = timeHorizon === "1d" ? 1 : timeHorizon === "7d" ? 7 : 30
     const alpha = Math.max(0.1, 1 / horizonDays) // Adaptive smoothing parameter
-    const smoothed = TimeSeriesAnalysis.exponentialSmoothing(performanceScores, alpha, 1)
+    const smoothed = TimeSeriesAnalysis.exponentialSmoothing(
+      performanceScores,
+      alpha,
+      1
+    )
 
     const predictedScore = smoothed[smoothed.length - 1]
 
     // Calculate confidence interval based on recent volatility
-    const recentScores = performanceScores.slice(-Math.min(10, performanceScores.length))
+    const recentScores = performanceScores.slice(
+      -Math.min(10, performanceScores.length)
+    )
     const volatility = this.standardDeviation(recentScores)
     const marginOfError = Math.min(volatility * 2, 30) // Cap at 30 points
 
@@ -376,10 +402,13 @@ export class PerformancePredictionEngine {
       predictedScore: Math.max(0, Math.min(100, predictedScore)),
       confidenceInterval: [
         Math.max(0, predictedScore - marginOfError),
-        Math.min(100, predictedScore + marginOfError)
+        Math.min(100, predictedScore + marginOfError),
       ],
       model: "exponential_smoothing",
-      rSquared: this.calculateExponentialSmoothingAccuracy(performanceScores, smoothed.slice(0, -1))
+      rSquared: this.calculateExponentialSmoothingAccuracy(
+        performanceScores,
+        smoothed.slice(0, -1)
+      ),
     }
   }
 
@@ -421,17 +450,18 @@ export class PerformancePredictionEngine {
     const predictedScore = Math.min(100, (forecastValue / 60) * 100)
 
     // Calculate confidence based on seasonal strength and trend strength
-    const confidence = (decomposition.seasonal_strength + decomposition.trend_strength) / 2
+    const confidence =
+      (decomposition.seasonal_strength + decomposition.trend_strength) / 2
     const marginOfError = (1 - confidence) * 25 // Higher uncertainty = larger margin
 
     return {
       predictedScore: Math.max(0, Math.min(100, predictedScore)),
       confidenceInterval: [
         Math.max(0, predictedScore - marginOfError),
-        Math.min(100, predictedScore + marginOfError)
+        Math.min(100, predictedScore + marginOfError),
       ],
       model: "seasonal_decomposition",
-      rSquared: confidence
+      rSquared: confidence,
     }
   }
 
@@ -460,7 +490,7 @@ export class PerformancePredictionEngine {
       memory_usage: session.avgMemory,
       cpu_usage: session.avgCpu,
       screen_name: "route_session",
-      load_time: session.screenDuration || 1000
+      load_time: session.screenDuration || 1000,
     }))
 
     return TimeSeriesAnalysis.detectSeasonalPatterns(
@@ -487,25 +517,39 @@ export class PerformancePredictionEngine {
           route,
           appAverages,
           historicalTrends,
-          ["linear_regression", "exponential_smoothing", "seasonal_decomposition"]
+          [
+            "linear_regression",
+            "exponential_smoothing",
+            "seasonal_decomposition",
+          ]
         )
 
         predictions.push({
           prediction_id: `${route.routePattern}_${horizon}_${Date.now()}`,
           metric_type: "performance_score",
           route_pattern: route.routePattern,
-          predicted_value: ensemblePrediction.predicted_performance_score,
+          predicted_value: ensemblePrediction.predicted_value,
           confidence_interval: ensemblePrediction.confidence_interval,
           time_horizon: horizon,
-          probability_of_issue: this.calculateProbabilityOfIssue(ensemblePrediction.predicted_performance_score),
-          contributing_factors: ensemblePrediction.contributing_factors.map(factor => ({
+          probability_of_issue: this.calculateProbabilityOfIssue(
+            ensemblePrediction.predicted_value
+          ),
+          contributing_factors: this.identifyContributingFactors(
+            route,
+            appAverages
+          ).map((factor: string) => ({
             factor_name: factor,
-            impact_weight: 1.0 / ensemblePrediction.contributing_factors.length,
-            description: this.getFactorDescription(factor)
+            impact_weight:
+              1.0 / this.identifyContributingFactors(route, appAverages).length,
+            description: this.getFactorDescription(factor),
           })),
-          recommended_actions: this.generatePredictiveActions(ensemblePrediction.predicted_performance_score),
-          model_used: ensemblePrediction.prediction_model,
-          seasonal_adjustment: historicalTrends ? this.calculateSeasonalAdjustment(historicalTrends) : undefined
+          recommended_actions: this.generatePredictiveActions(
+            ensemblePrediction.predicted_value
+          ),
+          model_used: ensemblePrediction.model_used,
+          seasonal_adjustment: historicalTrends
+            ? this.calculateSeasonalAdjustment(historicalTrends)
+            : undefined,
         })
       } catch (error) {
         console.warn(`Failed to generate prediction for ${horizon}:`, error)
@@ -531,18 +575,22 @@ export class PerformancePredictionEngine {
       predicted_value: prediction.predictedScore,
       confidence_interval: prediction.confidenceInterval,
       time_horizon: "7d",
-      probability_of_issue: this.calculateProbabilityOfIssue(prediction.predictedScore),
+      probability_of_issue: this.calculateProbabilityOfIssue(
+        prediction.predictedScore
+      ),
       contributing_factors: this.identifyContributingFactors(route, {
         avgFps: 0,
         avgMemory: 0,
-        avgCpu: 0
+        avgCpu: 0,
       }).map(factor => ({
         factor_name: factor,
         impact_weight: 1.0,
-        description: this.getFactorDescription(factor)
+        description: this.getFactorDescription(factor),
       })),
-      recommended_actions: this.generatePredictiveActions(prediction.predictedScore),
-      model_used: modelsUsed.length > 0 ? modelsUsed.join(", ") : modelType
+      recommended_actions: this.generatePredictiveActions(
+        prediction.predictedScore
+      ),
+      model_used: modelsUsed.length > 0 ? modelsUsed.join(", ") : modelType,
     }
   }
 
@@ -556,11 +604,16 @@ export class PerformancePredictionEngine {
 
   private getFactorDescription(factor: string): string {
     const descriptions: { [key: string]: string } = {
-      "Below average FPS performance": "Frame rate is consistently below application average",
-      "High memory usage pattern": "Memory consumption exceeds typical usage patterns",
-      "Elevated CPU usage": "CPU utilization is higher than expected for this route",
-      "Declining performance trend": "Performance metrics show deteriorating trend",
-      "Limited device diversity in data": "Insufficient device variety may affect prediction accuracy"
+      "Below average FPS performance":
+        "Frame rate is consistently below application average",
+      "High memory usage pattern":
+        "Memory consumption exceeds typical usage patterns",
+      "Elevated CPU usage":
+        "CPU utilization is higher than expected for this route",
+      "Declining performance trend":
+        "Performance metrics show deteriorating trend",
+      "Limited device diversity in data":
+        "Insufficient device variety may affect prediction accuracy",
     }
 
     return descriptions[factor] || factor
@@ -572,20 +625,20 @@ export class PerformancePredictionEngine {
         "Immediate performance optimization required",
         "Review and optimize critical path performance",
         "Consider caching strategies for frequently accessed data",
-        "Implement performance monitoring alerts"
+        "Implement performance monitoring alerts",
       ]
     } else if (predictedScore < 70) {
       return [
         "Monitor performance closely for degradation",
         "Implement preventive optimizations",
         "Review resource usage patterns",
-        "Consider performance testing under load"
+        "Consider performance testing under load",
       ]
     } else {
       return [
         "Continue monitoring performance trends",
         "Maintain current optimization strategies",
-        "Consider proactive improvements for future scaling"
+        "Consider proactive improvements for future scaling",
       ]
     }
   }
@@ -596,17 +649,24 @@ export class PerformancePredictionEngine {
   ): number {
     if (actual.length !== predicted.length || actual.length === 0) return 0
 
-    const mse = actual.reduce((sum, actualVal, i) => {
-      const error = actualVal - predicted[i]
-      return sum + error * error
-    }, 0) / actual.length
+    const mse =
+      actual.reduce((sum, actualVal, i) => {
+        const error = actualVal - predicted[i]
+        return sum + error * error
+      }, 0) / actual.length
 
     const variance = this.standardDeviation(actual) ** 2
     return variance > 0 ? Math.max(0, 1 - mse / variance) : 0
   }
 
-  private calculateSeasonalAdjustment(historicalTrends: MetricsTrend[]): number {
-    const decomposition = TimeSeriesAnalysis.seasonalDecomposition(historicalTrends, 7, "fps")
+  private calculateSeasonalAdjustment(
+    historicalTrends: MetricsTrend[]
+  ): number {
+    const decomposition = TimeSeriesAnalysis.seasonalDecomposition(
+      historicalTrends,
+      7,
+      "fps"
+    )
     return decomposition.seasonal_strength
   }
 }

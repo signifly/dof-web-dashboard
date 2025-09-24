@@ -1,0 +1,538 @@
+"use client"
+
+import { PerformanceRecommendation } from "@/types/insights"
+import { RoutePerformanceAnalysis } from "@/types/route-analytics"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react"
+import {
+  Lightbulb,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Target,
+  TrendingUp,
+  Zap,
+  Brain,
+  ArrowRight,
+  Star,
+  Calendar,
+  Users,
+} from "lucide-react"
+
+// Extended interface for proactive recommendations
+interface ProactiveRecommendation extends PerformanceRecommendation {
+  prediction_based?: boolean
+  predicted_impact_date?: string
+  prevention_priority?: "critical" | "high" | "medium" | "low"
+  early_warning_threshold?: number
+  monitoring_recommendations?: string[]
+  seasonal_context?: {
+    pattern_type: "daily" | "weekly" | "monthly"
+    next_occurrence: string
+    historical_impact: number
+  }
+}
+
+interface ProactiveRecommendationsPanelProps {
+  recommendations: ProactiveRecommendation[]
+  routeContext?: RoutePerformanceAnalysis
+  showImplementationGuidance?: boolean
+}
+
+export function ProactiveRecommendationsPanel({
+  recommendations,
+  routeContext,
+  showImplementationGuidance = true,
+}: ProactiveRecommendationsPanelProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [selectedRecommendation, setSelectedRecommendation] = useState<
+    string | null
+  >(null)
+
+  // Enhance recommendations with proactive indicators if missing
+  const enhancedRecommendations = recommendations.map(rec => ({
+    ...rec,
+    prediction_based:
+      rec.prediction_based || rec.category.includes("route_") || false,
+    prevention_priority:
+      rec.prevention_priority || (rec.impact === "high" ? "high" : "medium"),
+  }))
+
+  const filteredRecommendations =
+    selectedCategory === "all"
+      ? enhancedRecommendations
+      : enhancedRecommendations.filter(r => r.category === selectedCategory)
+
+  const sortedRecommendations = filteredRecommendations.sort((a, b) => {
+    // Sort by prediction-based first, then priority score
+    if (a.prediction_based && !b.prediction_based) return -1
+    if (!a.prediction_based && b.prediction_based) return 1
+    return b.priority_score - a.priority_score
+  })
+
+  const categories = [
+    {
+      value: "all",
+      label: "All Recommendations",
+      count: enhancedRecommendations.length,
+    },
+    {
+      value: "performance",
+      label: "Performance",
+      count: enhancedRecommendations.filter(r => r.category === "performance")
+        .length,
+    },
+    {
+      value: "memory",
+      label: "Memory",
+      count: enhancedRecommendations.filter(r => r.category === "memory")
+        .length,
+    },
+    {
+      value: "route_navigation",
+      label: "Navigation",
+      count: enhancedRecommendations.filter(
+        r => r.category === "route_navigation"
+      ).length,
+    },
+    {
+      value: "route_caching",
+      label: "Caching",
+      count: enhancedRecommendations.filter(r => r.category === "route_caching")
+        .length,
+    },
+  ].filter(cat => cat.count > 0)
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "critical":
+        return "text-red-600 bg-red-100"
+      case "high":
+        return "text-red-600 bg-red-50"
+      case "medium":
+        return "text-yellow-600 bg-yellow-50"
+      default:
+        return "text-green-600 bg-green-50"
+    }
+  }
+
+  const getImpactIcon = (impact: string) => {
+    switch (impact) {
+      case "high":
+        return <Zap className="h-4 w-4" />
+      case "medium":
+        return <Target className="h-4 w-4" />
+      default:
+        return <TrendingUp className="h-4 w-4" />
+    }
+  }
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "route_navigation":
+        return <ArrowRight className="h-4 w-4" />
+      case "route_caching":
+        return <Zap className="h-4 w-4" />
+      case "memory":
+        return <Brain className="h-4 w-4" />
+      default:
+        return <Lightbulb className="h-4 w-4" />
+    }
+  }
+
+  if (enhancedRecommendations.length === 0) {
+    return (
+      <Card className="col-span-2">
+        <CardHeader>
+          <CardTitle>Proactive Recommendations</CardTitle>
+          <CardDescription>
+            AI-powered optimization suggestions and predictive maintenance
+            recommendations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <div className="text-muted-foreground">
+              No recommendations available
+            </div>
+            <div className="text-sm text-muted-foreground mt-1">
+              Recommendations are generated based on performance insights and
+              predictive models
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4 text-center">
+            <Brain className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-blue-600">
+              {enhancedRecommendations.filter(r => r.prediction_based).length}
+            </div>
+            <div className="text-sm text-muted-foreground">Predictive</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <AlertTriangle className="h-6 w-6 text-red-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-red-600">
+              {
+                enhancedRecommendations.filter(
+                  r => r.prevention_priority === "critical"
+                ).length
+              }
+            </div>
+            <div className="text-sm text-muted-foreground">Critical</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <Target className="h-6 w-6 text-green-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-green-600">
+              {enhancedRecommendations.filter(r => r.impact === "high").length}
+            </div>
+            <div className="text-sm text-muted-foreground">High Impact</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <Clock className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-purple-600">
+              {Math.round(
+                enhancedRecommendations.reduce(
+                  (sum, r) => sum + r.priority_score,
+                  0
+                ) / enhancedRecommendations.length
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground">Avg Priority</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Recommendations Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Lightbulb className="h-5 w-5" />
+              <span>Proactive Recommendations</span>
+            </div>
+            <Badge variant="outline" className="text-xs">
+              {sortedRecommendations.length} recommendations
+            </Badge>
+          </CardTitle>
+          <CardDescription>
+            AI-powered optimization suggestions with predictive insights and
+            implementation guidance
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs
+            value={selectedCategory}
+            onValueChange={setSelectedCategory}
+            className="w-full"
+          >
+            <TabsList className="grid grid-cols-3 md:grid-cols-5 mb-6">
+              {categories.slice(0, 5).map(category => (
+                <TabsTrigger
+                  key={category.value}
+                  value={category.value}
+                  className="text-xs flex flex-col items-center py-2 h-auto"
+                >
+                  <span className="font-medium">{category.label}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {category.count}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <div className="space-y-4">
+              {sortedRecommendations.slice(0, 6).map(recommendation => (
+                <div
+                  key={recommendation.id}
+                  className={`p-4 border-2 rounded-lg transition-all hover:shadow-md cursor-pointer ${
+                    selectedRecommendation === recommendation.id
+                      ? "border-blue-300 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                  onClick={() =>
+                    setSelectedRecommendation(
+                      selectedRecommendation === recommendation.id
+                        ? null
+                        : recommendation.id
+                    )
+                  }
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        {getCategoryIcon(recommendation.category)}
+                        <h4 className="font-medium text-sm">
+                          {recommendation.title}
+                        </h4>
+                        {recommendation.prediction_based && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs bg-blue-50 text-blue-700"
+                          >
+                            <Brain className="h-3 w-3 mr-1" />
+                            Predictive
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {recommendation.description}
+                      </p>
+                      <div className="flex items-center space-x-4 text-xs">
+                        <span className="text-muted-foreground">
+                          Impact: {recommendation.estimated_improvement}
+                        </span>
+                        <span className="text-muted-foreground">
+                          Time: {recommendation.implementation_time}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <Badge
+                        variant={
+                          recommendation.impact === "high"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {recommendation.impact} impact
+                      </Badge>
+                      <div
+                        className={`p-1 rounded text-xs ${getPriorityColor(recommendation.prevention_priority || "medium")}`}
+                      >
+                        {getImpactIcon(recommendation.impact)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Priority & Confidence */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-1">
+                        <Star className="h-3 w-3 text-yellow-500" />
+                        <span className="text-xs text-muted-foreground">
+                          Priority: {recommendation.priority_score}/100
+                        </span>
+                      </div>
+                      <Progress
+                        value={recommendation.priority_score}
+                        className="h-1 w-20"
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Effort:{" "}
+                      <span className="capitalize">
+                        {recommendation.effort}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Seasonal Context */}
+                  {recommendation.seasonal_context && (
+                    <div className="mb-3 p-2 bg-purple-50 border border-purple-200 rounded text-xs">
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="h-3 w-3 text-purple-600" />
+                        <span className="font-medium text-purple-800">
+                          Seasonal Recommendation
+                        </span>
+                      </div>
+                      <div className="text-purple-700 mt-1">
+                        {recommendation.seasonal_context.pattern_type} pattern •
+                        Next occurrence:{" "}
+                        {new Date(
+                          recommendation.seasonal_context.next_occurrence
+                        ).toLocaleDateString()}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Predicted Impact Date */}
+                  {recommendation.predicted_impact_date && (
+                    <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="h-3 w-3 text-amber-600" />
+                        <span className="font-medium text-amber-800">
+                          Early Warning
+                        </span>
+                      </div>
+                      <div className="text-amber-700 mt-1">
+                        Predicted issue date:{" "}
+                        {new Date(
+                          recommendation.predicted_impact_date
+                        ).toLocaleDateString()}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Expanded Implementation Details */}
+                  {selectedRecommendation === recommendation.id &&
+                    showImplementationGuidance && (
+                      <div className="mt-4 pt-4 border-t space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h5 className="font-medium text-sm mb-2">
+                              Implementation Steps
+                            </h5>
+                            <ul className="text-xs space-y-1">
+                              {recommendation.actionable_steps.map(
+                                (step, index) => (
+                                  <li
+                                    key={index}
+                                    className="flex items-start space-x-2"
+                                  >
+                                    <div className="w-4 h-4 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium mt-0.5">
+                                      {index + 1}
+                                    </div>
+                                    <span className="flex-1">{step}</span>
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h5 className="font-medium text-sm mb-2">
+                              Related Metrics
+                            </h5>
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {recommendation.related_metrics.map(
+                                (metric, index) => (
+                                  <Badge
+                                    key={index}
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    {metric}
+                                  </Badge>
+                                )
+                              )}
+                            </div>
+
+                            {recommendation.monitoring_recommendations && (
+                              <>
+                                <h5 className="font-medium text-sm mb-2">
+                                  Monitoring
+                                </h5>
+                                <ul className="text-xs space-y-1 text-muted-foreground">
+                                  {recommendation.monitoring_recommendations.map(
+                                    (monitor, index) => (
+                                      <li key={index}>• {monitor}</li>
+                                    )
+                                  )}
+                                </ul>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-3 border-t">
+                          <div className="text-xs text-muted-foreground">
+                            Category:{" "}
+                            {recommendation.category.replace("_", " ")} •
+                            Created:{" "}
+                            {new Date(
+                              recommendation.created_at
+                            ).toLocaleDateString()}
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Mark as Planned
+                            </Button>
+                            <Button size="sm" className="text-xs">
+                              <Target className="h-3 w-3 mr-1" />
+                              Start Implementation
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                </div>
+              ))}
+            </div>
+
+            {sortedRecommendations.length > 6 && (
+              <div className="text-center mt-4 pt-4 border-t">
+                <Button variant="outline" size="sm">
+                  Show {sortedRecommendations.length - 6} More Recommendations
+                </Button>
+              </div>
+            )}
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Route Context */}
+      {routeContext && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              Route Performance Context
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-lg font-bold text-blue-600">
+                  {routeContext.routes?.length || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Routes Analyzed
+                </div>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-green-600">
+                  {routeContext.summary?.totalSessions || 0}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Total Sessions
+                </div>
+              </div>
+              <div>
+                <div className="text-lg font-bold text-purple-600">
+                  {Math.round(
+                    routeContext.routes?.reduce(
+                      (sum, route) => sum + route.performanceScore,
+                      0
+                    ) / Math.max(1, routeContext.routes?.length || 0) || 0
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Avg Performance
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}

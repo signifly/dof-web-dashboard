@@ -102,7 +102,7 @@ describe("performance-data-client", () => {
     })
 
     it("should fetch performance trends with custom limit", async () => {
-      const mockTrends = []
+      const mockTrends: any[] = []
 
       mockFetch.mockResolvedValue({
         ok: true,
