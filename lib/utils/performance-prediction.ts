@@ -42,10 +42,17 @@ export class PerformancePredictionEngine {
     // Use 7-day prediction as primary
     const primaryPrediction = predictions["7d"]
 
+    // Ensure no NaN values in final prediction
+    const safeScore = isNaN(primaryPrediction.predictedScore) ? 50 : primaryPrediction.predictedScore
+    const safeConfidence: [number, number] = [
+      isNaN(primaryPrediction.confidenceInterval[0]) ? 30 : primaryPrediction.confidenceInterval[0],
+      isNaN(primaryPrediction.confidenceInterval[1]) ? 70 : primaryPrediction.confidenceInterval[1]
+    ]
+
     return {
       route_pattern: route.routePattern,
-      predicted_performance_score: primaryPrediction.predictedScore,
-      confidence_interval: primaryPrediction.confidenceInterval,
+      predicted_performance_score: safeScore,
+      confidence_interval: safeConfidence,
       prediction_horizon: "7d",
       contributing_factors: this.identifyContributingFactors(
         route,
@@ -104,14 +111,19 @@ export class PerformancePredictionEngine {
     )
     const marginOfError = 1.96 * standardError // 95% confidence interval
 
+    // Ensure no NaN values
+    const safePredictedScore = isNaN(predictedScore) ? 50 : predictedScore
+    const safeMarginOfError = isNaN(marginOfError) ? 20 : marginOfError
+    const safeRSquared = isNaN(regression.rSquared) ? 0.5 : regression.rSquared
+
     return {
-      predictedScore: Math.max(0, Math.min(100, predictedScore)),
+      predictedScore: Math.max(0, Math.min(100, safePredictedScore)),
       confidenceInterval: [
-        Math.max(0, predictedScore - marginOfError),
-        Math.min(100, predictedScore + marginOfError),
+        Math.max(0, safePredictedScore - safeMarginOfError),
+        Math.min(100, safePredictedScore + safeMarginOfError),
       ],
       model: "linear_regression",
-      rSquared: regression.rSquared,
+      rSquared: Math.max(0, Math.min(1, safeRSquared)),
     }
   }
 
@@ -120,24 +132,52 @@ export class PerformancePredictionEngine {
     y: number[]
   ): LinearRegressionResult {
     const n = x.length
+
+    // Handle edge case: only one data point
+    if (n === 1) {
+      return {
+        slope: 0, // No trend with single point
+        intercept: y[0], // Use the actual value
+        rSquared: 1 // Perfect fit with single point
+      }
+    }
+
     const sumX = x.reduce((sum, val) => sum + val, 0)
     const sumY = y.reduce((sum, val) => sum + val, 0)
     const sumXY = x.reduce((sum, val, i) => sum + val * y[i], 0)
     const sumXX = x.reduce((sum, val) => sum + val * val, 0)
     const sumYY = y.reduce((sum, val) => sum + val * val, 0)
 
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
+    const denominator = n * sumXX - sumX * sumX
+
+    // Handle edge case: all x values are the same (vertical line)
+    if (Math.abs(denominator) < 1e-10) {
+      const meanY = sumY / n
+      return {
+        slope: 0,
+        intercept: meanY,
+        rSquared: 0
+      }
+    }
+
+    const slope = (n * sumXY - sumX * sumY) / denominator
     const intercept = (sumY - slope * sumX) / n
 
     // Calculate R-squared
     const meanY = sumY / n
     const totalSumSquares = y.reduce((sum, val) => sum + (val - meanY) ** 2, 0)
+
+    // Handle edge case: all y values are the same
+    if (totalSumSquares === 0) {
+      return { slope, intercept, rSquared: 1 }
+    }
+
     const residualSumSquares = y.reduce((sum, val, i) => {
       const predicted = slope * x[i] + intercept
       return sum + (val - predicted) ** 2
     }, 0)
 
-    const rSquared = 1 - residualSumSquares / totalSumSquares
+    const rSquared = Math.max(0, 1 - residualSumSquares / totalSumSquares)
 
     return { slope, intercept, rSquared }
   }
@@ -148,6 +188,7 @@ export class PerformancePredictionEngine {
     regression: LinearRegressionResult
   ): number {
     const n = x.length
+    if (n <= 1) return 25 // Default high error for single data point
     if (n <= 2) return 20 // Default high error for insufficient data
 
     const residualSumSquares = y.reduce((sum, val, i) => {
