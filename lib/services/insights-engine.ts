@@ -154,7 +154,10 @@ export class PerformanceInsightsEngine {
     ]
 
     // 8. Generate predictions and seasonal patterns (Issue #30)
-    const predictions = await this.generatePredictiveInsights(routeData, filteredTrends)
+    const predictions = await this.generatePredictiveInsights(
+      routeData,
+      filteredTrends
+    )
     const seasonalPatterns = this.detectSeasonalPatterns(filteredTrends)
 
     // 9. Generate early warnings based on predictions
@@ -198,14 +201,18 @@ export class PerformanceInsightsEngine {
       )
 
     // 12. Generate proactive recommendations based on predictions
-    const proactiveRecommendations = await this.recommendationEngine.generateProactiveRecommendations(
-      predictions,
-      seasonalPatterns,
-      earlyWarnings
-    )
+    const proactiveRecommendations =
+      await this.recommendationEngine.generateProactiveRecommendations(
+        predictions,
+        seasonalPatterns,
+        earlyWarnings
+      )
 
     console.log("💡 Generated Recommendations:", recommendations.length)
-    console.log("🚀 Proactive Recommendations:", proactiveRecommendations.length)
+    console.log(
+      "🚀 Proactive Recommendations:",
+      proactiveRecommendations.length
+    )
 
     // Ensure we always have at least one recommendation for demo purposes
     if (recommendations.length === 0) {
@@ -1053,10 +1060,18 @@ export class PerformanceInsightsEngine {
 
     try {
       if (trends.length >= 10) {
-        const fpsPrediction = await this.generateMetricPrediction(trends, "fps", "24h")
+        const fpsPrediction = await this.generateMetricPrediction(
+          trends,
+          "fps",
+          "24h"
+        )
         if (fpsPrediction) predictions.push(fpsPrediction)
 
-        const memoryPrediction = await this.generateMetricPrediction(trends, "memory_usage", "24h")
+        const memoryPrediction = await this.generateMetricPrediction(
+          trends,
+          "memory_usage",
+          "24h"
+        )
         if (memoryPrediction) predictions.push(memoryPrediction)
       }
     } catch (error) {
@@ -1086,17 +1101,22 @@ export class PerformanceInsightsEngine {
         predicted_value: Math.max(0, predictedValue),
         confidence_interval: [
           Math.max(0, predictedValue - marginOfError),
-          predictedValue + marginOfError
+          predictedValue + marginOfError,
         ],
         time_horizon: timeHorizon,
-        probability_of_issue: this.calculateProbabilityOfIssue(metric, predictedValue),
-        contributing_factors: [{
-          factor_name: "Historical performance pattern",
-          impact_weight: 1.0,
-          description: `Prediction based on historical ${metric} data`
-        }],
+        probability_of_issue: this.calculateProbabilityOfIssue(
+          metric,
+          predictedValue
+        ),
+        contributing_factors: [
+          {
+            factor_name: "Historical performance pattern",
+            impact_weight: 1.0,
+            description: `Prediction based on historical ${metric} data`,
+          },
+        ],
         recommended_actions: [`Monitor ${metric} performance closely`],
-        model_used: "exponential_smoothing"
+        model_used: "exponential_smoothing",
       }
     } catch (error) {
       return null
@@ -1114,27 +1134,39 @@ export class PerformanceInsightsEngine {
     }
   }
 
-  private createPredictiveInsights(predictions: PerformancePrediction[]): PerformanceInsight[] {
-    return predictions.filter(p => p.probability_of_issue > 0.6).map(prediction => ({
-      id: `prediction_insight_${prediction.prediction_id}`,
-      type: "predicted_performance_degradation" as const,
-      severity: prediction.probability_of_issue > 0.8 ? "high" as const : "medium" as const,
-      title: `${prediction.metric_type} Performance Prediction`,
-      description: `Predicted ${prediction.metric_type} value: ${prediction.predicted_value.toFixed(1)}`,
-      confidence: prediction.probability_of_issue * 0.8,
-      impact: prediction.probability_of_issue > 0.8 ? "high" as const : "medium" as const,
-      category: this.mapMetricToCategory(prediction.metric_type),
-      detected_at: new Date().toISOString(),
-      data_context: {
-        metric_type: prediction.metric_type,
-        value: prediction.predicted_value,
-        baseline: 50,
-        deviation: prediction.predicted_value - 50
-      }
-    }))
+  private createPredictiveInsights(
+    predictions: PerformancePrediction[]
+  ): PerformanceInsight[] {
+    return predictions
+      .filter(p => p.probability_of_issue > 0.6)
+      .map(prediction => ({
+        id: `prediction_insight_${prediction.prediction_id}`,
+        type: "predicted_performance_degradation" as const,
+        severity:
+          prediction.probability_of_issue > 0.8
+            ? ("high" as const)
+            : ("medium" as const),
+        title: `${prediction.metric_type} Performance Prediction`,
+        description: `Predicted ${prediction.metric_type} value: ${prediction.predicted_value.toFixed(1)}`,
+        confidence: prediction.probability_of_issue * 0.8,
+        impact:
+          prediction.probability_of_issue > 0.8
+            ? ("high" as const)
+            : ("medium" as const),
+        category: this.mapMetricToCategory(prediction.metric_type),
+        detected_at: new Date().toISOString(),
+        data_context: {
+          metric_type: prediction.metric_type,
+          value: prediction.predicted_value,
+          baseline: 50,
+          deviation: prediction.predicted_value - 50,
+        },
+      }))
   }
 
-  private createSeasonalInsights(patterns: SeasonalPattern[]): PerformanceInsight[] {
+  private createSeasonalInsights(
+    patterns: SeasonalPattern[]
+  ): PerformanceInsight[] {
     return patterns.map(pattern => ({
       id: `seasonal_insight_${pattern.pattern_id}`,
       type: "seasonal_pattern_detected" as const,
@@ -1149,12 +1181,14 @@ export class PerformanceInsightsEngine {
         metric_type: pattern.metric_type,
         value: pattern.amplitude,
         baseline: 0,
-        deviation: pattern.amplitude
-      }
+        deviation: pattern.amplitude,
+      },
     }))
   }
 
-  private createEarlyWarningInsights(alerts: EarlyWarningAlert[]): PerformanceInsight[] {
+  private createEarlyWarningInsights(
+    alerts: EarlyWarningAlert[]
+  ): PerformanceInsight[] {
     return alerts.map(alert => ({
       id: `early_warning_insight_${alert.id}`,
       type: "early_warning_alert" as const,
@@ -1162,31 +1196,43 @@ export class PerformanceInsightsEngine {
       title: `Early Warning: ${alert.type.replace("_", " ")}`,
       description: `Early warning detected in ${alert.time_to_issue}`,
       confidence: alert.confidence,
-      impact: alert.severity === "critical" ? "high" as const : "medium" as const,
+      impact:
+        alert.severity === "critical" ? ("high" as const) : ("medium" as const),
       category: "performance" as const,
       detected_at: new Date().toISOString(),
       data_context: {
         metric_type: alert.type,
         value: 1,
         baseline: 0,
-        deviation: 1
-      }
+        deviation: 1,
+      },
     }))
   }
 
-  private calculatePredictionConfidence(predictions: PerformancePrediction[]): number {
+  private calculatePredictionConfidence(
+    predictions: PerformancePrediction[]
+  ): number {
     if (predictions.length === 0) return 0
-    return predictions.reduce((sum, pred) => sum + (1 - pred.probability_of_issue), 0) / predictions.length
+    return (
+      predictions.reduce(
+        (sum, pred) => sum + (1 - pred.probability_of_issue),
+        0
+      ) / predictions.length
+    )
   }
 
   private calculateStandardDeviation(values: number[]): number {
     if (values.length === 0) return 0
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length
-    const variance = values.reduce((sum, val) => sum + (val - mean) ** 2, 0) / values.length
+    const variance =
+      values.reduce((sum, val) => sum + (val - mean) ** 2, 0) / values.length
     return Math.sqrt(variance)
   }
 
-  private calculateProbabilityOfIssue(metric: string, predictedValue: number): number {
+  private calculateProbabilityOfIssue(
+    metric: string,
+    predictedValue: number
+  ): number {
     switch (metric) {
       case "fps":
         return predictedValue < 45 ? 0.7 : 0.3

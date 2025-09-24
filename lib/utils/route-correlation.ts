@@ -44,7 +44,8 @@ export class RouteCorrelationAnalyzer {
       overallCorrelation
     )
 
-    return {
+    // Add debugging information
+    const result = {
       source_route: sourceRoute.routePattern,
       target_route: targetRoute.routePattern,
       correlation_strength: Math.abs(overallCorrelation),
@@ -60,11 +61,42 @@ export class RouteCorrelationAnalyzer {
         sourceRoute.totalSessions
       ),
     }
+
+    // Debug logging for correlation analysis
+    console.log(`🔗 Correlation Analysis:`, {
+      source: sourceRoute.routePattern,
+      target: targetRoute.routePattern,
+      fpsCorrelation,
+      memoryCorrelation,
+      cpuCorrelation,
+      overallCorrelation,
+      correlationStrength: result.correlation_strength,
+      sourceSessions: sourceRoute.sessions?.length || 0,
+      targetSessions: targetRoute.sessions?.length || 0,
+      sampleSize: result.sample_size
+    })
+
+    return result
   }
 
   private calculateCorrelation(x: number[], y: number[]): number {
     const minLength = Math.min(x.length, y.length)
-    if (minLength < 2) return 0
+
+    // Allow correlation calculation with just 1 data point for limited data scenarios
+    // In this case, we'll use a simple comparison approach
+    if (minLength === 0) return 0
+
+    if (minLength === 1) {
+      // For single data points, calculate similarity as inverse of relative difference
+      const xVal = x[0]
+      const yVal = y[0]
+      if (xVal === 0 && yVal === 0) return 1 // Perfect match
+      if (xVal === 0 || yVal === 0) return 0 // One is zero, no correlation
+
+      const relativeDiff = Math.abs(xVal - yVal) / Math.max(Math.abs(xVal), Math.abs(yVal))
+      // Convert to correlation-like value: 1 - relativeDiff, capped between -1 and 1
+      return Math.max(-1, Math.min(1, 1 - relativeDiff))
+    }
 
     const xSlice = x.slice(0, minLength)
     const ySlice = y.slice(0, minLength)
@@ -85,7 +117,17 @@ export class RouteCorrelationAnalyzer {
     }
 
     const denominator = Math.sqrt(sumXSquared * sumYSquared)
-    return denominator === 0 ? 0 : numerator / denominator
+    if (denominator === 0) {
+      // If both variables have no variance, check if they're equal
+      const allXEqual = xSlice.every(val => val === xSlice[0])
+      const allYEqual = ySlice.every(val => val === ySlice[0])
+      if (allXEqual && allYEqual) {
+        return xSlice[0] === ySlice[0] ? 1 : 0
+      }
+      return 0
+    }
+
+    return numerator / denominator
   }
 
   private determineCorrelationType(

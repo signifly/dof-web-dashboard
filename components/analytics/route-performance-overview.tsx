@@ -96,7 +96,7 @@ export function RoutePerformanceOverview({
             <div className="flex items-center justify-between">
               <span className="text-sm">Low Risk</span>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-green-100 rounded-full h-2 w-24">
+                <div className="flex-1 bg-green-100 dark:bg-green-900/30 rounded-full h-2 w-24">
                   <div
                     className="bg-green-500 h-2 rounded-full"
                     style={{
@@ -110,7 +110,7 @@ export function RoutePerformanceOverview({
             <div className="flex items-center justify-between">
               <span className="text-sm">Medium Risk</span>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-yellow-100 rounded-full h-2 w-24">
+                <div className="flex-1 bg-yellow-100 dark:bg-yellow-900/30 rounded-full h-2 w-24">
                   <div
                     className="bg-yellow-500 h-2 rounded-full"
                     style={{
@@ -124,7 +124,7 @@ export function RoutePerformanceOverview({
             <div className="flex items-center justify-between">
               <span className="text-sm">High Risk</span>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-red-100 rounded-full h-2 w-24">
+                <div className="flex-1 bg-red-100 dark:bg-red-900/30 rounded-full h-2 w-24">
                   <div
                     className="bg-red-500 h-2 rounded-full"
                     style={{
@@ -149,7 +149,7 @@ export function RoutePerformanceOverview({
             <div className="flex items-center justify-between">
               <span className="text-sm">Improving</span>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-green-100 rounded-full h-2 w-24">
+                <div className="flex-1 bg-green-100 dark:bg-green-900/30 rounded-full h-2 w-24">
                   <div
                     className="bg-green-500 h-2 rounded-full"
                     style={{
@@ -163,7 +163,7 @@ export function RoutePerformanceOverview({
             <div className="flex items-center justify-between">
               <span className="text-sm">Stable</span>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-blue-100 rounded-full h-2 w-24">
+                <div className="flex-1 bg-blue-100 dark:bg-blue-900/30 rounded-full h-2 w-24">
                   <div
                     className="bg-blue-500 h-2 rounded-full"
                     style={{
@@ -177,7 +177,7 @@ export function RoutePerformanceOverview({
             <div className="flex items-center justify-between">
               <span className="text-sm">Degrading</span>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-red-100 rounded-full h-2 w-24">
+                <div className="flex-1 bg-red-100 dark:bg-red-900/30 rounded-full h-2 w-24">
                   <div
                     className="bg-red-500 h-2 rounded-full"
                     style={{
@@ -206,7 +206,7 @@ export function RoutePerformanceOverview({
                 {summary.bestPerformingRoutes.map((route, index) => (
                   <div
                     key={`${route.routeName}-${route.routePattern}`}
-                    className="flex items-center justify-between p-3 bg-green-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-green-50 rounded-lg dark:bg-green-950/20"
                   >
                     <div>
                       <div className="font-medium text-sm">
@@ -247,7 +247,7 @@ export function RoutePerformanceOverview({
                 {summary.worstPerformingRoutes.map((route, index) => (
                   <div
                     key={`${route.routeName}-${route.routePattern}`}
-                    className="flex items-center justify-between p-3 bg-red-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-red-50 rounded-lg dark:bg-red-950/20"
                   >
                     <div>
                       <div className="font-medium text-sm">

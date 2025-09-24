@@ -107,13 +107,15 @@ export function InsightsList({ insights }: InsightsListProps) {
         <CardHeader>
           <CardTitle>Performance Insights</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No performance insights available at this time.</p>
-            <p className="text-sm mt-1">
-              Check back after more data is collected.
-            </p>
+        <CardContent className="p-0">
+          <div className="h-96 flex items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No performance insights available at this time.</p>
+              <p className="text-sm mt-1">
+                Check back after more data is collected.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -131,8 +133,8 @@ export function InsightsList({ insights }: InsightsListProps) {
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-0">
+        <div className="h-96 overflow-y-auto p-6 space-y-4">
           {insights.map(insight => (
             <div
               key={insight.id}

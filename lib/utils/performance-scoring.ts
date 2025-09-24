@@ -34,26 +34,26 @@ export class PerformanceScoringEngine {
       benchmarks: {
         fps: {
           metric_type: "fps",
-          excellent_threshold: 55,
-          good_threshold: 45,
-          average_threshold: 30,
-          poor_threshold: 20,
+          excellent_threshold: 45, // Tightened for more demanding scoring
+          good_threshold: 35,
+          average_threshold: 25,
+          poor_threshold: 15,
           device_specific: true,
         },
         memory: {
           metric_type: "memory",
-          excellent_threshold: 200, // MB
-          good_threshold: 400,
-          average_threshold: 600,
-          poor_threshold: 800,
+          excellent_threshold: 40, // MB - More demanding threshold
+          good_threshold: 80, // MB - Reasonable for most mobile apps
+          average_threshold: 120, // MB - Within Android recommendations
+          poor_threshold: 200, // MB - Upper limit before performance issues
           device_specific: true,
         },
         cpu: {
           metric_type: "cpu",
-          excellent_threshold: 20, // %
-          good_threshold: 40,
-          average_threshold: 60,
-          poor_threshold: 80,
+          excellent_threshold: 10, // % - More demanding for excellent rating
+          good_threshold: 25, // % - Acceptable for normal operation
+          average_threshold: 45, // % - Higher but still manageable
+          poor_threshold: 70, // % - Approaching problematic levels
           device_specific: false,
         },
       },
