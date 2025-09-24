@@ -56,7 +56,7 @@ export class NavigationFlowAnalyzer {
   private async analyzeFlowPattern(
     flowPattern: string,
     sequences: RouteSequence[],
-    routes: RoutePerformanceData[]
+    routes: RoutePerformanceData[] // TODO: Fix unused variable routes
   ): Promise<NavigationFlowAnalysis> {
     const routeSequence = flowPattern.split(" -> ")
 

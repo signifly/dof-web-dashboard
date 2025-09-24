@@ -3,7 +3,6 @@ import {
   PerformanceScore,
   TrendAnalysis,
   PerformanceBenchmark,
-  StatisticalResult,
 } from "@/types/insights"
 import { StatisticalAnalysisUtils } from "./statistical-analysis"
 

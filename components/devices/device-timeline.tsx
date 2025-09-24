@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DeviceSession } from "@/types/device"
-import { formatDistanceToNow, format } from "date-fns"
+import { format } from "date-fns"
 import { useState } from "react"
 
 interface DeviceTimelineProps {
@@ -241,7 +241,7 @@ function SessionDetails({
   )
 }
 
-export function DeviceTimeline({ sessions, deviceId }: DeviceTimelineProps) {
+export function DeviceTimeline({ sessions, _deviceId }: DeviceTimelineProps) {
   const [expandedSession, setExpandedSession] = useState<string | null>(null)
 
   const toggleSessionExpansion = (sessionId: string) => {

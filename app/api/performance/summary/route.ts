@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getPerformanceSummary } from "@/lib/performance-data"
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const summary = await getPerformanceSummary()
     return NextResponse.json(summary)

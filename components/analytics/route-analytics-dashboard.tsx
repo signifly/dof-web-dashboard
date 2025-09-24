@@ -14,7 +14,6 @@ import {
   AlertTriangle,
   Target,
   GitBranch,
-  Clock,
 } from "lucide-react"
 
 interface RouteAnalyticsDashboardProps {

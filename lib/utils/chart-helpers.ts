@@ -152,7 +152,7 @@ export function formatTimestamp(
       return timestamp // Return original if parsing fails
     }
     return format(date, formatString)
-  } catch (error) {
+  } catch (_error) {
     return timestamp
   }
 }
@@ -208,7 +208,7 @@ export function generatePerformanceAnnotations(
 ): ChartAnnotation[] {
   const annotations: ChartAnnotation[] = []
 
-  data.forEach((item, index) => {
+  data.forEach((item, _index) => {
     const value = (item as any)[metric] || 0
     const timestamp = item.timestamp
 
@@ -263,7 +263,7 @@ export function generatePerformanceAnnotations(
 export function aggregateDataByInterval(
   data: MetricsTrend[],
   interval: "minute" | "hour" | "day",
-  metric: string
+  metric: string // TODO: Fix unused variable metric
 ): MetricsTrend[] {
   if (!data.length) return []
 
@@ -293,7 +293,7 @@ export function aggregateDataByInterval(
 
   // Calculate averages for each group
   return Array.from(groupedData.entries())
-    .map(([key, items]) => {
+    .map(([__key, items]) => {
       const avgFps =
         items.reduce((sum, item) => sum + item.fps, 0) / items.length
       const avgMemory =

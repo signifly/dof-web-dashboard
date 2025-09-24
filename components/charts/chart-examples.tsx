@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
-import { addHours, addMinutes, format } from "date-fns"
+import { addMinutes } from "date-fns"
 import { InteractiveChart } from "./interactive-chart"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

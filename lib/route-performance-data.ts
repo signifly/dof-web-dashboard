@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { Tables, Json } from "@/types/database"
+import { Json } from "@/types/database"
 import {
   ScreenTimeContext,
   RoutePerformanceSession,
@@ -61,7 +61,7 @@ export function normalizeRoutePattern(
   return pattern
 }
 
-function isDynamicSegment(segment: string, routePath: string): boolean {
+function isDynamicSegment(segment: string, _routePath: string): boolean {
   // Already normalized segments
   if (segment.startsWith("[") && segment.endsWith("]")) {
     return false

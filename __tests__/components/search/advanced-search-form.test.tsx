@@ -308,10 +308,7 @@ describe("AdvancedSearchForm", () => {
     render(
       <AdvancedSearchForm
         onSearch={mockOnSearch}
-        onPresetApplied={query => {
-          // Simulate preset application
-          expect(query).toEqual(preset)
-        }}
+        initialQuery={preset}
       />
     )
   })

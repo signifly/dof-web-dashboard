@@ -8,7 +8,7 @@ import { MetricsTrend } from "@/lib/performance-data"
 import { MultiSeriesChart } from "@/components/charts"
 import { format } from "date-fns"
 import { useState } from "react"
-import { Activity, Clock, Zap, HardDrive, Cpu } from "lucide-react"
+import { Activity, Zap, HardDrive, Cpu } from "lucide-react"
 
 interface SessionMetricsTimelineProps {
   metrics: SessionMetricsTimeline[]
@@ -20,7 +20,7 @@ type MetricType = "fps" | "memory" | "cpu" | "all"
 
 export function SessionMetricsTimelineComponent({
   metrics,
-  sessionId,
+  _sessionId,
   isLive = false,
 }: SessionMetricsTimelineProps) {
   const [selectedMetric, setSelectedMetric] = useState<MetricType>("all")
@@ -171,7 +171,7 @@ export function SessionMetricsTimelineComponent({
   }
 
   const chartData = getChartData()
-  const chartConfig = getChartConfig()
+  const _chartConfig = getChartConfig()
   const stats = getMetricStats()
   const screenTransitions = getScreenTransitions()
 

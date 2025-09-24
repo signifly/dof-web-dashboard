@@ -10,7 +10,6 @@ import {
   detectRoutePerformanceAnomalies,
   compareRoutesAgainstGlobalPerformance,
   analyzeRoutePerformanceTrends,
-  identifyProblematicRoutes,
   RouteAnomalyDetection,
   RouteComparison,
   RouteTrendAnalysis,
@@ -31,7 +30,6 @@ import {
   PerformancePrediction,
   SeasonalPattern,
   EarlyWarningAlert,
-  ProactiveRecommendation,
 } from "@/types/insights"
 import { RoutePerformanceAnalysis } from "@/types/route-performance"
 import { UserJourney, JourneyAbandonmentPattern } from "@/types/user-journey"
@@ -325,8 +323,8 @@ export class PerformanceInsightsEngine {
    */
   private identifyOptimizationOpportunities(
     summary: PerformanceSummary,
-    devices: any[],
-    trends: {
+    _devices: any[],
+    trends: { // TODO: Fix unused variable trends
       fps: TrendAnalysis
       memory: TrendAnalysis
       cpu: TrendAnalysis
@@ -565,7 +563,7 @@ export class PerformanceInsightsEngine {
    */
   private createRoutePerformanceInsights(
     routeAnalysis: RoutePerformanceAnalysis,
-    globalPerformance: PerformanceSummary
+    globalPerformance: PerformanceSummary // TODO: Fix unused variable globalPerformance
   ): PerformanceInsight[] {
     const insights: PerformanceInsight[] = []
 
@@ -1118,7 +1116,7 @@ export class PerformanceInsightsEngine {
         recommended_actions: [`Monitor ${metric} performance closely`],
         model_used: "exponential_smoothing",
       }
-    } catch (error) {
+    } catch (_error) {
       return null
     }
   }
@@ -1129,7 +1127,7 @@ export class PerformanceInsightsEngine {
       return TimeSeriesAnalysis.detectSeasonalPatterns(trends, ["daily"], "fps")
         .filter(pattern => pattern.confidence > 0.5)
         .slice(0, 3)
-    } catch (error) {
+    } catch (_error) {
       return []
     }
   }

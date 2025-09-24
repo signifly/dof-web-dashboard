@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/client"
 import { Tables } from "@/types/database"
-import { PerformanceMetric, PerformanceSession } from "@/lib/performance-data"
 
 export type SearchMetric = Tables<"performance_metrics">
 export type SearchSession = Tables<"performance_sessions">

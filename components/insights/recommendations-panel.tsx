@@ -23,7 +23,6 @@ import {
   Activity,
   Cpu,
   HardDrive,
-  Zap,
   Eye,
   X,
 } from "lucide-react"

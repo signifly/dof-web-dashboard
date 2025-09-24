@@ -5,14 +5,10 @@ import {
   DeviceSession,
   DeviceMetricPoint,
   DeviceHealthInput,
-  DeviceAnalytics,
   HEALTH_SCORE_WEIGHTS,
   PERFORMANCE_THRESHOLDS,
 } from "@/types/device"
 import {
-  extractScreenName,
-  extractRoutePath,
-  extractRouteSegments,
   getNormalizedRoutePattern,
   getEnhancedRouteInfo,
 } from "@/lib/utils/screen-time-parser"

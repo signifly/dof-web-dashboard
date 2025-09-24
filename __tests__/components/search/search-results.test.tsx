@@ -257,7 +257,7 @@ describe("SearchResults", () => {
       <SearchResults
         results={null}
         query={mockQuery}
-        loading={true}
+        isLoading={true}
         onSort={mockOnSort}
         onPageChange={mockOnPageChange}
       />
@@ -317,7 +317,6 @@ describe("SearchResults", () => {
         query={mockQuery}
         onSort={mockOnSort}
         onPageChange={mockOnPageChange}
-        onExport={mockOnExport}
       />
     )
 
@@ -349,7 +348,6 @@ describe("SearchResults", () => {
       <SearchResults
         results={null}
         query={mockQuery}
-        error="Search failed"
         onSort={mockOnSort}
         onPageChange={mockOnPageChange}
       />

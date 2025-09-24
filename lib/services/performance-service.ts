@@ -71,7 +71,7 @@ export class PerformanceService {
    * Get performance metrics grouped by time period
    */
   async getMetricsByTimePeriod(
-    period: "hour" | "day" | "week" = "day",
+    _period: "hour" | "day" | "week" = "day",
     limit = 24
   ) {
     // Get metrics using the normalized schema

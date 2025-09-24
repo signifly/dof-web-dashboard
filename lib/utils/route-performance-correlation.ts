@@ -2,7 +2,6 @@ import {
   RoutePerformanceAnalysis,
   RoutePerformanceData,
 } from "@/types/route-performance"
-import { PerformanceSummary } from "@/lib/performance-data"
 
 export interface RoutePerformanceInsight {
   route_pattern: string
@@ -306,7 +305,7 @@ export function compareRoutesAgainstGlobalPerformance(
   const FPS_TARGET_OPTIMAL = 55
 
   routeAnalysis.routes.forEach(route => {
-    const insight = correlateRouteWithGlobalPerformance(
+    const _insight = correlateRouteWithGlobalPerformance(
       route,
       routeAnalysis.appAverages
     )

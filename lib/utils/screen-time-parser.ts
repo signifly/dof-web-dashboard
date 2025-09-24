@@ -187,7 +187,7 @@ function normalizeRoutePattern(routePath: string, segments: string[]): string {
 /**
  * Check if a segment is dynamic
  */
-function isDynamicSegment(segment: string, routePath: string): boolean {
+function isDynamicSegment(segment: string, _routePath: string): boolean {
   // Already normalized segments
   if (segment.startsWith("[") && segment.endsWith("]")) {
     return false

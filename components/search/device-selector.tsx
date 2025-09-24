@@ -50,7 +50,7 @@ export function DeviceSelector({
   maxItems = 10,
 }: DeviceSelectorProps) {
   const [devices, setDevices] = React.useState<DeviceInfo[]>([])
-  const [platforms, setPlatforms] = React.useState<string[]>([])
+  const [__platforms, setPlatforms] = React.useState<string[]>([])
   const [appVersions, setAppVersions] = React.useState<string[]>([])
   const [loading, setLoading] = React.useState(true)
   const [selectedPlatformFilter, setSelectedPlatformFilter] =
@@ -158,7 +158,7 @@ export function DeviceSelector({
   // Convert filtered devices to multi-select options
   const deviceOptions: MultiSelectOption[] = React.useMemo(() => {
     return filteredDevices.map(device => {
-      const PlatformIcon =
+      const _PlatformIcon =
         PLATFORM_ICONS[device.platform as keyof typeof PLATFORM_ICONS] ||
         Monitor
 
