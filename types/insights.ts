@@ -12,6 +12,12 @@ export interface PerformanceInsight {
     | "journey_abandonment_pattern"
     | "journey_bottleneck_detection"
     | "journey_optimization_opportunity"
+    | "seasonal_peak_predicted"
+    | "predicted_memory_spike"
+    | "predicted_fps_drop"
+    | "predicted_performance_degradation"
+    | "seasonal_pattern_detected"
+    | "early_warning_alert"
   severity: "critical" | "high" | "medium" | "low"
   title: string
   description: string
@@ -126,12 +132,25 @@ export interface OptimizationOpportunity {
 }
 
 export interface SeasonalPattern {
-  pattern_type: "daily" | "weekly" | "monthly"
-  confidence: number
-  peak_times: string[]
-  low_times: string[]
+  pattern_id: string
+  pattern_type: "hourly" | "daily" | "weekly" | "monthly"
+  metric_type: string
+  route_pattern?: string
+  peak_periods: TimePeriod[]
+  low_periods: TimePeriod[]
   amplitude: number
-  significance: number
+  confidence: number
+  next_predicted_peak: string
+  next_predicted_low: string
+  seasonal_strength: number
+  detection_method: "fourier" | "autocorrelation" | "pattern_matching"
+}
+
+export interface TimePeriod {
+  start: string
+  end: string
+  average_value: number
+  frequency: number
 }
 
 export interface InsightsReport {
@@ -158,10 +177,17 @@ export interface InsightsReport {
   }
   anomalies: AnomalyDetection[]
   optimization_opportunities: OptimizationOpportunity[]
+  predictions?: PerformancePrediction[]
+  seasonal_patterns?: SeasonalPattern[]
+  early_warnings?: EarlyWarningAlert[]
+  proactive_recommendations?: ProactiveRecommendation[]
   metadata: {
     analysis_duration_ms: number
     data_points_analyzed: number
     confidence_level: number
+    prediction_confidence?: number
+    seasonal_patterns_detected?: number
+    early_warnings_generated?: number
   }
 }
 
@@ -269,4 +295,79 @@ export interface RouteRecommendation extends PerformanceRecommendation {
     device_compatibility?: DeviceRouteCompatibility[]
     implementation_scope: "single_route" | "route_group" | "global_navigation"
   }
+}
+
+// Predictive Models and Early Warning Types for Issue #30
+export interface PerformancePredictionModel {
+  model_id: string
+  model_type: "linear_regression" | "time_series" | "seasonal_decomposition" | "exponential_smoothing"
+  target_metric: "fps" | "memory_usage" | "cpu_usage" | "route_performance"
+  training_period: string
+  accuracy_score: number
+  last_trained: string
+  seasonal_patterns?: SeasonalPattern[]
+}
+
+export interface PerformancePrediction {
+  prediction_id: string
+  metric_type: string
+  route_pattern?: string
+  predicted_value: number
+  confidence_interval: [number, number]
+  time_horizon: "1h" | "24h" | "7d" | "30d"
+  probability_of_issue: number
+  contributing_factors: PredictionFactor[]
+  recommended_actions: string[]
+  model_used: string
+  seasonal_adjustment?: number
+}
+
+export interface PredictionFactor {
+  factor_name: string
+  impact_weight: number
+  description: string
+}
+
+export interface EarlyWarningAlert {
+  id: string
+  type: "performance_degradation" | "memory_spike" | "fps_drop" | "seasonal_peak"
+  predicted_issue_date: string
+  time_to_issue: string
+  confidence: number
+  affected_routes?: string[]
+  severity: "critical" | "high" | "medium" | "low"
+  prevention_recommendations: string[]
+  monitoring_suggestions: string[]
+  prediction_basis: "trend_analysis" | "seasonal_pattern" | "anomaly_detection" | "model_ensemble"
+}
+
+export interface EarlyWarningThresholds {
+  fps_degradation_threshold: number
+  memory_spike_threshold: number
+  cpu_spike_threshold: number
+  confidence_threshold: number
+  time_horizon_days: number
+}
+
+export interface ProactiveRecommendation extends PerformanceRecommendation {
+  prediction_based: true
+  predicted_impact_date: string
+  prevention_priority: "critical" | "high" | "medium" | "low"
+  early_warning_threshold: number
+  monitoring_recommendations: string[]
+  seasonal_context?: {
+    pattern_type: "daily" | "weekly" | "monthly"
+    next_occurrence: string
+    historical_impact: number
+  }
+}
+
+export interface TimeSeriesDecomposition {
+  trend: number[]
+  seasonal: number[]
+  residual: number[]
+  forecast: number[]
+  seasonal_periods: number[]
+  trend_strength: number
+  seasonal_strength: number
 }

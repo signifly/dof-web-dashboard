@@ -28,15 +28,24 @@ import {
   OptimizationOpportunity,
   InsightsEngineConfig,
   TrendAnalysis,
+  PerformancePrediction,
+  SeasonalPattern,
+  EarlyWarningAlert,
+  ProactiveRecommendation,
 } from "@/types/insights"
 import { RoutePerformanceAnalysis } from "@/types/route-performance"
 import { UserJourney, JourneyAbandonmentPattern } from "@/types/user-journey"
+import { PerformancePredictionEngine } from "@/lib/utils/performance-prediction"
+import { EarlyWarningEngine } from "./early-warning-engine"
+import { TimeSeriesAnalysis } from "@/lib/utils/statistical-analysis"
 
 export class PerformanceInsightsEngine {
   private statisticalAnalysis = StatisticalAnalysisUtils
   private scoringEngine: PerformanceScoringEngine
   private recommendationEngine: RecommendationEngine
   private journeyTracker: UserJourneyTracker
+  private predictionEngine: PerformancePredictionEngine
+  private earlyWarningEngine: EarlyWarningEngine
   private config: InsightsEngineConfig
 
   constructor(config?: Partial<InsightsEngineConfig>) {
@@ -78,6 +87,8 @@ export class PerformanceInsightsEngine {
     })
     this.recommendationEngine = new RecommendationEngine()
     this.journeyTracker = new UserJourneyTracker()
+    this.predictionEngine = new PerformancePredictionEngine()
+    this.earlyWarningEngine = new EarlyWarningEngine()
   }
 
   /**
@@ -142,7 +153,25 @@ export class PerformanceInsightsEngine {
       ...journeyInsights,
     ]
 
-    // 8. Generate recommendations using recommendation engine
+    // 8. Generate predictions and seasonal patterns (Issue #30)
+    const predictions = await this.generatePredictiveInsights(routeData, filteredTrends)
+    const seasonalPatterns = this.detectSeasonalPatterns(filteredTrends)
+
+    // 9. Generate early warnings based on predictions
+    const earlyWarnings = await this.earlyWarningEngine.generateEarlyWarnings(
+      predictions,
+      [], // Route predictions would go here if available
+      seasonalPatterns,
+      performanceData,
+      filteredTrends
+    )
+
+    // 10. Add predictive insights to the main insights array
+    insights.push(...this.createPredictiveInsights(predictions))
+    insights.push(...this.createSeasonalInsights(seasonalPatterns))
+    insights.push(...this.createEarlyWarningInsights(earlyWarnings))
+
+    // 11. Generate recommendations using recommendation engine
     console.log(
       "📊 Generated Insights:",
       insights.length,
@@ -157,6 +186,9 @@ export class PerformanceInsightsEngine {
       "🎯 Optimization Opportunities:",
       optimizationOpportunities.length
     )
+    console.log("🔮 Predictions Generated:", predictions.length)
+    console.log("📅 Seasonal Patterns:", seasonalPatterns.length)
+    console.log("⚠️ Early Warnings:", earlyWarnings.length)
 
     const recommendations =
       await this.recommendationEngine.generateRecommendations(
@@ -165,7 +197,15 @@ export class PerformanceInsightsEngine {
         optimizationOpportunities
       )
 
+    // 12. Generate proactive recommendations based on predictions
+    const proactiveRecommendations = await this.recommendationEngine.generateProactiveRecommendations(
+      predictions,
+      seasonalPatterns,
+      earlyWarnings
+    )
+
     console.log("💡 Generated Recommendations:", recommendations.length)
+    console.log("🚀 Proactive Recommendations:", proactiveRecommendations.length)
 
     // Ensure we always have at least one recommendation for demo purposes
     if (recommendations.length === 0) {
@@ -201,7 +241,7 @@ export class PerformanceInsightsEngine {
       generated_at: new Date().toISOString(),
       time_range: timeRange || this.getDefaultTimeRange(),
       performance_score: performanceScore,
-      insights: insights.slice(0, 20), // Limit insights
+      insights: insights.slice(0, 25), // Increased limit for predictive insights
       recommendations: recommendations.slice(
         0,
         this.config.recommendations.max_recommendations
@@ -214,10 +254,17 @@ export class PerformanceInsightsEngine {
       },
       anomalies,
       optimization_opportunities: optimizationOpportunities,
+      predictions, // NEW: Performance predictions
+      seasonal_patterns: seasonalPatterns, // NEW: Seasonal patterns
+      early_warnings: earlyWarnings, // NEW: Early warning alerts
+      proactive_recommendations: proactiveRecommendations, // NEW: Proactive recommendations
       metadata: {
         analysis_duration_ms: analysisDuration,
         data_points_analyzed: dataPointsAnalyzed,
         confidence_level: this.calculateOverallConfidence(insights),
+        prediction_confidence: this.calculatePredictionConfidence(predictions),
+        seasonal_patterns_detected: seasonalPatterns.length,
+        early_warnings_generated: earlyWarnings.length,
       },
     }
   }
@@ -989,5 +1036,164 @@ export class PerformanceInsightsEngine {
     if (type.includes("cpu")) return "cpu"
     if (type.includes("fps")) return "performance"
     return "performance"
+  }
+
+  /**
+   * Enhanced Predictive Analysis Methods for Issue #30
+   */
+
+  /**
+   * Generate predictive insights using multiple models
+   */
+  private async generatePredictiveInsights(
+    routeData: RoutePerformanceAnalysis | null,
+    trends: MetricsTrend[]
+  ): Promise<PerformancePrediction[]> {
+    const predictions: PerformancePrediction[] = []
+
+    try {
+      if (trends.length >= 10) {
+        const fpsPrediction = await this.generateMetricPrediction(trends, "fps", "24h")
+        if (fpsPrediction) predictions.push(fpsPrediction)
+
+        const memoryPrediction = await this.generateMetricPrediction(trends, "memory_usage", "24h")
+        if (memoryPrediction) predictions.push(memoryPrediction)
+      }
+    } catch (error) {
+      console.warn("Error generating predictive insights:", error)
+    }
+
+    return predictions
+  }
+
+  private async generateMetricPrediction(
+    trends: MetricsTrend[],
+    metric: "fps" | "memory_usage" | "cpu_usage",
+    timeHorizon: "1h" | "24h" | "7d" | "30d"
+  ): Promise<PerformancePrediction | null> {
+    try {
+      const values = trends.map(t => t[metric] as number).filter(v => !isNaN(v))
+      if (values.length < 5) return null
+
+      const forecast = TimeSeriesAnalysis.exponentialSmoothing(values, 0.3, 1)
+      const predictedValue = forecast[forecast.length - 1]
+      const volatility = this.calculateStandardDeviation(values.slice(-10))
+      const marginOfError = Math.min(volatility * 1.5, predictedValue * 0.3)
+
+      return {
+        prediction_id: `${metric}_${timeHorizon}_${Date.now()}`,
+        metric_type: metric,
+        predicted_value: Math.max(0, predictedValue),
+        confidence_interval: [
+          Math.max(0, predictedValue - marginOfError),
+          predictedValue + marginOfError
+        ],
+        time_horizon: timeHorizon,
+        probability_of_issue: this.calculateProbabilityOfIssue(metric, predictedValue),
+        contributing_factors: [{
+          factor_name: "Historical performance pattern",
+          impact_weight: 1.0,
+          description: `Prediction based on historical ${metric} data`
+        }],
+        recommended_actions: [`Monitor ${metric} performance closely`],
+        model_used: "exponential_smoothing"
+      }
+    } catch (error) {
+      return null
+    }
+  }
+
+  private detectSeasonalPatterns(trends: MetricsTrend[]): SeasonalPattern[] {
+    if (trends.length < 24) return []
+    try {
+      return TimeSeriesAnalysis.detectSeasonalPatterns(trends, ["daily"], "fps")
+        .filter(pattern => pattern.confidence > 0.5)
+        .slice(0, 3)
+    } catch (error) {
+      return []
+    }
+  }
+
+  private createPredictiveInsights(predictions: PerformancePrediction[]): PerformanceInsight[] {
+    return predictions.filter(p => p.probability_of_issue > 0.6).map(prediction => ({
+      id: `prediction_insight_${prediction.prediction_id}`,
+      type: "predicted_performance_degradation" as const,
+      severity: prediction.probability_of_issue > 0.8 ? "high" as const : "medium" as const,
+      title: `${prediction.metric_type} Performance Prediction`,
+      description: `Predicted ${prediction.metric_type} value: ${prediction.predicted_value.toFixed(1)}`,
+      confidence: prediction.probability_of_issue * 0.8,
+      impact: prediction.probability_of_issue > 0.8 ? "high" as const : "medium" as const,
+      category: this.mapMetricToCategory(prediction.metric_type),
+      detected_at: new Date().toISOString(),
+      data_context: {
+        metric_type: prediction.metric_type,
+        value: prediction.predicted_value,
+        baseline: 50,
+        deviation: prediction.predicted_value - 50
+      }
+    }))
+  }
+
+  private createSeasonalInsights(patterns: SeasonalPattern[]): PerformanceInsight[] {
+    return patterns.map(pattern => ({
+      id: `seasonal_insight_${pattern.pattern_id}`,
+      type: "seasonal_pattern_detected" as const,
+      severity: "medium" as const,
+      title: `${pattern.pattern_type} Pattern in ${pattern.metric_type}`,
+      description: `Seasonal pattern detected with ${(pattern.confidence * 100).toFixed(0)}% confidence`,
+      confidence: pattern.confidence,
+      impact: "medium" as const,
+      category: this.mapMetricToCategory(pattern.metric_type),
+      detected_at: new Date().toISOString(),
+      data_context: {
+        metric_type: pattern.metric_type,
+        value: pattern.amplitude,
+        baseline: 0,
+        deviation: pattern.amplitude
+      }
+    }))
+  }
+
+  private createEarlyWarningInsights(alerts: EarlyWarningAlert[]): PerformanceInsight[] {
+    return alerts.map(alert => ({
+      id: `early_warning_insight_${alert.id}`,
+      type: "early_warning_alert" as const,
+      severity: alert.severity,
+      title: `Early Warning: ${alert.type.replace("_", " ")}`,
+      description: `Early warning detected in ${alert.time_to_issue}`,
+      confidence: alert.confidence,
+      impact: alert.severity === "critical" ? "high" as const : "medium" as const,
+      category: "performance" as const,
+      detected_at: new Date().toISOString(),
+      data_context: {
+        metric_type: alert.type,
+        value: 1,
+        baseline: 0,
+        deviation: 1
+      }
+    }))
+  }
+
+  private calculatePredictionConfidence(predictions: PerformancePrediction[]): number {
+    if (predictions.length === 0) return 0
+    return predictions.reduce((sum, pred) => sum + (1 - pred.probability_of_issue), 0) / predictions.length
+  }
+
+  private calculateStandardDeviation(values: number[]): number {
+    if (values.length === 0) return 0
+    const mean = values.reduce((sum, val) => sum + val, 0) / values.length
+    const variance = values.reduce((sum, val) => sum + (val - mean) ** 2, 0) / values.length
+    return Math.sqrt(variance)
+  }
+
+  private calculateProbabilityOfIssue(metric: string, predictedValue: number): number {
+    switch (metric) {
+      case "fps":
+        return predictedValue < 45 ? 0.7 : 0.3
+      case "memory_usage":
+        return predictedValue > 400 ? 0.7 : 0.3
+      default:
+        return 0.4
+    }
   }
 }
