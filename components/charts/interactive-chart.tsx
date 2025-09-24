@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useMemo, useRef, useCallback, useState, useEffect } from "react"
+import { ANIMATION_DURATIONS } from "@/constants/time"
 import {
   ResponsiveContainer,
   LineChart,
@@ -340,7 +341,10 @@ export function InteractiveChart({
 
     if (hasDataChanged && prevDataRef.current !== "") {
       setShouldAnimate(true)
-      const timer = setTimeout(() => setShouldAnimate(false), 750)
+      const timer = setTimeout(
+        () => setShouldAnimate(false),
+        ANIMATION_DURATIONS.CHART_ANIMATION
+      )
 
       prevDataRef.current = currentDataString
 

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useMemo, useCallback, useState, useRef, useEffect } from "react"
+import { ANIMATION_DURATIONS } from "@/constants/time"
 import {
   ResponsiveContainer,
   LineChart,
@@ -244,7 +245,10 @@ export function MultiSeriesChart({
 
     if (hasDataChanged && prevDataRef.current !== "") {
       setShouldAnimate(true)
-      const timer = setTimeout(() => setShouldAnimate(false), 750)
+      const timer = setTimeout(
+        () => setShouldAnimate(false),
+        ANIMATION_DURATIONS.CHART_ANIMATION
+      )
 
       prevDataRef.current = currentDataString
 

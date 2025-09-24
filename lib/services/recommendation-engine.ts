@@ -230,7 +230,8 @@ export class RecommendationEngine {
         description: "Proactive memory optimization for increasing usage",
         condition: insight =>
           insight.type === "trend_decline" && insight.category === "memory",
-        recommendation: insight => ({ // TODO: Fix unused variable insight
+        recommendation: insight => ({
+          // TODO: Fix unused variable insight
           title: "Proactive Memory Leak Prevention",
           description:
             "Memory usage is trending upward. Implement preventive measures to avoid future memory issues.",
@@ -288,7 +289,8 @@ export class RecommendationEngine {
         description: "Holistic approach for multiple performance problems",
         condition: insight =>
           insight.type === "alert" && insight.impact === "high",
-        recommendation: insight => ({ // TODO: Fix unused variable insight
+        recommendation: insight => ({
+          // TODO: Fix unused variable insight
           title: "Comprehensive Performance Audit",
           description:
             "Multiple performance issues detected. Conduct comprehensive optimization review.",
@@ -321,7 +323,8 @@ export class RecommendationEngine {
             insight.category === "memory") &&
           insight.data_context.value !== undefined &&
           insight.confidence > 0.7,
-        recommendation: insight => ({ // TODO: Fix unused variable insight
+        recommendation: insight => ({
+          // TODO: Fix unused variable insight
           title: "Low-End Device Compatibility",
           description:
             "Optimize performance for lower-end devices to ensure broad compatibility.",
@@ -358,7 +361,8 @@ export class RecommendationEngine {
             insight.data_context.route_context.route_specific_metrics
               .avg_screen_duration > 3000
           ),
-        recommendation: insight => ({ // TODO: Fix unused variable insight
+        recommendation: insight => ({
+          // TODO: Fix unused variable insight
           title: "Implement Route Preloading",
           description:
             "Long-duration route detected. Implement preloading for better UX.",
@@ -392,7 +396,8 @@ export class RecommendationEngine {
             insight.data_context.route_context.route_specific_metrics
               .avg_screen_duration > 5000
           ),
-        recommendation: insight => ({ // TODO: Fix unused variable insight
+        recommendation: insight => ({
+          // TODO: Fix unused variable insight
           title: "Optimize Route for Low-End Devices",
           description:
             "Route performs poorly on low-end devices. Implement device-specific optimizations.",
@@ -427,7 +432,8 @@ export class RecommendationEngine {
               insight.data_context.route_context.route_specific_metrics
                 .avg_screen_duration > 5000
             )),
-        recommendation: insight => ({ // TODO: Fix unused variable insight
+        recommendation: insight => ({
+          // TODO: Fix unused variable insight
           title: "Route Exceeds Performance Budget",
           description:
             "Route loading time exceeds performance budget. Optimization required.",
@@ -462,7 +468,8 @@ export class RecommendationEngine {
             insight.data_context.route_context.route_specific_metrics
               .sessions_count > 50
           ),
-        recommendation: insight => ({ // TODO: Fix unused variable insight
+        recommendation: insight => ({
+          // TODO: Fix unused variable insight
           title: "Implement Route Caching Strategy",
           description:
             "High-traffic route detected. Implement caching for improved performance.",

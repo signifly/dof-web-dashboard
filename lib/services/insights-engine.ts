@@ -324,7 +324,8 @@ export class PerformanceInsightsEngine {
   private identifyOptimizationOpportunities(
     summary: PerformanceSummary,
     _devices: any[],
-    trends: { // TODO: Fix unused variable trends
+    trends: {
+      // TODO: Fix unused variable trends
       fps: TrendAnalysis
       memory: TrendAnalysis
       cpu: TrendAnalysis

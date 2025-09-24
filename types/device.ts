@@ -105,4 +105,7 @@ export interface DeviceAnalytics {
 }
 
 // Re-export performance constants from centralized constants folder
-export { HEALTH_SCORE_WEIGHTS, PERFORMANCE_THRESHOLDS } from '@/constants/performance'
+export {
+  HEALTH_SCORE_WEIGHTS,
+  PERFORMANCE_THRESHOLDS,
+} from "@/constants/performance"
