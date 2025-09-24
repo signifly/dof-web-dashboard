@@ -14,6 +14,7 @@ import {
   ALERT_SEVERITY_THRESHOLDS,
   DEGRADATION_DETECTION,
 } from "@/constants/performance"
+import { AlertSeverity } from "@/constants/enums"
 
 /**
  * Early Warning Engine for Issue #30
@@ -364,7 +365,7 @@ export class EarlyWarningEngine {
   private isAlertValid(alert: EarlyWarningAlert): boolean {
     return (
       alert.confidence >= this.thresholds.confidence_threshold &&
-      alert.severity !== "low" &&
+      alert.severity !== AlertSeverity.LOW &&
       new Date(alert.predicted_issue_date) > new Date()
     )
   }
@@ -372,11 +373,13 @@ export class EarlyWarningEngine {
   private calculateSeverity(
     probabilityOfIssue: number,
     predictedValue: number
-  ): "critical" | "high" | "medium" | "low" {
-    if (probabilityOfIssue > 0.8 && predictedValue < 30) return "critical"
-    if (probabilityOfIssue > 0.6 && predictedValue < 50) return "high"
-    if (probabilityOfIssue > 0.4) return "medium"
-    return "low"
+  ): AlertSeverity {
+    if (probabilityOfIssue > 0.8 && predictedValue < 30)
+      return AlertSeverity.CRITICAL
+    if (probabilityOfIssue > 0.6 && predictedValue < 50)
+      return AlertSeverity.HIGH
+    if (probabilityOfIssue > 0.4) return AlertSeverity.MEDIUM
+    return AlertSeverity.LOW
   }
 
   private calculatePredictedIssueDate(timeHorizon: string): string {
