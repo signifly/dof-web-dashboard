@@ -80,7 +80,7 @@ export function SearchPageContent() {
                 initialQuery={query}
                 onSearch={handleSearch}
                 onError={handleSearchError}
-                autoSearch={true}
+                autoSearch={false}
                 showPreview={true}
               />
             </CardContent>

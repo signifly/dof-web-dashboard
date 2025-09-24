@@ -71,18 +71,39 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
   // Memory usage trends
   const memoryTrends = chartData.filter(d => d.memory > 0)
 
-  // Screen breakdown
+  // Enhanced screen breakdown using route patterns
   const screenBreakdown = metrics.reduce(
     (screens, metric) => {
-      const screen = metric.screenName
-      screens[screen] = (screens[screen] || 0) + 1
+      const screen = metric.displayName || metric.screenName
+      const routePattern = metric.routePattern || metric.screenName
+
+      screens[screen] = {
+        count: (screens[screen]?.count || 0) + 1,
+        routePattern,
+        isDynamic: metric.isDynamic || false,
+        routePath: metric.routePath || null,
+      }
       return screens
     },
-    {} as Record<string, number>
+    {} as Record<
+      string,
+      {
+        count: number
+        routePattern: string
+        isDynamic: boolean
+        routePath: string | null
+      }
+    >
   )
 
   const screenData = Object.entries(screenBreakdown)
-    .map(([screen, count]) => ({ screen, count }))
+    .map(([screen, data]) => ({
+      screen,
+      count: data.count,
+      routePattern: data.routePattern,
+      isDynamic: data.isDynamic,
+      routePath: data.routePath,
+    }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10) // Top 10 screens
 
@@ -152,15 +173,20 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Unique Screens</CardTitle>
+            <CardTitle className="text-base">Unique Routes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {Object.keys(screenBreakdown).length}
             </div>
             <p className="text-xs text-muted-foreground">
-              Different screens visited
+              Different routes/screens visited
             </p>
+            {Object.values(screenBreakdown).some(s => s.isDynamic) && (
+              <p className="text-xs text-blue-600 mt-1">
+                Includes dynamic routes
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -192,10 +218,36 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                 />
                 <Tooltip
                   labelFormatter={label => `Time: ${label}`}
-                  formatter={(value: number) => [
-                    `${value.toFixed(1)} FPS`,
-                    "FPS",
-                  ]}
+                  formatter={(value: number, name: string, props: any) => {
+                    const data = props.payload
+                    return [`${value.toFixed(1)} FPS`, "FPS"]
+                  }}
+                  labelStyle={{ marginBottom: "8px" }}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null
+
+                    const data = payload[0].payload
+                    return (
+                      <div className="bg-background border rounded-lg shadow-lg p-3">
+                        <p className="text-sm font-medium mb-2">{`Time: ${label}`}</p>
+                        <div className="space-y-1 text-sm">
+                          <p className="text-green-600">{`FPS: ${data.fps?.toFixed(1) || "N/A"}`}</p>
+                          {data.displayName &&
+                            data.displayName !== "Unknown" && (
+                              <p className="text-muted-foreground">{`Screen: ${data.displayName}`}</p>
+                            )}
+                          {data.routePath && (
+                            <p className="text-xs text-muted-foreground font-mono">{`Route: ${data.routePath}`}</p>
+                          )}
+                          {data.isDynamic && (
+                            <p className="text-xs text-blue-600">
+                              Dynamic Route
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  }}
                 />
                 <Area
                   type="monotone"
@@ -232,11 +284,31 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                       tick={{ fontSize: 12 }}
                     />
                     <Tooltip
-                      labelFormatter={label => `Time: ${label}`}
-                      formatter={(value: number) => [
-                        `${value.toFixed(1)} MB`,
-                        "Memory",
-                      ]}
+                      content={({ active, payload, label }) => {
+                        if (!active || !payload?.length) return null
+
+                        const data = payload[0].payload
+                        return (
+                          <div className="bg-background border rounded-lg shadow-lg p-3">
+                            <p className="text-sm font-medium mb-2">{`Time: ${label}`}</p>
+                            <div className="space-y-1 text-sm">
+                              <p className="text-orange-600">{`Memory: ${data.memory?.toFixed(1) || "N/A"} MB`}</p>
+                              {data.displayName &&
+                                data.displayName !== "Unknown" && (
+                                  <p className="text-muted-foreground">{`Screen: ${data.displayName}`}</p>
+                                )}
+                              {data.routePath && (
+                                <p className="text-xs text-muted-foreground font-mono">{`Route: ${data.routePath}`}</p>
+                              )}
+                              {data.isDynamic && (
+                                <p className="text-xs text-blue-600">
+                                  Dynamic Route
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      }}
                     />
                     <Line
                       type="monotone"
@@ -290,34 +362,84 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
         </Card>
       </div>
 
-      {/* Screen Usage Breakdown */}
+      {/* Route Usage Breakdown */}
       {screenData.length > 1 && (
         <Card>
           <CardHeader>
-            <CardTitle>Screen Usage Breakdown</CardTitle>
+            <CardTitle>Route Usage Breakdown</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Performance measurements by route/screen
+            </p>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={screenData} layout="horizontal">
+                <BarChart
+                  data={screenData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis
+                  <XAxis
                     dataKey="screen"
-                    type="category"
-                    width={100}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    tick={{ fontSize: 11 }}
+                    interval={0}
+                  />
+                  <YAxis
+                    label={{
+                      value: 'Measurements',
+                      angle: -90,
+                      position: 'insideLeft'
+                    }}
                     tick={{ fontSize: 12 }}
                   />
                   <Tooltip
-                    formatter={(value: number) => [
-                      `${value} measurements`,
-                      "Count",
-                    ]}
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null
+
+                      const data = payload[0].payload
+                      return (
+                        <div className="bg-background border rounded-lg shadow-lg p-3 max-w-xs">
+                          <p className="text-sm font-medium mb-2">{`Screen: ${data.screen}`}</p>
+                          <div className="space-y-1 text-sm">
+                            <p className="text-blue-600 font-medium">{`${data.count} measurements`}</p>
+                            {data.routePath &&
+                              data.routePath !== data.screen && (
+                                <p className="text-xs text-muted-foreground font-mono break-all">{`Route: ${data.routePath}`}</p>
+                              )}
+                            {data.routePattern &&
+                              data.routePattern !== data.screen &&
+                              data.routePattern !== data.routePath && (
+                                <p className="text-xs text-muted-foreground">{`Pattern: ${data.routePattern}`}</p>
+                              )}
+                            {data.isDynamic && (
+                              <p className="text-xs text-green-600 font-medium">
+                                🔗 Dynamic Route
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {((data.count / metrics.length) * 100).toFixed(1)}% of total measurements
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    }}
                   />
-                  <Bar dataKey="count" fill="#3b82f6" />
+                  <Bar
+                    dataKey="count"
+                    fill="#3b82f6"
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            {screenData.length > 8 && (
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Showing top 10 most visited routes
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
@@ -351,11 +473,26 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                       <td className="p-2 font-mono text-xs">
                         {format(new Date(metric.timestamp), "MMM d, HH:mm:ss")}
                       </td>
-                      <td
-                        className="p-2 truncate max-w-32"
-                        title={metric.screenName}
-                      >
-                        {metric.screenName}
+                      <td className="p-2 max-w-32">
+                        <div
+                          className="truncate"
+                          title={metric.routePath || metric.screenName}
+                        >
+                          <span className="font-medium">
+                            {metric.displayName || metric.screenName}
+                          </span>
+                          {metric.isDynamic && (
+                            <span className="text-xs text-blue-600 ml-1">
+                              [dynamic]
+                            </span>
+                          )}
+                        </div>
+                        {metric.routePath &&
+                          metric.routePath !== metric.screenName && (
+                            <div className="text-xs text-muted-foreground font-mono truncate mt-0.5">
+                              {metric.routePath}
+                            </div>
+                          )}
                       </td>
                       <td className="p-2">
                         <div className="flex items-center space-x-2">

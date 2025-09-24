@@ -87,6 +87,8 @@ const CollapsibleComponent = React.forwardRef<
   )
 })
 
+CollapsibleComponent.displayName = "CollapsibleComponent"
+
 const CollapsibleTrigger = React.forwardRef<
   React.ElementRef<"button">,
   React.ComponentPropsWithoutRef<"button">
@@ -200,6 +202,94 @@ export function AdvancedSearchForm({
 
   const watchedValues = form.watch()
 
+  // Define all callback functions first
+  const buildSearchQuery = React.useCallback(
+    (values: SearchFormValues): SearchQuery => {
+      const query: SearchQuery = {}
+
+      if (values.text?.trim()) query.text = values.text.trim()
+      if (values.devices?.length) query.devices = values.devices
+      if (values.platforms?.length) query.platforms = values.platforms
+      if (values.appVersions?.length) query.appVersions = values.appVersions
+      if (values.metricTypes?.length) query.metricTypes = values.metricTypes
+
+      if (values.dateRange?.from && values.dateRange?.to) {
+        query.dateRange = {
+          start: values.dateRange.from,
+          end: values.dateRange.to,
+        }
+      }
+
+      if (values.metrics && Object.keys(values.metrics).length > 0) {
+        query.metrics = values.metrics as MetricsRange
+      }
+
+      if (values.sortBy) query.sortBy = values.sortBy
+      if (values.sortOrder) query.sortOrder = values.sortOrder
+
+      return query
+    },
+    []
+  )
+
+  const updateSearchPreview = React.useCallback((query: SearchQuery) => {
+    const parts: string[] = []
+
+    if (query.text) parts.push(`"${query.text}"`)
+    if (query.devices?.length) parts.push(`${query.devices.length} devices`)
+    if (query.platforms?.length)
+      parts.push(`${query.platforms.join(", ")} platforms`)
+    if (query.appVersions?.length)
+      parts.push(`versions: ${query.appVersions.join(", ")}`)
+    if (query.metricTypes?.length)
+      parts.push(`metrics: ${query.metricTypes.join(", ")}`)
+    if (query.dateRange) {
+      const days = Math.ceil(
+        (query.dateRange.end.getTime() - query.dateRange.start.getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+      parts.push(`${days} days`)
+    }
+    if (query.metrics) {
+      Object.entries(query.metrics).forEach(([metric, range]) => {
+        if (range.min !== undefined || range.max !== undefined) {
+          parts.push(`${metric} range`)
+        }
+      })
+    }
+
+    setSearchPreview(parts.length ? parts.join(", ") : "All performance data")
+  }, [])
+
+  const handleSearch = React.useCallback(
+    async (searchQuery?: SearchQuery) => {
+      const query = searchQuery || buildSearchQuery(form.getValues())
+
+      // Validate query
+      const validation = SearchQueryBuilder.validateQuery(query)
+      if (!validation.isValid) {
+        validation.errors.forEach(error => {
+          form.setError("root", { message: error })
+        })
+        return
+      }
+
+      try {
+        setIsSearching(true)
+        const results = await searchService.search(query)
+        onSearch(query, results)
+      } catch (error) {
+        console.error("Search error:", error)
+        form.setError("root", {
+          message: "Search failed. Please try again.",
+        })
+      } finally {
+        setIsSearching(false)
+      }
+    },
+    [onSearch, form]
+  )
+
   // Load filter options on mount
   React.useEffect(() => {
     const loadFilterOptions = async () => {
@@ -231,7 +321,11 @@ export function AdvancedSearchForm({
 
       return () => clearTimeout(timeoutId)
     }
-  }, [watchedValues, autoSearch])
+  }, [
+    watchedValues,
+    autoSearch,
+    isSearching,
+  ])
 
   // Update search preview
   React.useEffect(() => {
@@ -240,87 +334,6 @@ export function AdvancedSearchForm({
       updateSearchPreview(searchQuery)
     }
   }, [watchedValues, showPreview])
-
-  const buildSearchQuery = (values: SearchFormValues): SearchQuery => {
-    const query: SearchQuery = {}
-
-    if (values.text?.trim()) query.text = values.text.trim()
-    if (values.devices?.length) query.devices = values.devices
-    if (values.platforms?.length) query.platforms = values.platforms
-    if (values.appVersions?.length) query.appVersions = values.appVersions
-    if (values.metricTypes?.length) query.metricTypes = values.metricTypes
-
-    if (values.dateRange?.from && values.dateRange?.to) {
-      query.dateRange = {
-        start: values.dateRange.from,
-        end: values.dateRange.to,
-      }
-    }
-
-    if (values.metrics && Object.keys(values.metrics).length > 0) {
-      query.metrics = values.metrics as MetricsRange
-    }
-
-    if (values.sortBy) query.sortBy = values.sortBy
-    if (values.sortOrder) query.sortOrder = values.sortOrder
-
-    return query
-  }
-
-  const updateSearchPreview = (query: SearchQuery) => {
-    const parts: string[] = []
-
-    if (query.text) parts.push(`"${query.text}"`)
-    if (query.devices?.length) parts.push(`${query.devices.length} devices`)
-    if (query.platforms?.length)
-      parts.push(`${query.platforms.join(", ")} platforms`)
-    if (query.appVersions?.length)
-      parts.push(`versions: ${query.appVersions.join(", ")}`)
-    if (query.metricTypes?.length)
-      parts.push(`metrics: ${query.metricTypes.join(", ")}`)
-    if (query.dateRange) {
-      const days = Math.ceil(
-        (query.dateRange.end.getTime() - query.dateRange.start.getTime()) /
-          (1000 * 60 * 60 * 24)
-      )
-      parts.push(`${days} days`)
-    }
-    if (query.metrics) {
-      Object.entries(query.metrics).forEach(([metric, range]) => {
-        if (range.min !== undefined || range.max !== undefined) {
-          parts.push(`${metric} range`)
-        }
-      })
-    }
-
-    setSearchPreview(parts.length ? parts.join(", ") : "All performance data")
-  }
-
-  const handleSearch = async (searchQuery?: SearchQuery) => {
-    const query = searchQuery || buildSearchQuery(form.getValues())
-
-    // Validate query
-    const validation = SearchQueryBuilder.validateQuery(query)
-    if (!validation.isValid) {
-      validation.errors.forEach(error => {
-        form.setError("root", { message: error })
-      })
-      return
-    }
-
-    try {
-      setIsSearching(true)
-      const results = await searchService.search(query)
-      onSearch(query, results)
-    } catch (error) {
-      console.error("Search error:", error)
-      form.setError("root", {
-        message: "Search failed. Please try again.",
-      })
-    } finally {
-      setIsSearching(false)
-    }
-  }
 
   const handleClearForm = () => {
     form.reset({

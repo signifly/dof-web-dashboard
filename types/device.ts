@@ -52,6 +52,12 @@ export interface DeviceMetricPoint {
   loadTime: number
   screenName: string
   sessionId: string
+  // Enhanced route information
+  routePath?: string
+  routePattern?: string
+  segments?: string[]
+  isDynamic?: boolean
+  displayName?: string
 }
 
 // Device health calculation input

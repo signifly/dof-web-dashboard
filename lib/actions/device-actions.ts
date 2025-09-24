@@ -9,6 +9,13 @@ import {
   HEALTH_SCORE_WEIGHTS,
   PERFORMANCE_THRESHOLDS,
 } from "@/types/device"
+import {
+  extractScreenName,
+  extractRoutePath,
+  extractRouteSegments,
+  getNormalizedRoutePattern,
+  getEnhancedRouteInfo,
+} from "@/lib/utils/screen-time-parser"
 
 /**
  * Get comprehensive device details including health score and trends
@@ -397,18 +404,72 @@ function transformMetricsToTimePoints(
 ): DeviceMetricPoint[] {
   const timePoints = new Map<string, DeviceMetricPoint>()
 
+  // First, create a map of screen_time data by timestamp for reference
+  const screenTimeMap = new Map<string, any>()
+
+  metrics
+    .filter(m => m.metric_type === "screen_time")
+    .forEach(metric => {
+      const routeInfo = getEnhancedRouteInfo(metric.context)
+      screenTimeMap.set(metric.timestamp, routeInfo)
+    })
+
+  // Sort screen time entries by timestamp to enable temporal lookup
+  const screenTimeEntries = Array.from(screenTimeMap.entries())
+    .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+
+  // Function to find the most recent screen_time data for a given timestamp
+  const findScreenTimeForTimestamp = (timestamp: string) => {
+    const targetTime = new Date(timestamp).getTime()
+
+    // Find the most recent screen_time entry before or at this timestamp
+    for (let i = screenTimeEntries.length - 1; i >= 0; i--) {
+      const [screenTimestamp, routeInfo] = screenTimeEntries[i]
+      const screenTime = new Date(screenTimestamp).getTime()
+
+      // If this screen_time is before or at our target time, use it
+      // Allow for a reasonable time window (10 seconds)
+      if (screenTime <= targetTime && (targetTime - screenTime) <= 10000) {
+        return routeInfo
+      }
+    }
+
+    // If no recent screen_time found, try the first one after (within 10 seconds)
+    for (const [screenTimestamp, routeInfo] of screenTimeEntries) {
+      const screenTime = new Date(screenTimestamp).getTime()
+      if (screenTime > targetTime && (screenTime - targetTime) <= 10000) {
+        return routeInfo
+      }
+    }
+
+    return null
+  }
+
   metrics.forEach(metric => {
     const timestamp = metric.timestamp
     const sessionId = metric.session_id || ""
 
     if (!timePoints.has(timestamp)) {
+      // Try to get route info from screen_time data first
+      let routeInfo = findScreenTimeForTimestamp(timestamp)
+
+      // If no screen_time data found, try extracting from the metric itself
+      if (!routeInfo || routeInfo.screenName === "Unknown") {
+        routeInfo = getEnhancedRouteInfo(metric.context)
+      }
+
       timePoints.set(timestamp, {
         timestamp,
         fps: 0,
         memory: 0,
         loadTime: 0,
-        screenName: (metric.context as any)?.screen_name || "Unknown",
+        screenName: routeInfo.screenName,
         sessionId,
+        routePath: routeInfo.routePath,
+        routePattern: routeInfo.routePattern,
+        segments: routeInfo.segments,
+        isDynamic: routeInfo.isDynamic,
+        displayName: routeInfo.displayName,
       })
     }
 
@@ -427,12 +488,18 @@ function transformMetricsToTimePoints(
       case "load_time":
         point.loadTime = metric.metric_value
         break
+      case "screen_time":
+        // Don't include screen_time metrics in the final data points
+        // as they're used for context only
+        break
     }
   })
 
-  return Array.from(timePoints.values()).sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-  )
+  return Array.from(timePoints.values())
+    .filter(point => point.fps > 0 || point.memory > 0 || point.loadTime > 0) // Only include points with actual metric data
+    .sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
 }
 
 /**
@@ -514,13 +581,15 @@ async function getDeviceSessionsWithHealth(
         )
       : undefined
 
-    // Count screen transitions (rough estimate from context changes)
-    const screenTransitions = sessionMetrics.filter(
-      (m, i, arr) =>
-        i > 0 &&
-        (m.context as any)?.screen_name !==
-          (arr[i - 1].context as any)?.screen_name
-    ).length
+    // Count screen transitions using enhanced route information
+    const screenTransitions = sessionMetrics.filter((m, i, arr) => {
+      if (i === 0) return false
+
+      const currentRoute = getNormalizedRoutePattern(m.context)
+      const previousRoute = getNormalizedRoutePattern(arr[i - 1].context)
+
+      return currentRoute !== previousRoute
+    }).length
 
     deviceSessions.push({
       session,
