@@ -84,7 +84,7 @@ export function SearchExample({ className }: SearchExampleProps) {
                     <div className="flex flex-wrap gap-2">
                       {searchQuery.text && (
                         <Badge variant="secondary">
-                          Text: "{searchQuery.text}"
+                          Text: &quot;{searchQuery.text}&quot;
                         </Badge>
                       )}
                       {searchQuery.devices &&
