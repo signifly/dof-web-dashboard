@@ -142,7 +142,9 @@ export function RecommendationsPanel({
             <div className="text-center text-muted-foreground">
               <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>No recommendations available at this time.</p>
-              <p className="text-sm mt-1">Performance analysis in progress...</p>
+              <p className="text-sm mt-1">
+                Performance analysis in progress...
+              </p>
             </div>
           </div>
         </CardContent>

@@ -71,34 +71,45 @@ export function ProactiveRecommendationsPanel({
   >(null)
 
   // Enhance recommendations with proactive indicators if missing
-  const enhancedRecommendations = recommendations.map(rec => ({
-    ...rec,
-    // Map properties to match expected interface
-    id: rec.recommendation_id || rec.id || `rec_${Math.random()}`,
-    impact: rec.impact_estimate || rec.impact || "medium",
-    effort: rec.effort_estimate || rec.effort || "medium",
-    priority_score: rec.priority_score || (
-      rec.priority === "high" ? 85 :
-      rec.priority === "medium" ? 65 :
-      rec.priority === "critical" ? 95 : 45
-    ),
-    actionable_steps: rec.implementation_steps || rec.actionable_steps || [],
-    estimated_improvement: rec.expected_improvement || rec.estimated_improvement || "Not specified",
-    related_metrics: rec.related_metrics || ["performance", "fps", "memory"],
-    implementation_time: rec.implementation_time || "1-2 weeks",
-    status: rec.status || "pending",
-    created_at: rec.created_at || new Date().toISOString(),
-    insight_id: rec.insight_id || `insight_${rec.recommendation_id}`,
-    prediction_based:
-      rec.prediction_based ||
-      rec.category.includes("performance_optimization") ||
-      rec.category.includes("route_") ||
-      false,
-    prevention_priority:
-      rec.prevention_priority ||
-      rec.priority ||
-      (rec.impact_estimate === "high" || rec.impact === "high" ? "high" : "medium"),
-  })).filter(rec => rec && rec.id) // Filter out any malformed recommendations
+  const enhancedRecommendations = recommendations
+    .map(rec => ({
+      ...rec,
+      // Map properties to match expected interface
+      id: rec.recommendation_id || rec.id || `rec_${Math.random()}`,
+      impact: rec.impact_estimate || rec.impact || "medium",
+      effort: rec.effort_estimate || rec.effort || "medium",
+      priority_score:
+        rec.priority_score ||
+        (rec.priority === "high"
+          ? 85
+          : rec.priority === "medium"
+            ? 65
+            : rec.priority === "critical"
+              ? 95
+              : 45),
+      actionable_steps: rec.implementation_steps || rec.actionable_steps || [],
+      estimated_improvement:
+        rec.expected_improvement ||
+        rec.estimated_improvement ||
+        "Not specified",
+      related_metrics: rec.related_metrics || ["performance", "fps", "memory"],
+      implementation_time: rec.implementation_time || "1-2 weeks",
+      status: rec.status || "pending",
+      created_at: rec.created_at || new Date().toISOString(),
+      insight_id: rec.insight_id || `insight_${rec.recommendation_id}`,
+      prediction_based:
+        rec.prediction_based ||
+        rec.category.includes("performance_optimization") ||
+        rec.category.includes("route_") ||
+        false,
+      prevention_priority:
+        rec.prevention_priority ||
+        rec.priority ||
+        (rec.impact_estimate === "high" || rec.impact === "high"
+          ? "high"
+          : "medium"),
+    }))
+    .filter(rec => rec && rec.id) // Filter out any malformed recommendations
 
   const filteredRecommendations =
     selectedCategory === "all"
@@ -216,7 +227,10 @@ export function ProactiveRecommendationsPanel({
           <CardContent className="p-4 text-center">
             <Brain className="h-6 w-6 text-blue-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-blue-600">
-              {enhancedRecommendations.filter(r => r.prediction_based === true).length}
+              {
+                enhancedRecommendations.filter(r => r.prediction_based === true)
+                  .length
+              }
             </div>
             <div className="text-sm text-muted-foreground">Predictive</div>
           </CardContent>
@@ -227,7 +241,9 @@ export function ProactiveRecommendationsPanel({
             <div className="text-2xl font-bold text-red-600">
               {
                 enhancedRecommendations.filter(
-                  r => r.prevention_priority === "critical" || r.priority === "critical"
+                  r =>
+                    r.prevention_priority === "critical" ||
+                    r.priority === "critical"
                 ).length
               }
             </div>
@@ -247,12 +263,14 @@ export function ProactiveRecommendationsPanel({
           <CardContent className="p-4 text-center">
             <Clock className="h-6 w-6 text-purple-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-purple-600">
-              {enhancedRecommendations.length > 0 ? Math.round(
-                enhancedRecommendations.reduce(
-                  (sum, r) => sum + (r.priority_score || 0),
-                  0
-                ) / enhancedRecommendations.length
-              ) : 0}
+              {enhancedRecommendations.length > 0
+                ? Math.round(
+                    enhancedRecommendations.reduce(
+                      (sum, r) => sum + (r.priority_score || 0),
+                      0
+                    ) / enhancedRecommendations.length
+                  )
+                : 0}
             </div>
             <div className="text-sm text-muted-foreground">Avg Priority</div>
           </CardContent>
@@ -336,10 +354,14 @@ export function ProactiveRecommendationsPanel({
                       </p>
                       <div className="flex items-center space-x-4 text-xs">
                         <span className="text-muted-foreground">
-                          Impact: {recommendation.estimated_improvement || "Not specified"}
+                          Impact:{" "}
+                          {recommendation.estimated_improvement ||
+                            "Not specified"}
                         </span>
                         <span className="text-muted-foreground">
-                          Time: {recommendation.implementation_time || "Not specified"}
+                          Time:{" "}
+                          {recommendation.implementation_time ||
+                            "Not specified"}
                         </span>
                         <span className="text-muted-foreground">
                           Priority: {recommendation.priority || "medium"}
@@ -490,8 +512,11 @@ export function ProactiveRecommendationsPanel({
                         <div className="flex justify-between items-center pt-3 border-t">
                           <div className="text-xs text-muted-foreground">
                             Category:{" "}
-                            {(recommendation.category || "general").replace("_", " ")} •
-                            Created:{" "}
+                            {(recommendation.category || "general").replace(
+                              "_",
+                              " "
+                            )}{" "}
+                            • Created:{" "}
                             {new Date(
                               recommendation.created_at || new Date()
                             ).toLocaleDateString()}
