@@ -7,11 +7,16 @@ import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { useRealtime } from "@/lib/contexts/realtime-context"
 import { ConnectionStatus } from "@/components/ui/connection-status"
+import { GlobalSearch } from "@/components/search/global-search"
 
 const navigationItems = [
   {
     name: "Dashboard",
     href: "/dashboard" as const,
+  },
+  {
+    name: "Search",
+    href: "/search" as const,
   },
   {
     name: "Metrics",
@@ -89,6 +94,11 @@ export function Header({
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Global Search */}
+          <div className="hidden lg:block">
+            <GlobalSearch variant="button" className="w-[280px]" />
+          </div>
+
           {/* Connection Status */}
           {showConnectionStatus && (
             <ConnectionStatus

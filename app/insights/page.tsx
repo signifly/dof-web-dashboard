@@ -18,7 +18,8 @@ export default async function InsightsPage() {
               Performance Insights
             </h1>
             <p className="text-muted-foreground">
-              Comprehensive performance analysis and optimization recommendations.
+              Comprehensive performance analysis and optimization
+              recommendations.
             </p>
           </div>
 

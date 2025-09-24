@@ -43,10 +43,16 @@ export class PerformancePredictionEngine {
     const primaryPrediction = predictions["7d"]
 
     // Ensure no NaN values in final prediction
-    const safeScore = isNaN(primaryPrediction.predictedScore) ? 50 : primaryPrediction.predictedScore
+    const safeScore = isNaN(primaryPrediction.predictedScore)
+      ? 50
+      : primaryPrediction.predictedScore
     const safeConfidence: [number, number] = [
-      isNaN(primaryPrediction.confidenceInterval[0]) ? 30 : primaryPrediction.confidenceInterval[0],
-      isNaN(primaryPrediction.confidenceInterval[1]) ? 70 : primaryPrediction.confidenceInterval[1]
+      isNaN(primaryPrediction.confidenceInterval[0])
+        ? 30
+        : primaryPrediction.confidenceInterval[0],
+      isNaN(primaryPrediction.confidenceInterval[1])
+        ? 70
+        : primaryPrediction.confidenceInterval[1],
     ]
 
     return {
@@ -138,7 +144,7 @@ export class PerformancePredictionEngine {
       return {
         slope: 0, // No trend with single point
         intercept: y[0], // Use the actual value
-        rSquared: 1 // Perfect fit with single point
+        rSquared: 1, // Perfect fit with single point
       }
     }
 
@@ -156,7 +162,7 @@ export class PerformancePredictionEngine {
       return {
         slope: 0,
         intercept: meanY,
-        rSquared: 0
+        rSquared: 0,
       }
     }
 

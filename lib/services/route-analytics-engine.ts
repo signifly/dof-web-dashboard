@@ -100,7 +100,7 @@ export class RouteAnalyticsEngine {
           source: sourceRoute.routePattern,
           target: targetRoute.routePattern,
           sourceSessions: sourceRoute.sessions?.length || 0,
-          targetSessions: targetRoute.sessions?.length || 0
+          targetSessions: targetRoute.sessions?.length || 0,
         })
 
         // Calculate correlation between routes
@@ -115,7 +115,7 @@ export class RouteAnalyticsEngine {
           strength: correlation.correlation_strength,
           impact: correlation.performance_impact,
           threshold: 0.05,
-          willInclude: correlation.correlation_strength > 0.05
+          willInclude: correlation.correlation_strength > 0.05,
         })
 
         // Significantly lowered correlation threshold to 0.05 for maximum insights with limited data
@@ -502,9 +502,7 @@ export class RouteAnalyticsEngine {
   /**
    * Generate seasonal patterns based on route data
    */
-  private generateSeasonalPatterns(
-    routeData: RoutePerformanceAnalysis
-  ): any[] {
+  private generateSeasonalPatterns(routeData: RoutePerformanceAnalysis): any[] {
     const patterns: any[] = []
 
     // Simple seasonal pattern detection for demo/testing
@@ -522,7 +520,7 @@ export class RouteAnalyticsEngine {
           confidence: 0.7,
           seasonal_strength: 0.6,
           next_predicted_peak: nextWeek.toISOString(),
-          detection_method: "trend_analysis"
+          detection_method: "trend_analysis",
         })
       }
     }
@@ -543,7 +541,10 @@ export class RouteAnalyticsEngine {
 
     // Generate recommendations based on predictions (including medium priority)
     predictions.forEach(prediction => {
-      if (prediction.recommendation_priority === "high" || prediction.recommendation_priority === "medium") {
+      if (
+        prediction.recommendation_priority === "high" ||
+        prediction.recommendation_priority === "medium"
+      ) {
         recommendations.push({
           recommendation_id: `pred_${Date.now()}_${Math.random()}`,
           priority: prediction.recommendation_priority,
@@ -556,17 +557,22 @@ export class RouteAnalyticsEngine {
             "Profile route performance bottlenecks",
             "Optimize critical rendering path",
             "Implement performance monitoring",
-            "Test improvements under load"
+            "Test improvements under load",
           ],
           expected_improvement: "15-25% performance boost",
-          deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          deadline: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000
+          ).toISOString(),
         })
       }
     })
 
     // Generate recommendations based on correlations
     correlations.forEach(correlation => {
-      if (correlation.performance_impact === "negative" && correlation.confidence_level > 0.5) {
+      if (
+        correlation.performance_impact === "negative" &&
+        correlation.confidence_level > 0.5
+      ) {
         recommendations.push({
           recommendation_id: `corr_${Date.now()}_${Math.random()}`,
           priority: "medium",
@@ -578,10 +584,12 @@ export class RouteAnalyticsEngine {
           implementation_steps: [
             "Investigate shared resources between routes",
             "Optimize route transition performance",
-            "Consider route-specific caching strategies"
+            "Consider route-specific caching strategies",
           ],
           expected_improvement: "10-15% correlation improvement",
-          deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+          deadline: new Date(
+            Date.now() + 14 * 24 * 60 * 60 * 1000
+          ).toISOString(),
         })
       }
     })
@@ -600,10 +608,12 @@ export class RouteAnalyticsEngine {
           implementation_steps: pattern.suggested_mitigation || [
             "Investigate pattern root cause",
             "Implement targeted optimizations",
-            "Monitor pattern resolution"
+            "Monitor pattern resolution",
           ],
           expected_improvement: "System-wide stability improvement",
-          deadline: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString()
+          deadline: new Date(
+            Date.now() + 21 * 24 * 60 * 60 * 1000
+          ).toISOString(),
         })
       }
     })

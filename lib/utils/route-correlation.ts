@@ -73,7 +73,7 @@ export class RouteCorrelationAnalyzer {
       correlationStrength: result.correlation_strength,
       sourceSessions: sourceRoute.sessions?.length || 0,
       targetSessions: targetRoute.sessions?.length || 0,
-      sampleSize: result.sample_size
+      sampleSize: result.sample_size,
     })
 
     return result
@@ -93,7 +93,8 @@ export class RouteCorrelationAnalyzer {
       if (xVal === 0 && yVal === 0) return 1 // Perfect match
       if (xVal === 0 || yVal === 0) return 0 // One is zero, no correlation
 
-      const relativeDiff = Math.abs(xVal - yVal) / Math.max(Math.abs(xVal), Math.abs(yVal))
+      const relativeDiff =
+        Math.abs(xVal - yVal) / Math.max(Math.abs(xVal), Math.abs(yVal))
       // Convert to correlation-like value: 1 - relativeDiff, capped between -1 and 1
       return Math.max(-1, Math.min(1, 1 - relativeDiff))
     }
