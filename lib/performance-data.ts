@@ -4,6 +4,11 @@ import {
   inferCPUUsage,
   PerformanceMetricsForInference,
 } from "@/lib/utils/cpu-inference"
+import {
+  extractScreenName,
+  getEnhancedRouteInfo,
+  parseScreenTimeContext
+} from "@/lib/utils/screen-time-parser"
 
 export type PerformanceMetric = Tables<"performance_metrics">
 export type PerformanceSession = Tables<"performance_sessions">
@@ -30,6 +35,10 @@ export interface MetricsTrend {
   cpu_usage: number
   load_time: number
   screen_name: string
+  route_path?: string
+  route_pattern?: string
+  is_dynamic?: boolean
+  display_name?: string
 }
 
 export interface SessionPerformance {
@@ -336,7 +345,7 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
 }
 
 /**
- * Get performance metrics trends over time
+ * Get performance metrics trends over time with enhanced screen_time data
  */
 export async function getPerformanceTrends(
   limit = 100
@@ -349,26 +358,113 @@ export async function getPerformanceTrends(
       .from("performance_metrics")
       .select("*")
       .order("timestamp", { ascending: true })
-      .limit(limit)
+      .limit(limit * 3) // Get more data to account for screen_time association
 
     if (error) {
       console.warn(`Performance trends error: ${error.message}`)
       return []
     }
 
-    // Group metrics by timestamp to create trend data points
-    const metricsGrouped = new Map<string, any>()
+    if (!data || data.length === 0) {
+      return []
+    }
 
-    data?.forEach(metric => {
+    // Transform metrics to time points using temporal association like device pages
+    const trends = transformMetricsToTimePoints(data)
+
+    // Get session data to infer CPU for points that don't have CPU data
+    const { data: sessions } = await supabase
+      .from("performance_sessions")
+      .select("id, device_type")
+
+    const sessionMap = new Map(sessions?.map(s => [s.id, s.device_type]) || [])
+
+    // Calculate inferred CPU and return final trends
+    const finalTrends = trends.map(point => {
+      if (point.cpu_usage === 0 && point.session_id) {
+        const deviceType = sessionMap.get(point.session_id) || "Unknown"
+        if (point.fps > 0 || point.memory_usage > 0 || point.load_time > 0) {
+          const inferenceInput: PerformanceMetricsForInference = {
+            fps: point.fps || 30,
+            memory_usage: point.memory_usage || 200,
+            load_time: point.load_time || 1000,
+            device_type: deviceType,
+          }
+          point.cpu_usage =
+            Math.round(inferCPUUsage(inferenceInput) * 100) / 100
+        }
+      }
+      return point
+    })
+
+    return finalTrends.slice(0, limit) // Return requested limit
+  } catch (error) {
+    console.error("Error fetching performance trends:", error)
+    return []
+  }
+}
+
+/**
+ * Transform metrics to time points with temporal screen_time association
+ * (Same logic as device pages)
+ */
+function transformMetricsToTimePoints(
+  metrics: PerformanceMetric[]
+): (MetricsTrend & { session_id?: string })[] {
+  // First, create a map of screen_time data by timestamp for reference
+  const screenTimeMap = new Map<string, any>()
+
+  metrics
+    .filter(m => m.metric_type === "screen_time")
+    .forEach(metric => {
+      const routeInfo = getEnhancedRouteInfo(metric.context)
+      screenTimeMap.set(metric.timestamp, routeInfo)
+    })
+
+  // Function to find the most recent screen_time data for a given timestamp
+  const findScreenTimeForTimestamp = (timestamp: string) => {
+    const targetTime = new Date(timestamp).getTime()
+    let closestEntry = null
+    let closestTimeDiff = Infinity
+
+    // Look for screen_time data within a 10-second window
+    for (const [screenTimestamp, routeInfo] of screenTimeMap.entries()) {
+      const screenTime = new Date(screenTimestamp).getTime()
+      const timeDiff = Math.abs(targetTime - screenTime)
+
+      // Only consider screen_time data from before or at the same time as the metric
+      if (screenTime <= targetTime && timeDiff <= 10000 && timeDiff < closestTimeDiff) {
+        closestTimeDiff = timeDiff
+        closestEntry = routeInfo
+      }
+    }
+
+    return closestEntry
+  }
+
+  // Group performance metrics by timestamp
+  const metricsGrouped = new Map<string, any>()
+
+  // Process non-screen_time metrics
+  metrics
+    .filter(m => m.metric_type !== "screen_time")
+    .forEach(metric => {
       const timestamp = metric.timestamp
       if (!metricsGrouped.has(timestamp)) {
+        // Find associated screen_time data
+        const screenTimeInfo = findScreenTimeForTimestamp(timestamp)
+
         metricsGrouped.set(timestamp, {
           timestamp,
           fps: 0,
           memory_usage: 0,
           cpu_usage: 0,
           load_time: 0,
-          screen_name: (metric.context as any)?.screen_name || "Unknown",
+          screen_name: screenTimeInfo?.displayName || extractScreenName(metric.context),
+          route_path: screenTimeInfo?.routePath,
+          route_pattern: screenTimeInfo?.routePattern,
+          is_dynamic: screenTimeInfo?.isDynamic || false,
+          display_name: screenTimeInfo?.displayName || extractScreenName(metric.context),
           session_id: metric.session_id,
         })
       }
@@ -396,36 +492,7 @@ export async function getPerformanceTrends(
       }
     })
 
-    // Get session data to infer CPU for points that don't have CPU data
-    const { data: sessions } = await supabase
-      .from("performance_sessions")
-      .select("id, device_type")
-
-    const sessionMap = new Map(sessions?.map(s => [s.id, s.device_type]) || [])
-
-    // Calculate inferred CPU for trend points that lack CPU data
-    const trends = Array.from(metricsGrouped.values()).map(point => {
-      if (point.cpu_usage === 0 && point.session_id) {
-        const deviceType = sessionMap.get(point.session_id) || "Unknown"
-        if (point.fps > 0 || point.memory_usage > 0 || point.load_time > 0) {
-          const inferenceInput: PerformanceMetricsForInference = {
-            fps: point.fps || 30,
-            memory_usage: point.memory_usage || 200,
-            load_time: point.load_time || 1000,
-            device_type: deviceType,
-          }
-          point.cpu_usage =
-            Math.round(inferCPUUsage(inferenceInput) * 100) / 100
-        }
-      }
-      return point
-    })
-
-    return trends
-  } catch (error) {
-    console.error("Error fetching performance trends:", error)
-    return []
-  }
+  return Array.from(metricsGrouped.values())
 }
 
 /**
@@ -470,7 +537,7 @@ export async function getSessionPerformance(
         memory_usage: 0,
         cpu_usage: 0,
         load_time: 0,
-        screen_name: (metric.context as any)?.screen_name || "Unknown",
+        screen_name: extractScreenName(metric.context),
       })
     }
 
