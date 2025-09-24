@@ -20,7 +20,6 @@ The main search form component that combines all other search components into a 
 
 ```tsx
 import { AdvancedSearchForm } from "@/components/search"
-
 ;<AdvancedSearchForm
   onSearch={(query, results) => {
     // Handle search results
@@ -52,7 +51,6 @@ A comprehensive date range picker with preset options and calendar interface.
 
 ```tsx
 import { DateRangePicker } from "@/components/search"
-
 ;<DateRangePicker
   value={dateRange}
   onChange={setDateRange}
@@ -76,7 +74,6 @@ Multi-select device picker with platform and version filtering.
 
 ```tsx
 import { DeviceSelector } from "@/components/search"
-
 ;<DeviceSelector
   value={selectedDevices}
   onChange={setSelectedDevices}
@@ -101,7 +98,6 @@ Advanced metrics filtering with sliders, inputs, and performance tier shortcuts.
 
 ```tsx
 import { MetricsRangeFilter } from "@/components/search"
-
 ;<MetricsRangeFilter
   value={metricsRange}
   onChange={setMetricsRange}
