@@ -1,13 +1,17 @@
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
 import {
+  calculateInferredCPU,
+  extractMetricsByType,
+} from "@/lib/utils/cpu-inference-helper"
+import {
   inferCPUUsage,
   PerformanceMetricsForInference,
 } from "@/lib/utils/cpu-inference"
 import {
   extractScreenName,
   getEnhancedRouteInfo,
-  parseScreenTimeContext
+  parseScreenTimeContext,
 } from "@/lib/utils/screen-time-parser"
 
 export type PerformanceMetric = Tables<"performance_metrics">
@@ -73,59 +77,7 @@ interface DeviceCalculation {
   lastSeen: string
 }
 
-/**
- * Calculate inferred CPU usage for a session based on its metrics
- */
-function calculateInferredCPU(
-  metrics: PerformanceMetric[],
-  deviceType: string
-): number {
-  // Get the latest values for each metric type
-  const fpsMetrics = metrics.filter(m => m.metric_type === "fps")
-  const memoryMetrics = metrics.filter(m => m.metric_type === "memory_usage")
-  const loadTimeMetrics = metrics.filter(
-    m =>
-      m.metric_type === "navigation_time" ||
-      m.metric_type === "screen_load" ||
-      m.metric_type === "load_time"
-  )
-
-  if (
-    fpsMetrics.length === 0 &&
-    memoryMetrics.length === 0 &&
-    loadTimeMetrics.length === 0
-  ) {
-    return 0 // No data to infer from
-  }
-
-  // Calculate averages
-  const avgFps =
-    fpsMetrics.length > 0
-      ? fpsMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-        fpsMetrics.length
-      : 30 // Default reasonable FPS if no data
-
-  const avgMemory =
-    memoryMetrics.length > 0
-      ? memoryMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-        memoryMetrics.length
-      : 200 // Default reasonable memory if no data
-
-  const avgLoadTime =
-    loadTimeMetrics.length > 0
-      ? loadTimeMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-        loadTimeMetrics.length
-      : 1000 // Default reasonable load time if no data
-
-  const inferenceInput: PerformanceMetricsForInference = {
-    fps: avgFps,
-    memory_usage: avgMemory,
-    load_time: avgLoadTime,
-    device_type: deviceType,
-  }
-
-  return inferCPUUsage(inferenceInput)
-}
+// CPU inference logic moved to utils/cpu-inference-helper.ts
 
 /**
  * Get overall performance summary statistics
@@ -171,35 +123,18 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
     const totalSessions = sessions?.length || 0
     const totalMetrics = metrics?.length || 0
 
-    // Calculate averages from normalized metrics
-    const fpsMetrics = metrics?.filter(m => m.metric_type === "fps") || []
-    const memoryMetrics =
-      metrics?.filter(m => m.metric_type === "memory_usage") || []
-    const loadTimeMetrics =
-      metrics?.filter(
-        m =>
-          m.metric_type === "navigation_time" ||
-          m.metric_type === "screen_load" ||
-          m.metric_type === "load_time"
-      ) || []
-
-    const avgFps =
-      fpsMetrics.length > 0
-        ? fpsMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-          fpsMetrics.length
-        : 0
-
-    const avgMemory =
-      memoryMetrics.length > 0
-        ? memoryMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-          memoryMetrics.length
-        : 0
-
-    const avgLoadTime =
-      loadTimeMetrics.length > 0
-        ? loadTimeMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-          loadTimeMetrics.length
-        : 0
+    // Calculate averages using helper functions
+    const { average: avgFps } = extractMetricsByType(metrics || [], "FPS", 0)
+    const { average: avgMemory } = extractMetricsByType(
+      metrics || [],
+      "MEMORY",
+      0
+    )
+    const { average: avgLoadTime } = extractMetricsByType(
+      metrics || [],
+      "LOAD_TIME",
+      0
+    )
 
     // Calculate inferred CPU usage
     let avgInferredCpu = 0
@@ -433,7 +368,11 @@ function transformMetricsToTimePoints(
       const timeDiff = Math.abs(targetTime - screenTime)
 
       // Only consider screen_time data from before or at the same time as the metric
-      if (screenTime <= targetTime && timeDiff <= 10000 && timeDiff < closestTimeDiff) {
+      if (
+        screenTime <= targetTime &&
+        timeDiff <= 10000 &&
+        timeDiff < closestTimeDiff
+      ) {
         closestTimeDiff = timeDiff
         closestEntry = routeInfo
       }
@@ -460,11 +399,13 @@ function transformMetricsToTimePoints(
           memory_usage: 0,
           cpu_usage: 0,
           load_time: 0,
-          screen_name: screenTimeInfo?.displayName || extractScreenName(metric.context),
+          screen_name:
+            screenTimeInfo?.displayName || extractScreenName(metric.context),
           route_path: screenTimeInfo?.routePath,
           route_pattern: screenTimeInfo?.routePattern,
           is_dynamic: screenTimeInfo?.isDynamic || false,
-          display_name: screenTimeInfo?.displayName || extractScreenName(metric.context),
+          display_name:
+            screenTimeInfo?.displayName || extractScreenName(metric.context),
           session_id: metric.session_id,
         })
       }
@@ -690,45 +631,27 @@ export async function getBuildPerformanceData(): Promise<any[]> {
         m => m.session_id && sessionIds.has(m.session_id)
       )
 
-      // Calculate averages
-      const fpsMetrics = versionMetrics.filter(m => m.metric_type === "fps")
-      const memoryMetrics = versionMetrics.filter(
-        m => m.metric_type === "memory_usage"
+      // Calculate averages using helper functions
+      const { average: avgFps } = extractMetricsByType(versionMetrics, "FPS", 0)
+      const { average: avgMemory } = extractMetricsByType(
+        versionMetrics,
+        "MEMORY",
+        0
       )
-      const loadTimeMetrics = versionMetrics.filter(
-        m =>
-          m.metric_type === "navigation_time" ||
-          m.metric_type === "screen_load" ||
-          m.metric_type === "load_time"
+      const { average: avgLoadTime } = extractMetricsByType(
+        versionMetrics,
+        "LOAD_TIME",
+        0
       )
-      const cpuMetrics = versionMetrics.filter(
-        m => m.metric_type === "cpu_usage"
+      const { average: avgCpu, values: cpuValues } = extractMetricsByType(
+        versionMetrics,
+        "CPU",
+        0
       )
 
-      const avgFps =
-        fpsMetrics.length > 0
-          ? fpsMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-            fpsMetrics.length
-          : 0
-      const avgMemory =
-        memoryMetrics.length > 0
-          ? memoryMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-            memoryMetrics.length
-          : 0
-      const avgLoadTime =
-        loadTimeMetrics.length > 0
-          ? loadTimeMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-            loadTimeMetrics.length
-          : 0
-      // Calculate inferred CPU for this version group
-      let avgCpu = 0
-      if (cpuMetrics.length > 0) {
-        // Use actual CPU data if available
-        avgCpu =
-          cpuMetrics.reduce((sum, m) => sum + m.metric_value, 0) /
-          cpuMetrics.length
-      } else {
-        // Infer CPU from other metrics
+      // If no direct CPU data, calculate inferred CPU
+      let finalAvgCpu = avgCpu
+      if (cpuValues.length === 0) {
         const cpuInferences: number[] = []
         group.sessions.forEach((session: any) => {
           const sessionMetrics = versionMetrics.filter(
@@ -743,7 +666,7 @@ export async function getBuildPerformanceData(): Promise<any[]> {
           }
         })
         if (cpuInferences.length > 0) {
-          avgCpu =
+          finalAvgCpu =
             cpuInferences.reduce((sum, cpu) => sum + cpu, 0) /
             cpuInferences.length
         }
@@ -785,7 +708,7 @@ export async function getBuildPerformanceData(): Promise<any[]> {
         avgFps: Math.round(avgFps * 10) / 10,
         avgMemory: Math.round(avgMemory),
         avgLoadTime: Math.round(avgLoadTime),
-        avgCpu: Math.round(avgCpu),
+        avgCpu: Math.round(finalAvgCpu),
         regressionScore,
         status,
         totalSessions: group.totalSessions,

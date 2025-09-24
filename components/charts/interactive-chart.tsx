@@ -180,13 +180,17 @@ function CustomTooltip({ active, payload, label, metric }: CustomTooltipProps) {
         {data.route_path && data.route_path !== data.screen_name && (
           <div className="flex items-start justify-between">
             <span className="text-muted-foreground text-sm">Route:</span>
-            <span className="text-xs font-mono text-right max-w-[200px] break-all">{data.route_path}</span>
+            <span className="text-xs font-mono text-right max-w-[200px] break-all">
+              {data.route_path}
+            </span>
           </div>
         )}
         {data.is_dynamic && (
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground text-sm">Type:</span>
-            <span className="text-xs text-blue-600 font-medium">🔗 Dynamic Route</span>
+            <span className="text-xs text-blue-600 font-medium">
+              🔗 Dynamic Route
+            </span>
           </div>
         )}
         <div className="flex items-center justify-between">

@@ -415,8 +415,9 @@ function transformMetricsToTimePoints(
     })
 
   // Sort screen time entries by timestamp to enable temporal lookup
-  const screenTimeEntries = Array.from(screenTimeMap.entries())
-    .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+  const screenTimeEntries = Array.from(screenTimeMap.entries()).sort(
+    ([a], [b]) => new Date(a).getTime() - new Date(b).getTime()
+  )
 
   // Function to find the most recent screen_time data for a given timestamp
   const findScreenTimeForTimestamp = (timestamp: string) => {
@@ -429,7 +430,7 @@ function transformMetricsToTimePoints(
 
       // If this screen_time is before or at our target time, use it
       // Allow for a reasonable time window (10 seconds)
-      if (screenTime <= targetTime && (targetTime - screenTime) <= 10000) {
+      if (screenTime <= targetTime && targetTime - screenTime <= 10000) {
         return routeInfo
       }
     }
@@ -437,7 +438,7 @@ function transformMetricsToTimePoints(
     // If no recent screen_time found, try the first one after (within 10 seconds)
     for (const [screenTimestamp, routeInfo] of screenTimeEntries) {
       const screenTime = new Date(screenTimestamp).getTime()
-      if (screenTime > targetTime && (screenTime - targetTime) <= 10000) {
+      if (screenTime > targetTime && screenTime - targetTime <= 10000) {
         return routeInfo
       }
     }
@@ -498,7 +499,8 @@ function transformMetricsToTimePoints(
   return Array.from(timePoints.values())
     .filter(point => point.fps > 0 || point.memory > 0 || point.loadTime > 0) // Only include points with actual metric data
     .sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
 }
 

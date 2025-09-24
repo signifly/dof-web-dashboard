@@ -389,9 +389,9 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                   />
                   <YAxis
                     label={{
-                      value: 'Measurements',
+                      value: "Measurements",
                       angle: -90,
-                      position: 'insideLeft'
+                      position: "insideLeft",
                     }}
                     tick={{ fontSize: 12 }}
                   />
@@ -420,18 +420,15 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground mt-2">
-                              {((data.count / metrics.length) * 100).toFixed(1)}% of total measurements
+                              {((data.count / metrics.length) * 100).toFixed(1)}
+                              % of total measurements
                             </p>
                           </div>
                         </div>
                       )
                     }}
                   />
-                  <Bar
-                    dataKey="count"
-                    fill="#3b82f6"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

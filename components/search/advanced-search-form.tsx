@@ -321,11 +321,7 @@ export function AdvancedSearchForm({
 
       return () => clearTimeout(timeoutId)
     }
-  }, [
-    watchedValues,
-    autoSearch,
-    isSearching,
-  ])
+  }, [watchedValues, autoSearch, isSearching])
 
   // Update search preview
   React.useEffect(() => {
