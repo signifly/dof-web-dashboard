@@ -1,6 +1,5 @@
 "use client"
 
-import { PerformanceRecommendation } from "@/types/insights"
 import { RoutePerformanceAnalysis } from "@/types/route-analytics"
 import {
   Card,
@@ -12,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useState } from "react"
 import {
   Lightbulb,
@@ -26,7 +25,6 @@ import {
   ArrowRight,
   Star,
   Calendar,
-  Users,
 } from "lucide-react"
 
 // Extended interface for proactive recommendations

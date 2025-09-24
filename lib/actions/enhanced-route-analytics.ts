@@ -1,14 +1,13 @@
 import { RouteAnalyticsEngine } from "@/lib/services/route-analytics-engine"
 import { UserJourneyTracker } from "@/lib/services/user-journey-tracker"
 import { getRoutePerformanceAnalysis } from "@/lib/route-performance-data"
-import { getSessionDetails } from "./session-actions"
 import { createClient } from "@/lib/supabase/server"
 import {
   RoutePerformanceAnalysis,
   RoutePerformancePrediction,
   RouteCorrelationAnalysis,
 } from "@/types/route-analytics"
-import { UserJourney, JourneyPattern } from "@/types/user-journey"
+import { JourneyPattern } from "@/types/user-journey"
 import { SeasonalPattern, ProactiveRecommendation } from "@/types/insights"
 import { SessionDetails } from "@/types/session"
 

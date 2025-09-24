@@ -188,7 +188,7 @@ export class EarlyWarningEngine {
    */
   private checkSeasonalPeakAlerts(
     seasonalPatterns: SeasonalPattern[],
-    currentPerformance: PerformanceSummary
+    currentPerformance: PerformanceSummary // TODO: Fix unused variable currentPerformance
   ): EarlyWarningAlert[] {
     const alerts: EarlyWarningAlert[] = []
 

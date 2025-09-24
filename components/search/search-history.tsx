@@ -17,13 +17,7 @@ import {
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import {
   History,
@@ -34,10 +28,8 @@ import {
   RotateCcw,
   TrendingUp,
   Calendar,
-  Filter,
   X,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { SearchQuery } from "@/lib/services/search-service"
 
 interface SearchHistoryEntry {
@@ -69,7 +61,7 @@ const RECENT_SEARCHES_KEY = "recent-searches"
 const SEARCH_FREQUENCY_KEY = "search-frequency"
 
 export function SearchHistory({
-  currentQuery,
+  _currentQuery,
   onLoadHistory,
   onNewSearch,
   className,
@@ -278,7 +270,7 @@ export function SearchHistory({
   }
 
   // Get recent searches (last 7 days)
-  const getRecentSearches = (): SearchHistoryEntry[] => {
+  const _getRecentSearches = (): SearchHistoryEntry[] => {
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 

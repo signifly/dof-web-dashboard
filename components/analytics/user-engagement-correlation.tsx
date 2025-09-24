@@ -23,7 +23,7 @@ const generateEngagementData = (
   return performanceData.map(perf => {
     // Simulate correlation: better FPS = higher engagement
     const fpsQuality = perf.fps / 60 // normalize to 0-1
-    const memoryImpact = Math.max(0, 1 - perf.memory_usage / 500) // normalize memory impact
+    const _memoryImpact = Math.max(0, 1 - perf.memory_usage / 500) // normalize memory impact
 
     return {
       timestamp: perf.timestamp,

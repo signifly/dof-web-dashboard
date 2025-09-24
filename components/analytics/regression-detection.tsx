@@ -105,7 +105,7 @@ const generateRegressionData = (builds: BuildPerformance[]) => {
 }
 
 export function RegressionDetection({
-  performanceData,
+  _performanceData,
 }: RegressionDetectionProps) {
   const [builds, setBuilds] = useState<BuildPerformance[]>([])
   const [loading, setLoading] = useState(true)

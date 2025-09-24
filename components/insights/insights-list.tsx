@@ -21,7 +21,7 @@ interface InsightsListProps {
 }
 
 export function InsightsList({ insights }: InsightsListProps) {
-  const getInsightIcon = (type: string, category: string) => {
+  const getInsightIcon = (type: string, _category: string) => {
     switch (type) {
       case "trend_decline":
         return <TrendingDown className="h-4 w-4 text-red-600" />

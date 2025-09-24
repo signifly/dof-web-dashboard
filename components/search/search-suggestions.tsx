@@ -2,18 +2,12 @@
 
 import * as React from "react"
 import { useState, useEffect, useRef, useCallback } from "react"
-import {
-  Command,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -28,11 +22,7 @@ import {
   Loader2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import {
-  SearchSuggestion,
-  searchService,
-  SearchQuery,
-} from "@/lib/services/search-service"
+import { SearchSuggestion, searchService } from "@/lib/services/search-service"
 
 interface SearchSuggestionsProps {
   value: string

@@ -132,7 +132,7 @@ export function RefreshSettings({
           {sections.includes("intervals") && (
             <div className="grid grid-cols-2 gap-4">
               {intervalSettings.slice(0, 2).map(setting => {
-                const Icon = setting.icon
+                const _Icon = setting.icon
                 return (
                   <div key={setting.key} className="space-y-2">
                     <div className="flex items-center gap-2">

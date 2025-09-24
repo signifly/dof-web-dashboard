@@ -8,7 +8,7 @@ export class RouteCorrelationAnalyzer {
   async analyzeRouteRelationship(
     sourceRoute: RoutePerformanceData,
     targetRoute: RoutePerformanceData,
-    appAverages: { avgFps: number; avgMemory: number; avgCpu: number }
+    appAverages: { avgFps: number; avgMemory: number; avgCpu: number } // TODO: Fix unused variable appAverages
   ): Promise<RouteCorrelationAnalysis> {
     // Calculate correlation strength using Pearson correlation coefficient
     const fpsCorrelation = this.calculateCorrelation(

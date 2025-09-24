@@ -1,4 +1,4 @@
-import { createClient, createServiceClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
 import {
   calculateInferredCPU,
@@ -11,7 +11,6 @@ import {
 import {
   extractScreenName,
   getEnhancedRouteInfo,
-  parseScreenTimeContext,
 } from "@/lib/utils/screen-time-parser"
 
 export type PerformanceMetric = Tables<"performance_metrics">

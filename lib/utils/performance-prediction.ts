@@ -7,13 +7,7 @@ import {
   PredictionResult,
   LinearRegressionResult,
 } from "@/types/route-analytics"
-import {
-  PerformancePrediction,
-  PerformancePredictionModel,
-  SeasonalPattern,
-  TimeSeriesDecomposition,
-  PredictionFactor,
-} from "@/types/insights"
+import { PerformancePrediction, SeasonalPattern } from "@/types/insights"
 import { TimeSeriesAnalysis } from "./statistical-analysis"
 import { MetricsTrend } from "@/lib/performance-data"
 
@@ -152,7 +146,7 @@ export class PerformancePredictionEngine {
     const sumY = y.reduce((sum, val) => sum + val, 0)
     const sumXY = x.reduce((sum, val, i) => sum + val * y[i], 0)
     const sumXX = x.reduce((sum, val) => sum + val * val, 0)
-    const sumYY = y.reduce((sum, val) => sum + val * val, 0)
+    const _sumYY = y.reduce((sum, val) => sum + val * val, 0)
 
     const denominator = n * sumXX - sumX * sumX
 

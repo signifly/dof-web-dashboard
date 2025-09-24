@@ -120,7 +120,7 @@ export function ConnectionStatusBadge({
   onReconnect,
   className,
 }: ConnectionStatusBadgeProps) {
-  const getVariant = () => {
+  const _getVariant = () => {
     if (error) return "destructive"
     if (isConnected) return "default"
     return "secondary"

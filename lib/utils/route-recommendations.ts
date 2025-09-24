@@ -105,7 +105,7 @@ export function assessDeviceRouteCompatibility(
     "low_end",
   ]
 
-  deviceTiers.forEach((tier, index) => {
+  deviceTiers.forEach((tier, _index) => {
     // Simulate device tier analysis based on performance metrics
     // In real implementation, this would analyze actual device data
     let performanceScore = 80

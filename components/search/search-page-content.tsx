@@ -18,7 +18,7 @@ export function SearchPageContent() {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState<SearchQuery>({})
   const [results, setResults] = useState<SearchResultsType | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, __setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Load initial query from URL parameters

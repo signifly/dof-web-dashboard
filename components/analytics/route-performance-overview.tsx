@@ -203,7 +203,7 @@ export function RoutePerformanceOverview({
           <CardContent>
             {summary.bestPerformingRoutes.length > 0 ? (
               <div className="space-y-3">
-                {summary.bestPerformingRoutes.map((route, index) => (
+                {summary.bestPerformingRoutes.map((route, _index) => (
                   <div
                     key={`${route.routeName}-${route.routePattern}`}
                     className="flex items-center justify-between p-3 bg-green-50 rounded-lg dark:bg-green-950/20"
@@ -244,7 +244,7 @@ export function RoutePerformanceOverview({
           <CardContent>
             {summary.worstPerformingRoutes.length > 0 ? (
               <div className="space-y-3">
-                {summary.worstPerformingRoutes.map((route, index) => (
+                {summary.worstPerformingRoutes.map((route, _index) => (
                   <div
                     key={`${route.routeName}-${route.routePattern}`}
                     className="flex items-center justify-between p-3 bg-red-50 rounded-lg dark:bg-red-950/20"

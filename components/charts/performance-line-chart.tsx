@@ -13,7 +13,7 @@ import {
 import { format } from "date-fns"
 import { MetricsTrend } from "@/lib/performance-data"
 
-interface DataPoint {
+interface _DataPoint {
   timestamp: string
   [key: string]: string | number
 }

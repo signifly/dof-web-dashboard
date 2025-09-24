@@ -1,10 +1,5 @@
 import { MetricCard } from "@/components/charts/metric-card"
 import { PerformanceSummary } from "@/lib/performance-data"
-import {
-  getPerformanceGrade,
-  getCpuGrade,
-  getMemoryGrade,
-} from "@/lib/utils/performance"
 
 interface PerformanceSummaryCardsProps {
   data: PerformanceSummary

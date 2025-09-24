@@ -31,7 +31,7 @@ export function PlatformBreakdown({ data }: PlatformBreakdownProps) {
         <CardTitle>Platform Breakdown</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {data.map((platform, index) => {
+        {data.map((platform, _index) => {
           const percentage =
             totalSessions > 0 ? (platform.count / totalSessions) * 100 : 0
 

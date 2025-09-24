@@ -25,7 +25,7 @@ interface DeviceMetricsProps {
   metrics: DeviceMetricPoint[]
 }
 
-export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
+export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
   // Prepare chart data
   const chartData = metrics.map(metric => ({
     ...metric,
@@ -219,7 +219,7 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                 <Tooltip
                   labelFormatter={label => `Time: ${label}`}
                   formatter={(value: number, name: string, props: any) => {
-                    const data = props.payload
+                    const _data = props.payload
                     return [`${value.toFixed(1)} FPS`, "FPS"]
                   }}
                   labelStyle={{ marginBottom: "8px" }}
@@ -338,7 +338,7 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, value, percent }: any) =>
+                    label={({ name, _value, percent }: any) =>
                       `${name}: ${((percent as number) * 100).toFixed(1)}%`
                     }
                     outerRadius={80}
@@ -396,7 +396,7 @@ export function DeviceMetrics({ deviceId, metrics }: DeviceMetricsProps) {
                     tick={{ fontSize: 12 }}
                   />
                   <Tooltip
-                    content={({ active, payload, label }) => {
+                    content={({ active, payload, _label }) => {
                       if (!active || !payload?.length) return null
 
                       const data = payload[0].payload

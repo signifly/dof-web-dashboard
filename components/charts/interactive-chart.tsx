@@ -15,10 +15,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   Brush,
-  ReferenceLine,
-  ReferenceArea,
 } from "recharts"
 import { format, parseISO } from "date-fns"
 import { cn } from "@/lib/utils"
@@ -29,7 +26,6 @@ import {
   ZoomOut,
   RotateCcw,
   Download,
-  Maximize2,
   AlertTriangle,
   Info,
   CheckCircle,
@@ -44,7 +40,6 @@ import {
   transformDataForChart,
   calculateChartDomain,
   generatePerformanceAnnotations,
-  getPerformanceColor,
   chartColorSchemes,
 } from "@/lib/utils/chart-helpers"
 
@@ -53,9 +48,6 @@ import type {
   InteractiveChartProps,
   ChartDataPoint,
   ChartAnnotation,
-  BrushSelection,
-  ZoomState,
-  defaultChartConfig,
 } from "@/types/chart"
 
 // Chart toolbar component
@@ -152,7 +144,12 @@ interface CustomTooltipProps {
   metric: string
 }
 
-function CustomTooltip({ active, payload, label, metric }: CustomTooltipProps) {
+function CustomTooltip({
+  active,
+  payload,
+  _label,
+  metric,
+}: CustomTooltipProps) {
   if (!active || !payload?.length) return null
 
   const data = payload[0].payload as ChartDataPoint
@@ -232,6 +229,7 @@ interface AnnotationMarkerProps {
   y: number
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function AnnotationMarker({ annotation, x, y }: AnnotationMarkerProps) {
   const [showTooltip, setShowTooltip] = useState(false)
 
@@ -303,7 +301,7 @@ export function InteractiveChart({
   chartType,
   title,
   height = 400,
-  width,
+  _width,
   enableBrush = true,
   enableZoom = true,
   enableExport = true,
@@ -317,10 +315,10 @@ export function InteractiveChart({
   className,
   ariaLabel,
   ariaDescription,
-  ...props
+  ..._props
 }: InteractiveChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
-  const [containerDimensions, setContainerDimensions] = useState({
+  const [__containerDimensions, setContainerDimensions] = useState({
     width: 0,
     height: 0,
   })
@@ -377,7 +375,7 @@ export function InteractiveChart({
     onZoomChange: onZoom,
   })
 
-  const { brushState, brushHandlers, getSelectedData } = useChartBrush({
+  const { _brushState, brushHandlers, _getSelectedData } = useChartBrush({
     onSelectionChange: onBrush,
   })
 

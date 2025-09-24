@@ -46,7 +46,7 @@ interface HeaderProps {
 }
 
 export function Header({
-  title = "Dashboard",
+  _title = "Dashboard",
   showConnectionStatus = true,
 }: HeaderProps) {
   const pathname = usePathname()

@@ -6,7 +6,6 @@ import {
   JourneyPattern,
 } from "@/types/user-journey"
 import { Database } from "@/types/database"
-import { SessionDetails } from "@/types/session"
 import { PerformanceSession, PerformanceMetric } from "@/lib/performance-data"
 import { createClient } from "@/lib/supabase/server"
 
@@ -343,7 +342,7 @@ export class UserJourneyTracker {
     })
 
     // Convert screen groups to route visits
-    const sessionStart = new Date(session.session_start).getTime()
+    const _sessionStart = new Date(session.session_start).getTime()
     let visitIndex = 0
 
     for (const [screenName, screenMetrics] of Array.from(

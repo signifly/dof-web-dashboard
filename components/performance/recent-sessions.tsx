@@ -25,7 +25,7 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
     )
   }
 
-  const formatDuration = (seconds: number | null) => {
+  const _formatDuration = (seconds: number | null) => {
     if (!seconds) return "Unknown"
     if (seconds < 60) return `${Math.round(seconds)}s`
     const minutes = Math.floor(seconds / 60)
@@ -49,7 +49,7 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
     }
   }
 
-  const getPerformanceColor = (fps: number | null) => {
+  const _getPerformanceColor = (fps: number | null) => {
     if (!fps) return "bg-gray-500"
     if (fps >= 50) return "bg-green-900/200"
     if (fps >= 30) return "bg-yellow-900/200"

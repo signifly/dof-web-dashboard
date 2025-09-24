@@ -24,10 +24,6 @@ import { Download, RotateCcw, Eye, EyeOff, ZoomIn, ZoomOut } from "lucide-react"
 import { useChartZoom } from "@/hooks/use-chart-zoom"
 import { useChartBrush } from "@/hooks/use-chart-brush"
 import { useChartExport } from "@/hooks/use-chart-export"
-import {
-  chartColorSchemes,
-  transformDataForChart,
-} from "@/lib/utils/chart-helpers"
 
 import type { MetricsTrend } from "@/lib/performance-data"
 
@@ -228,7 +224,7 @@ export function MultiSeriesChart({
     onZoomChange: onZoom,
   })
 
-  const { brushState, brushHandlers } = useChartBrush({
+  const { _brushState, brushHandlers } = useChartBrush({
     onSelectionChange: onBrush,
   })
 

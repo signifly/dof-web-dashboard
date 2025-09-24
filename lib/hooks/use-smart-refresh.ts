@@ -226,7 +226,7 @@ export function useSmartRefresh<T>(
     })
   }
 
-  const scheduleRefresh = useCallback(() => {
+  const _scheduleRefresh = useCallback(() => {
     scheduleRefreshRef.current?.()
   }, [])
 

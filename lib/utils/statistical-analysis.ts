@@ -553,7 +553,7 @@ export class TimeSeriesAnalysis {
 
     // Forecast future periods
     const forecast: number[] = [...smoothed]
-    let lastSmoothed = s
+    const lastSmoothed = s
 
     for (let i = 0; i < periods; i++) {
       forecast.push(lastSmoothed)
@@ -834,7 +834,7 @@ export class TimeSeriesAnalysis {
     isStart: boolean
   ): string {
     const periodNum = parseInt(period)
-    const now = new Date()
+    const _now = new Date()
 
     switch (patternType) {
       case "hourly":

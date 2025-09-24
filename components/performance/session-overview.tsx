@@ -37,7 +37,7 @@ export function SessionOverview({ summary, isLoading }: SessionOverviewProps) {
     )
   }
 
-  const formatDuration = (duration: number | null) => {
+  const _formatDuration = (duration: number | null) => {
     if (!duration) return "Unknown"
     if (duration < 60) return `${Math.round(duration)}s`
     if (duration < 3600) return `${Math.round(duration / 60)}m`

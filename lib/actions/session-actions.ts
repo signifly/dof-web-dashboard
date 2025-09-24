@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { PerformanceSession, PerformanceMetric } from "@/lib/performance-data"
+import { PerformanceMetric } from "@/lib/performance-data"
 import {
   SessionDetails,
   SessionMetricsTimeline,
@@ -303,7 +303,7 @@ function calculateRiskLevel(
     avgCpu: number
     avgLoadTime: number
   },
-  isActive: boolean
+  isActive: boolean // TODO: Fix unused variable isActive
 ): "low" | "medium" | "high" {
   const { avgFps, avgMemory, avgCpu, avgLoadTime } = healthIndicators
 

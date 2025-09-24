@@ -535,7 +535,7 @@ export class RouteAnalyticsEngine {
     correlations: any[],
     predictions: any[],
     patterns: any[],
-    routeData: RoutePerformanceAnalysis
+    routeData: RoutePerformanceAnalysis // TODO: Fix unused variable routeData
   ): any[] {
     const recommendations: any[] = []
 
