@@ -254,7 +254,7 @@ export function JourneyFlowChart({
                 <div className="space-y-3 pt-4 border-t">
                   <h4 className="font-medium text-sm">Journey Insights</h4>
                   <div className="space-y-2">
-                    <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg dark:bg-gray-800">
                       <div className="flex-shrink-0">
                         {pattern.completion_rate > 0.7 ? (
                           <TrendingUp className="h-4 w-4 text-green-500 mt-0.5" />
@@ -281,7 +281,7 @@ export function JourneyFlowChart({
                     </div>
 
                     {pattern.optimization_potential > 50 && (
-                      <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg dark:bg-blue-950/50">
                         <TrendingUp className="h-4 w-4 text-blue-500 mt-0.5" />
                         <div className="flex-1">
                           <div className="text-sm font-medium">

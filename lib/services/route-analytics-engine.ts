@@ -88,11 +88,20 @@ export class RouteAnalyticsEngine {
     const correlations: RouteCorrelationAnalysis[] = []
     const routes = routeData.routes
 
+    console.log(`🔍 Starting correlation analysis with ${routes.length} routes`)
+
     // Analyze all route pairs for correlations
     for (let i = 0; i < routes.length; i++) {
       for (let j = i + 1; j < routes.length; j++) {
         const sourceRoute = routes[i]
         const targetRoute = routes[j]
+
+        console.log(`📊 Analyzing correlation between:`, {
+          source: sourceRoute.routePattern,
+          target: targetRoute.routePattern,
+          sourceSessions: sourceRoute.sessions?.length || 0,
+          targetSessions: targetRoute.sessions?.length || 0
+        })
 
         // Calculate correlation between routes
         const correlation =
@@ -102,12 +111,21 @@ export class RouteAnalyticsEngine {
             routeData.appAverages
           )
 
-        // Lowered correlation threshold to 0.1 for better insights with limited data
-        if (correlation.correlation_strength > 0.1) {
+        console.log(`📈 Correlation result:`, {
+          strength: correlation.correlation_strength,
+          impact: correlation.performance_impact,
+          threshold: 0.05,
+          willInclude: correlation.correlation_strength > 0.05
+        })
+
+        // Significantly lowered correlation threshold to 0.05 for maximum insights with limited data
+        if (correlation.correlation_strength > 0.05) {
           correlations.push(correlation)
         }
       }
     }
+
+    console.log(`✅ Found ${correlations.length} correlations above threshold`)
 
     return correlations.sort(
       (a, b) => b.correlation_strength - a.correlation_strength

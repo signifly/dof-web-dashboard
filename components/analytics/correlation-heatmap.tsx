@@ -247,17 +247,17 @@ export function CorrelationHeatmap({
               </div>
 
               <div className="grid grid-cols-3 gap-4 text-xs">
-                <div className="text-center p-2 bg-gray-50 rounded">
+                <div className="text-center p-2 bg-gray-50 rounded dark:bg-gray-800">
                   <div className="font-medium">
                     {Math.round(correlation.confidence_level * 100)}%
                   </div>
                   <div className="text-muted-foreground">Confidence</div>
                 </div>
-                <div className="text-center p-2 bg-gray-50 rounded">
+                <div className="text-center p-2 bg-gray-50 rounded dark:bg-gray-800">
                   <div className="font-medium">{correlation.sample_size}</div>
                   <div className="text-muted-foreground">Sample Size</div>
                 </div>
-                <div className="text-center p-2 bg-gray-50 rounded">
+                <div className="text-center p-2 bg-gray-50 rounded dark:bg-gray-800">
                   <div className="font-medium">
                     {Math.round(correlation.statistical_significance * 100)}%
                   </div>
@@ -269,11 +269,11 @@ export function CorrelationHeatmap({
               {selectedCorrelation === correlation && (
                 <div className="mt-4 pt-4 border-t space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <div className="font-medium text-sm text-blue-800 mb-2">
+                    <div className="p-3 bg-blue-50 rounded-lg dark:bg-blue-950/50">
+                      <div className="font-medium text-sm text-blue-800 mb-2 dark:text-blue-200">
                         Performance Impact Analysis
                       </div>
-                      <ul className="text-xs text-blue-700 space-y-1">
+                      <ul className="text-xs text-blue-700 space-y-1 dark:text-blue-300">
                         {correlation.performance_impact === "positive" && (
                           <>
                             <li>
@@ -310,11 +310,11 @@ export function CorrelationHeatmap({
                       </ul>
                     </div>
 
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <div className="font-medium text-sm text-gray-800 mb-2">
+                    <div className="p-3 bg-gray-50 rounded-lg dark:bg-gray-800">
+                      <div className="font-medium text-sm text-gray-800 mb-2 dark:text-gray-200">
                         Optimization Recommendations
                       </div>
-                      <ul className="text-xs text-gray-700 space-y-1">
+                      <ul className="text-xs text-gray-700 space-y-1 dark:text-gray-300">
                         {correlation.correlation_type === "memory_leak" && (
                           <>
                             <li>• Review memory management in both routes</li>

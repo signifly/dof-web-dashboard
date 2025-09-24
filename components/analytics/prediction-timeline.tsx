@@ -181,7 +181,7 @@ export function PredictionTimeline({
           {filteredPredictions.slice(0, 8).map((prediction, index) => (
             <div
               key={`${prediction.route_pattern}-${index}`}
-              className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
@@ -228,7 +228,7 @@ export function PredictionTimeline({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="text-center p-3 bg-white border rounded-lg">
+                <div className="text-center p-3 bg-white border rounded-lg dark:bg-gray-800">
                   <div
                     className={`text-2xl font-bold mb-1 ${getPerformanceColor(prediction.predicted_performance_score)}`}
                   >
@@ -240,8 +240,8 @@ export function PredictionTimeline({
                 </div>
 
                 {showConfidenceIntervals && (
-                  <div className="text-center p-3 bg-white border rounded-lg">
-                    <div className="text-sm font-medium text-gray-600 mb-1">
+                  <div className="text-center p-3 bg-white border rounded-lg dark:bg-gray-800">
+                    <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
                       {Math.round(prediction.confidence_interval[0])} -{" "}
                       {Math.round(prediction.confidence_interval[1])}
                     </div>
@@ -261,8 +261,8 @@ export function PredictionTimeline({
                   </div>
                 )}
 
-                <div className="text-center p-3 bg-white border rounded-lg">
-                  <div className="text-sm font-medium text-gray-600 mb-1">
+                <div className="text-center p-3 bg-white border rounded-lg dark:bg-gray-800">
+                  <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
                     {Math.round(prediction.forecast_accuracy * 100)}%
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -278,7 +278,7 @@ export function PredictionTimeline({
               {/* Prediction Insights */}
               <div className="space-y-2">
                 {prediction.predicted_performance_score < 50 && (
-                  <div className="flex items-start space-x-2 p-2 bg-red-50 border border-red-200 rounded">
+                  <div className="flex items-start space-x-2 p-2 bg-red-50 border border-red-200 rounded dark:bg-red-950/50 dark:border-red-800">
                     <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
                     <div className="text-sm">
                       <div className="font-medium text-red-800">
@@ -294,7 +294,7 @@ export function PredictionTimeline({
 
                 {prediction.trend_direction === "degrading" &&
                   prediction.predicted_performance_score > 50 && (
-                    <div className="flex items-start space-x-2 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                    <div className="flex items-start space-x-2 p-2 bg-yellow-50 border border-yellow-200 rounded dark:bg-yellow-950/50 dark:border-yellow-800">
                       <TrendingDown className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                       <div className="text-sm">
                         <div className="font-medium text-yellow-800">
@@ -309,7 +309,7 @@ export function PredictionTimeline({
                   )}
 
                 {prediction.trend_direction === "improving" && (
-                  <div className="flex items-start space-x-2 p-2 bg-green-50 border border-green-200 rounded">
+                  <div className="flex items-start space-x-2 p-2 bg-green-50 border border-green-200 rounded dark:bg-green-950/50 dark:border-green-800">
                     <TrendingUp className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                     <div className="text-sm">
                       <div className="font-medium text-green-800">
@@ -329,7 +329,7 @@ export function PredictionTimeline({
                 <div className="mt-3 pt-3 border-t">
                   <div className="flex items-center space-x-2 mb-2">
                     <Target className="h-3 w-3 text-gray-500" />
-                    <div className="text-xs font-medium text-gray-600">
+                    <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
                       Key Factors:
                     </div>
                   </div>

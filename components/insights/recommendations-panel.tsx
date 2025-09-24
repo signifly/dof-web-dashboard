@@ -137,11 +137,13 @@ export function RecommendationsPanel({
         <CardHeader>
           <CardTitle>AI Recommendations</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No recommendations available at this time.</p>
-            <p className="text-sm mt-1">Performance analysis in progress...</p>
+        <CardContent className="p-0">
+          <div className="h-96 flex items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No recommendations available at this time.</p>
+              <p className="text-sm mt-1">Performance analysis in progress...</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -159,8 +161,8 @@ export function RecommendationsPanel({
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-0">
+        <div className="h-96 overflow-y-auto p-6 space-y-4">
           {visibleRecommendations.map(recommendation => (
             <div
               key={recommendation.id}
