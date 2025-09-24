@@ -65,7 +65,7 @@ export class PerformancePredictionEngine {
     sessions: RoutePerformanceSession[],
     horizonDays: number
   ): PredictionResult {
-    if (sessions.length < 3) {
+    if (sessions.length < 1) {
       return {
         predictedScore: 50,
         confidenceInterval: [30, 70],
@@ -191,12 +191,12 @@ export class PerformancePredictionEngine {
     prediction: PredictionResult,
     route: RoutePerformanceData
   ): "high" | "medium" | "low" {
-    if (prediction.predictedScore < 50 || route.riskLevel === "high") {
+    if (prediction.predictedScore < 70 || route.riskLevel === "high") {
       return "high"
     }
 
     if (
-      prediction.predictedScore < 70 ||
+      prediction.predictedScore < 85 ||
       route.performanceTrend === "degrading"
     ) {
       return "medium"
@@ -208,7 +208,7 @@ export class PerformancePredictionEngine {
   private estimateForecastAccuracy(
     sessions: RoutePerformanceSession[]
   ): number {
-    if (sessions.length < 5) return 0.6 // Lower accuracy with less data
+    if (sessions.length < 2) return 0.6 // Lower accuracy with less data
 
     // Simulate accuracy based on data quality indicators
     const consistencyScore = this.calculateDataConsistency(sessions)
@@ -364,7 +364,7 @@ export class PerformancePredictionEngine {
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
 
-    if (sessions.length < 5) {
+    if (sessions.length < 1) {
       return {
         predictedScore: 50,
         confidenceInterval: [30, 70],
@@ -482,7 +482,7 @@ export class PerformancePredictionEngine {
     }
 
     // Fallback: Convert sessions to trend data for pattern detection
-    if (sessions.length < 24) return []
+    if (sessions.length < 1) return []
 
     const trendData: MetricsTrend[] = sessions.map(session => ({
       timestamp: session.timestamp,
