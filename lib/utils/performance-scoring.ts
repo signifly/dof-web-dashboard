@@ -1,4 +1,5 @@
 import { PerformanceSummary, MetricsTrend } from "@/lib/performance-data"
+import { PerformanceCategory } from "@/constants/enums"
 import {
   PerformanceScore,
   TrendAnalysis,
@@ -399,7 +400,7 @@ export class PerformanceScoringEngine {
   ): {
     score: number
     deviation: number
-    classification: "excellent" | "good" | "average" | "poor" | "critical"
+    classification: PerformanceCategory | "average" | "critical"
   } {
     const deviation = current - baseline
     const percentageDeviation =
@@ -408,20 +409,20 @@ export class PerformanceScoringEngine {
     // For metrics where lower is better
     const isLowerBetter = ["memory", "cpu"].includes(metricType)
 
-    let classification: "excellent" | "good" | "average" | "poor" | "critical"
+    let classification: PerformanceCategory | "average" | "critical"
     let score: number
 
     if (percentageDeviation < 5) {
-      classification = "excellent"
+      classification = PerformanceCategory.EXCELLENT
       score = 95
     } else if (percentageDeviation < 15) {
-      classification = "good"
+      classification = PerformanceCategory.GOOD
       score = 80
     } else if (percentageDeviation < 30) {
       classification = "average"
       score = 65
     } else if (percentageDeviation < 50) {
-      classification = "poor"
+      classification = PerformanceCategory.POOR
       score = 40
     } else {
       classification = "critical"

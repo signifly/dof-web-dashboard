@@ -1,6 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CHART_COLORS } from "@/constants/ui/colors"
 import { DeviceMetricPoint } from "@/types/device"
 import { format } from "date-fns"
 import {
@@ -49,22 +50,22 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
     {
       name: "Excellent (50+ FPS)",
       value: performanceDistribution.excellent,
-      color: "#10b981",
+      color: CHART_COLORS.PRIMARY,
     },
     {
       name: "Good (30-49 FPS)",
       value: performanceDistribution.good,
-      color: "#f59e0b",
+      color: CHART_COLORS.WARNING,
     },
     {
       name: "Fair (20-29 FPS)",
       value: performanceDistribution.fair,
-      color: "#f97316",
+      color: "#f97316", // orange-500 - specific for this use case
     },
     {
       name: "Poor (<20 FPS)",
       value: performanceDistribution.poor,
-      color: "#ef4444",
+      color: CHART_COLORS.DANGER,
     },
   ].filter(item => item.value > 0)
 
@@ -202,8 +203,16 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="fpsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
+                    <stop
+                      offset="5%"
+                      stopColor={CHART_COLORS.PRIMARY}
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={CHART_COLORS.PRIMARY}
+                      stopOpacity={0.1}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -252,7 +261,7 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                 <Area
                   type="monotone"
                   dataKey="fps"
-                  stroke="#10b981"
+                  stroke={CHART_COLORS.PRIMARY}
                   fillOpacity={1}
                   fill="url(#fpsGradient)"
                 />
@@ -313,7 +322,7 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                     <Line
                       type="monotone"
                       dataKey="memory"
-                      stroke="#f59e0b"
+                      stroke={CHART_COLORS.WARNING}
                       strokeWidth={2}
                       dot={false}
                     />
@@ -342,7 +351,7 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                       `${name}: ${((percent as number) * 100).toFixed(1)}%`
                     }
                     outerRadius={80}
-                    fill="#8884d8"
+                    fill="#8884d8" // purple-500 - specific for scatter plot
                     dataKey="value"
                   >
                     {distributionData.map((entry, index) => (
@@ -428,7 +437,11 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                       )
                     }}
                   />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar
+                    dataKey="count"
+                    fill={CHART_COLORS.SECONDARY}
+                    radius={[4, 4, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client"
 import { Tables } from "@/types/database"
+import { QUERY_LIMITS } from "@/constants/data/limits"
 
 export type SearchMetric = Tables<"performance_metrics">
 export type SearchSession = Tables<"performance_sessions">
@@ -117,7 +118,11 @@ export class SearchService {
   /**
    * Get search suggestions based on partial input
    */
-  async getSuggestions(input: string, limit = 10): Promise<SearchSuggestion[]> {
+  async getSuggestions(
+    input: string,
+    limit = QUERY_LIMITS.RECENT_ITEMS_LIMIT / 2
+  ): Promise<SearchSuggestion[]> {
+    // 10 suggestions
     const suggestions: SearchSuggestion[] = []
 
     try {

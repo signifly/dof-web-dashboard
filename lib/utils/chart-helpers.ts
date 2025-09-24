@@ -1,31 +1,32 @@
 import { format, parseISO, isValid } from "date-fns"
 import { MetricsTrend } from "@/lib/performance-data"
+import { CHART_COLORS } from "@/constants/ui/colors"
 
 // Color schemes for different chart types and themes
 export const chartColorSchemes = {
   primary: {
-    fps: "#10b981", // green-500
-    memory_usage: "#f59e0b", // amber-500
-    cpu_usage: "#ef4444", // red-500
-    load_time: "#3b82f6", // blue-500
+    fps: CHART_COLORS.PRIMARY, // green-500
+    memory_usage: CHART_COLORS.WARNING, // amber-500
+    cpu_usage: CHART_COLORS.DANGER, // red-500
+    load_time: CHART_COLORS.SECONDARY, // blue-500
   },
   secondary: {
-    fps: "#059669", // green-600
-    memory_usage: "#d97706", // amber-600
-    cpu_usage: "#dc2626", // red-600
-    load_time: "#2563eb", // blue-600
+    fps: CHART_COLORS.PRIMARY_DARK, // green-600
+    memory_usage: CHART_COLORS.WARNING_DARK, // amber-600
+    cpu_usage: CHART_COLORS.DANGER_DARK, // red-600
+    load_time: CHART_COLORS.SECONDARY_DARK, // blue-600
   },
   gradient: {
-    fps: ["#10b981", "#065f46"], // green-500 to green-800
-    memory_usage: ["#f59e0b", "#92400e"], // amber-500 to amber-800
-    cpu_usage: ["#ef4444", "#991b1b"], // red-500 to red-800
-    load_time: ["#3b82f6", "#1e40af"], // blue-500 to blue-800
+    fps: [CHART_COLORS.PRIMARY, CHART_COLORS.PRIMARY_DARKEST], // green-500 to green-800
+    memory_usage: [CHART_COLORS.WARNING, CHART_COLORS.WARNING_DARKEST], // amber-500 to amber-800
+    cpu_usage: [CHART_COLORS.DANGER, CHART_COLORS.DANGER_DARKEST], // red-500 to red-800
+    load_time: [CHART_COLORS.SECONDARY, CHART_COLORS.SECONDARY_DARKEST], // blue-500 to blue-800
   },
   categorical: [
-    "#10b981", // green-500
-    "#f59e0b", // amber-500
-    "#ef4444", // red-500
-    "#3b82f6", // blue-500
+    CHART_COLORS.PRIMARY, // green-500
+    CHART_COLORS.WARNING, // amber-500
+    CHART_COLORS.DANGER, // red-500
+    CHART_COLORS.SECONDARY, // blue-500
     "#8b5cf6", // violet-500
     "#06b6d4", // cyan-500
     "#f97316", // orange-500

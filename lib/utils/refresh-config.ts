@@ -2,6 +2,8 @@
  * Refresh configuration utilities for smart auto-refresh system
  */
 
+import { REFRESH_INTERVALS, SYSTEM_TIMEOUTS } from "@/constants/time"
+
 export interface RefreshConfig {
   /** Interval for active/real-time data (milliseconds) */
   active: number
@@ -49,10 +51,10 @@ export interface RefreshState {
  * Based on issue requirements: 30s for active data, 5min for summaries
  */
 export const DEFAULT_REFRESH_CONFIG: RefreshConfig = {
-  active: 30 * 1000, // 30 seconds for real-time data
-  summary: 5 * 60 * 1000, // 5 minutes for summary data
-  background: 10 * 60 * 1000, // 10 minutes when tab not active
-  interactive: 60 * 1000, // 1 minute when user is actively interacting
+  active: REFRESH_INTERVALS.ACTIVE_DATA, // 30 seconds for real-time data
+  summary: REFRESH_INTERVALS.SUMMARY_DATA, // 5 minutes for summary data
+  background: REFRESH_INTERVALS.BACKGROUND_DATA, // 10 minutes when tab not active
+  interactive: REFRESH_INTERVALS.INTERACTIVE_DATA, // 1 minute when user is actively interacting
 }
 
 /**
@@ -66,7 +68,7 @@ export const DEFAULT_REFRESH_OPTIONS: Required<RefreshOptions> = {
   retryOnError: true,
   maxRetries: 3,
   backoffMultiplier: 2,
-  maxBackoffInterval: 5 * 60 * 1000, // 5 minutes max backoff
+  maxBackoffInterval: SYSTEM_TIMEOUTS.MAX_RETRY_INTERVAL, // 5 minutes max backoff
   type: "active",
 }
 

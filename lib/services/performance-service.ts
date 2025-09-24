@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server"
 import { Database } from "@/types/database"
+import { QUERY_LIMITS } from "@/constants/data/limits"
 
 type PerformanceMetric =
   Database["public"]["Tables"]["performance_metrics"]["Row"]
@@ -16,7 +17,7 @@ export class PerformanceService {
   /**
    * Get recent performance metrics
    */
-  async getRecentMetrics(limit = 100) {
+  async getRecentMetrics(limit = QUERY_LIMITS.DEFAULT_PAGE_SIZE) {
     const { data, error } = await this.supabase
       .from("performance_metrics")
       .select("*")
@@ -52,7 +53,7 @@ export class PerformanceService {
   /**
    * Get all performance sessions
    */
-  async getSessions(limit = 50) {
+  async getSessions(limit = QUERY_LIMITS.DEFAULT_PAGE_SIZE) {
     const { data, error } = await this.supabase
       .from("performance_sessions")
       .select("*")
@@ -72,7 +73,7 @@ export class PerformanceService {
    */
   async getMetricsByTimePeriod(
     _period: "hour" | "day" | "week" = "day",
-    limit = 24
+    limit = QUERY_LIMITS.RECENT_ITEMS_LIMIT
   ) {
     // Get metrics using the normalized schema
     const { data, error } = await this.supabase
@@ -179,7 +180,10 @@ export class PerformanceService {
   /**
    * Get metrics filtered by platform
    */
-  async getMetricsByPlatform(platform: string, limit = 100) {
+  async getMetricsByPlatform(
+    platform: string,
+    limit = QUERY_LIMITS.DEFAULT_PAGE_SIZE
+  ) {
     // Note: Platform filtering would need to be done via context or session join
     // For now, get all metrics and filter in application layer if needed
     const { data, error } = await this.supabase
@@ -199,7 +203,10 @@ export class PerformanceService {
   /**
    * Get metrics filtered by device model
    */
-  async getMetricsByDevice(deviceModel: string, limit = 100) {
+  async getMetricsByDevice(
+    deviceModel: string,
+    limit = QUERY_LIMITS.DEFAULT_PAGE_SIZE
+  ) {
     // Note: Device filtering would need to be done via context or session join
     // For now, get all metrics and filter in application layer if needed
     const { data, error } = await this.supabase

@@ -1,4 +1,5 @@
 import { MetricsTrend } from "@/lib/performance-data"
+import { CSS_VARIABLES, CHART_COLORS } from "@/constants/ui/colors"
 
 // Chart annotation types
 export interface ChartAnnotation {
@@ -310,11 +311,11 @@ export const defaultChartConfig: InteractiveChartConfig = {
   enableAnomalyDetection: true,
   theme: {
     background: "transparent",
-    foreground: "hsl(var(--foreground))",
-    muted: "hsl(var(--muted))",
-    accent: "hsl(var(--accent))",
-    grid: "hsl(var(--border))",
-    text: "hsl(var(--foreground))",
+    foreground: CSS_VARIABLES.FOREGROUND,
+    muted: CSS_VARIABLES.MUTED,
+    accent: "hsl(var(--accent))", // keeping original as not in constants
+    grid: "hsl(var(--border))", // keeping original as not in constants
+    text: CSS_VARIABLES.FOREGROUND,
     colors: {
       primary: {
         fps: "#10b981",

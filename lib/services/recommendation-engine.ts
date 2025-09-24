@@ -8,6 +8,10 @@ import {
   SeasonalPattern,
   EarlyWarningAlert,
 } from "@/types/insights"
+import {
+  PREDICTION_PARAMETERS,
+  ANALYTICS_THRESHOLDS,
+} from "@/constants/business"
 import { PerformanceSummary } from "@/lib/performance-data"
 import { RoutePerformanceAnalysis } from "@/types/route-performance"
 import {
@@ -248,7 +252,7 @@ export class RecommendationEngine {
           related_metrics: ["memory_usage"],
           implementation_time: "1-2 development days",
         }),
-        priority_weight: 0.8,
+        priority_weight: PREDICTION_PARAMETERS.HIGH_CONFIDENCE_THRESHOLD,
         category: ["memory", "preventive"],
       },
 
@@ -320,7 +324,7 @@ export class RecommendationEngine {
           (insight.category === "performance" ||
             insight.category === "memory") &&
           insight.data_context.value !== undefined &&
-          insight.confidence > 0.7,
+          insight.confidence > ANALYTICS_THRESHOLDS.CORRELATION_THRESHOLD,
         recommendation: insight => ({ // TODO: Fix unused variable insight
           title: "Low-End Device Compatibility",
           description:
@@ -339,7 +343,7 @@ export class RecommendationEngine {
           related_metrics: ["fps", "memory_usage"],
           implementation_time: "3-5 development days",
         }),
-        priority_weight: 0.7,
+        priority_weight: ANALYTICS_THRESHOLDS.CORRELATION_THRESHOLD,
         category: ["compatibility", "optimization"],
       },
 
@@ -513,11 +517,11 @@ export class RecommendationEngine {
 
     // Adjust based on overall performance context
     if (context.avgFps < 30 && recommendation.category === "rendering") {
-      contextMultiplier += 0.5 // Boost rendering recommendations when FPS is very low
+      contextMultiplier += 0.5 // Boost rendering recommendations when FPS is very low - specific multiplier
     }
 
     if (context.avgMemory > 600 && recommendation.category === "memory") {
-      contextMultiplier += 0.3 // Boost memory recommendations when usage is high
+      contextMultiplier += 0.3 // Boost memory recommendations when usage is high - specific multiplier
     }
 
     // Device count factor - more affected devices = higher priority
