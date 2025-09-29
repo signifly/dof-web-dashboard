@@ -6,7 +6,8 @@ import {
 } from "@/lib/performance-data"
 import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Dashboard page with performance data - shorter revalidation for fresh data
+export const revalidate = 60 // 1 minute
 
 export default async function DashboardPage() {
   // Require authentication (DashboardLayout will get user from server context)

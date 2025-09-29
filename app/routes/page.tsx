@@ -11,7 +11,8 @@ import {
 import { AlertCircle, Brain, TrendingUp } from "lucide-react"
 import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Routes page - medium caching for route analytics
+export const revalidate = 180 // 3 minutes
 
 export default async function RoutesPage() {
   // Require authentication (DashboardLayout will get user from server context)

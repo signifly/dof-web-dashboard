@@ -3,7 +3,8 @@ import { requireAuth } from "@/lib/auth"
 import { InsightsDashboard } from "@/components/insights/insights-dashboard"
 import { PerformanceInsightsEngine } from "@/lib/services/insights-engine"
 
-export const dynamic = "force-dynamic"
+// Insights page - longer caching for AI-generated insights
+export const revalidate = 300 // 5 minutes
 
 export default async function InsightsPage() {
   // Require authentication (DashboardLayout will get user from server context)

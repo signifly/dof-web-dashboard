@@ -7,7 +7,8 @@ import {
 } from "@/lib/performance-data"
 import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Devices page - medium caching for device performance data
+export const revalidate = 120 // 2 minutes
 
 export default async function DevicesPage() {
   // Require authentication (DashboardLayout will get user from server context)

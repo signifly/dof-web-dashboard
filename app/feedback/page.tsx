@@ -4,7 +4,8 @@ import { getFeedbackList, getFeedbackStats } from "@/lib/actions/feedback"
 import { requireAuth } from "@/lib/auth"
 import { isSuccess } from "@/lib/utils/result"
 
-export const dynamic = "force-dynamic"
+// Feedback page - medium caching for feedback data
+export const revalidate = 180 // 3 minutes
 
 export default async function FeedbackPage() {
   // Require authentication (DashboardLayout will get user from server context)

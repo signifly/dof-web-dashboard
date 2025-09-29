@@ -3,7 +3,8 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { SearchPageContent } from "@/components/search/search-page-content"
 import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Search page can be cached since it's mostly static content with client-side search
+export const revalidate = 300 // 5 minutes
 
 export default async function SearchPage() {
   // Require authentication (DashboardLayout will get user from server context)

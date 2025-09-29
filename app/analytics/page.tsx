@@ -7,7 +7,8 @@ import { getPerformanceTrends, getRecentSessions } from "@/lib/performance-data"
 import { Button } from "@/components/ui/button"
 import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Analytics page - medium caching for computed insights
+export const revalidate = 180 // 3 minutes
 
 export default async function AnalyticsPage() {
   // Require authentication (DashboardLayout will get user from server context)
