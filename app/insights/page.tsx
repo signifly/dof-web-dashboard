@@ -1,10 +1,13 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { requireAuth } from "@/lib/auth"
 import { InsightsDashboard } from "@/components/insights/insights-dashboard"
 import { PerformanceInsightsEngine } from "@/lib/services/insights-engine"
 
 export const dynamic = "force-dynamic"
 
 export default async function InsightsPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     // Generate performance insights
     const insightsEngine = new PerformanceInsightsEngine()

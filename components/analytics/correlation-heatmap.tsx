@@ -34,7 +34,7 @@ interface CorrelationHeatmapProps {
 
 export function CorrelationHeatmap({
   correlations,
-  _routes,
+  routes: _routes,
   selectedMetric = "fps",
   interactive = true,
 }: CorrelationHeatmapProps) {
@@ -80,8 +80,10 @@ export function CorrelationHeatmap({
   }
 
   const getCorrelationDescription = (correlation: RouteCorrelationAnalysis) => {
-    const { correlation_type, _performance_impact, correlation_strength } =
+    const { correlation_type, performance_impact, correlation_strength } =
       correlation
+    // Mark as potentially unused for destructuring
+    void performance_impact
     const strength =
       correlation_strength > 0.7
         ? "strong"

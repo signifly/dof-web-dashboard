@@ -42,7 +42,7 @@ export class PerformanceInsightsEngine {
   private scoringEngine: PerformanceScoringEngine
   private recommendationEngine: RecommendationEngine
   private journeyTracker: UserJourneyTracker
-  private predictionEngine: PerformancePredictionEngine
+  private _predictionEngine: PerformancePredictionEngine
   private earlyWarningEngine: EarlyWarningEngine
   private config: InsightsEngineConfig
 
@@ -85,7 +85,7 @@ export class PerformanceInsightsEngine {
     })
     this.recommendationEngine = new RecommendationEngine()
     this.journeyTracker = new UserJourneyTracker()
-    this.predictionEngine = new PerformancePredictionEngine()
+    this._predictionEngine = new PerformancePredictionEngine()
     this.earlyWarningEngine = new EarlyWarningEngine()
   }
 

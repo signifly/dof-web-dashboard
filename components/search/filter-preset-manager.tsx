@@ -69,7 +69,7 @@ import { SearchQuery } from "@/lib/services/search-service"
 interface FilterPreset {
   id: string
   name: string
-  description?: string
+  description?: string | undefined
   query: SearchQuery
   category: string
   isStarred: boolean

@@ -1,6 +1,5 @@
 import { PerformanceInsightsEngine } from "@/lib/services/insights-engine"
 import {
-  InsightsReport,
   PerformanceInsight,
   AnomalyDetection,
 } from "@/types/insights"

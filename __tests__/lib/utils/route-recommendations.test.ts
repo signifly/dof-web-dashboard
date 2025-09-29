@@ -11,7 +11,32 @@ import {
 import {
   RoutePerformanceAnalysis,
   RoutePerformanceData,
+  RoutePerformanceSession,
 } from "@/types/route-performance"
+
+// Helper function to create properly typed test session data
+function createTestSession(overrides: Partial<RoutePerformanceSession> = {}): RoutePerformanceSession {
+  return {
+    sessionId: "test-session",
+    deviceId: "test-device",
+    routeName: "Test Route",
+    routePath: "/test-route",
+    routePattern: "/test-route",
+    segments: ["test"],
+    screenStartTime: Date.now(),
+    screenDuration: 2000,
+    fpsMetrics: [40, 38, 42],
+    memoryMetrics: [400, 390, 410],
+    cpuMetrics: [50, 48, 52],
+    avgFps: 40,
+    avgMemory: 400,
+    avgCpu: 50,
+    deviceType: "mobile",
+    appVersion: "1.0.0",
+    timestamp: "2024-01-01T10:00:00Z",
+    ...overrides,
+  }
+}
 
 describe("Route Recommendations Utility", () => {
   const createMockRoute = (
@@ -27,26 +52,24 @@ describe("Route Recommendations Utility", () => {
     riskLevel: "medium",
     performanceTrend: "stable",
     sessions: [
-      {
+      createTestSession({
         sessionId: "session-1",
         deviceId: "device-1",
-        routePattern: "/test-route",
-        timestamp: "2024-01-01T10:00:00Z",
         avgFps: 35,
         avgMemory: 450,
         avgCpu: 55,
         screenDuration: 3000,
-      },
-      {
+        timestamp: "2024-01-01T10:00:00Z",
+      }),
+      createTestSession({
         sessionId: "session-2",
         deviceId: "device-2",
-        routePattern: "/test-route",
-        timestamp: "2024-01-01T11:00:00Z",
         avgFps: 45,
         avgMemory: 350,
         avgCpu: 45,
         screenDuration: 2500,
-      },
+        timestamp: "2024-01-01T11:00:00Z",
+      }),
     ],
     ...overrides,
   })
@@ -63,16 +86,16 @@ describe("Route Recommendations Utility", () => {
         performanceScore: 40,
         riskLevel: "high",
         sessions: [
-          {
+          createTestSession({
             sessionId: "session-slow-1",
             deviceId: "device-slow-1",
             routePattern: "/slow-route",
-            timestamp: "2024-01-01T10:00:00Z",
             avgFps: 20,
             avgMemory: 750,
             avgCpu: 85,
             screenDuration: 6000,
-          },
+            timestamp: "2024-01-01T10:00:00Z",
+          }),
         ],
       }),
       createMockRoute({
@@ -85,27 +108,22 @@ describe("Route Recommendations Utility", () => {
         performanceScore: 90,
         riskLevel: "low",
         sessions: [
-          {
+          createTestSession({
             sessionId: "session-fast-1",
             deviceId: "device-fast-1",
             routePattern: "/fast-route",
-            timestamp: "2024-01-01T10:00:00Z",
             avgFps: 60,
             avgMemory: 200,
             avgCpu: 25,
             screenDuration: 1000,
-          },
+            timestamp: "2024-01-01T10:00:00Z",
+          }),
         ],
       }),
     ],
     summary: {
       totalSessions: 130,
       totalRoutes: 2,
-      riskDistribution: {
-        high: 1,
-        medium: 0,
-        low: 1,
-      },
     },
     appAverages: {
       avgFps: 42.5,
@@ -149,16 +167,16 @@ describe("Route Recommendations Utility", () => {
     it("should identify preloading opportunities for slow routes", () => {
       const slowRoute = createMockRoute({
         sessions: [
-          {
+          createTestSession({
             sessionId: "session-1",
             deviceId: "device-1",
             routePattern: "/slow-route",
-            timestamp: "2024-01-01T10:00:00Z",
             avgFps: 30,
             avgMemory: 400,
             avgCpu: 50,
             screenDuration: 4000, // 4 seconds - slow
-          },
+            timestamp: "2024-01-01T10:00:00Z",
+          }),
         ],
       })
 
@@ -169,16 +187,16 @@ describe("Route Recommendations Utility", () => {
     it("should not recommend preloading for fast routes", () => {
       const fastRoute = createMockRoute({
         sessions: [
-          {
+          createTestSession({
             sessionId: "session-1",
             deviceId: "device-1",
             routePattern: "/fast-route",
-            timestamp: "2024-01-01T10:00:00Z",
             avgFps: 60,
             avgMemory: 200,
             avgCpu: 25,
             screenDuration: 1000, // 1 second - fast
-          },
+            timestamp: "2024-01-01T10:00:00Z",
+          }),
         ],
       })
 
@@ -294,16 +312,16 @@ describe("Route Recommendations Utility", () => {
     it("should identify exceeded budget for slow routes", () => {
       const slowRoute = createMockRoute({
         sessions: [
-          {
+          createTestSession({
             sessionId: "session-1",
             deviceId: "device-1",
             routePattern: "/slow-route",
-            timestamp: "2024-01-01T10:00:00Z",
             avgFps: 30,
             avgMemory: 400,
             avgCpu: 50,
             screenDuration: 6000, // 6 seconds
-          },
+            timestamp: "2024-01-01T10:00:00Z",
+          }),
         ],
       })
 
@@ -314,16 +332,16 @@ describe("Route Recommendations Utility", () => {
     it("should identify approaching budget threshold", () => {
       const approachingRoute = createMockRoute({
         sessions: [
-          {
+          createTestSession({
             sessionId: "session-1",
             deviceId: "device-1",
             routePattern: "/approaching-route",
-            timestamp: "2024-01-01T10:00:00Z",
             avgFps: 40,
             avgMemory: 350,
             avgCpu: 45,
             screenDuration: 4200, // 4.2 seconds (84% of 5 second budget)
-          },
+            timestamp: "2024-01-01T10:00:00Z",
+          }),
         ],
       })
 
@@ -334,16 +352,16 @@ describe("Route Recommendations Utility", () => {
     it("should identify within budget for fast routes", () => {
       const fastRoute = createMockRoute({
         sessions: [
-          {
+          createTestSession({
             sessionId: "session-1",
             deviceId: "device-1",
             routePattern: "/fast-route",
-            timestamp: "2024-01-01T10:00:00Z",
             avgFps: 60,
             avgMemory: 200,
             avgCpu: 25,
             screenDuration: 2000, // 2 seconds
-          },
+            timestamp: "2024-01-01T10:00:00Z",
+          }),
         ],
       })
 
@@ -441,16 +459,16 @@ describe("Route Recommendations Utility", () => {
           routePattern: "/heavy-route",
           avgMemory: 800,
           sessions: [
-            {
+            createTestSession({
               sessionId: "session-1",
               deviceId: "device-1",
               routePattern: "/heavy-route",
-              timestamp: "2024-01-01T10:00:00Z",
               avgFps: 25,
               avgMemory: 800,
               avgCpu: 75,
               screenDuration: 6000, // Heavy route
-            },
+              timestamp: "2024-01-01T10:00:00Z",
+            }),
           ],
         }),
         createMockRoute({

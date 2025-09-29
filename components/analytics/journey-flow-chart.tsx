@@ -15,9 +15,9 @@ import { AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react"
 
 interface JourneyFlowChartProps {
   journeyPatterns: JourneyPattern[]
-  selectedPattern?: string
-  onPatternSelect?: (patternId: string) => void
-  showPerformanceOverlay?: boolean
+  selectedPattern?: string | undefined
+  onPatternSelect?: ((patternId: string) => void) | undefined
+  showPerformanceOverlay?: boolean | undefined
 }
 
 export function JourneyFlowChart({

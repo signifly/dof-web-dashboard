@@ -4,10 +4,13 @@ import {
   getPerformanceSummary,
   getPerformanceTrends,
 } from "@/lib/performance-data"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
 export default async function MetricsPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const [summary, trends] = await Promise.all([
       getPerformanceSummary(),

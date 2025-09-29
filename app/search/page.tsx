@@ -1,10 +1,13 @@
 import { Suspense } from "react"
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { SearchPageContent } from "@/components/search/search-page-content"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
-export default function SearchPage() {
+export default async function SearchPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   return (
     <DashboardLayout title="Search Performance Data">
       <div className="space-y-6">

@@ -46,8 +46,8 @@ const navigationItems = [
 ] as const
 
 interface HeaderProps {
-  title?: string
-  showConnectionStatus?: boolean
+  title?: string | undefined
+  showConnectionStatus?: boolean | undefined
 }
 
 export function Header({

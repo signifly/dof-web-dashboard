@@ -17,12 +17,12 @@ interface DeviceInfo {
 }
 
 interface DeviceSelectorProps {
-  value?: string[]
+  value?: string[] | undefined
   onChange: (devices: string[]) => void
-  className?: string
-  disabled?: boolean
-  placeholder?: string
-  maxItems?: number
+  className?: string | undefined
+  disabled?: boolean | undefined
+  placeholder?: string | undefined
+  maxItems?: number | undefined
 }
 
 // Platform icons mapping

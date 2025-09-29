@@ -32,8 +32,8 @@ export type ChartMetric = "fps" | "memory_usage" | "cpu_usage" | "load_time"
 export interface BrushSelection {
   startIndex: number
   endIndex: number
-  startTime?: Date
-  endTime?: Date
+  startTime?: Date | undefined
+  endTime?: Date | undefined
 }
 
 // Zoom state interface

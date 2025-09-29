@@ -4,6 +4,7 @@ import { getDeviceDetails } from "@/lib/actions/device-actions"
 import { DeviceOverview } from "@/components/devices/device-overview"
 import { DeviceTimeline } from "@/components/devices/device-timeline"
 import { DeviceMetrics } from "@/components/devices/device-metrics"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -16,6 +17,9 @@ interface DeviceDetailPageProps {
 export default async function DeviceDetailPage({
   params,
 }: DeviceDetailPageProps) {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
+
   const { deviceId } = params
 
   try {

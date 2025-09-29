@@ -2,7 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
-import { tryCatch, type Result } from "@/lib/utils/result"
+import { type Result } from "@/lib/utils/result"
 
 export type Feedback = Tables<"feedback">
 

@@ -5,10 +5,13 @@ import {
   getPerformanceSummary,
   getDevicePerformanceData,
 } from "@/lib/performance-data"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
 export default async function DevicesPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const [summary, devices] = await Promise.all([
       getPerformanceSummary(),

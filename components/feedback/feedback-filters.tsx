@@ -461,7 +461,7 @@ export function FeedbackFilters({
                         <Calendar
                           initialFocus
                           mode="range"
-                          defaultMonth={customDateRange?.from}
+                          defaultMonth={customDateRange?.from || new Date()}
                           selected={customDateRange}
                           onSelect={setCustomDateRange}
                           numberOfMonths={2}

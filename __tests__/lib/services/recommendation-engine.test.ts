@@ -1,13 +1,11 @@
 import { RecommendationEngine } from "@/lib/services/recommendation-engine"
 import {
   PerformanceInsight,
-  PerformanceRecommendation,
   OptimizationOpportunity,
 } from "@/types/insights"
 import { PerformanceSummary } from "@/lib/performance-data"
 import {
   RoutePerformanceAnalysis,
-  RoutePerformanceData,
 } from "@/types/route-performance"
 
 // Mock crypto.randomUUID
@@ -697,12 +695,21 @@ describe("RecommendationEngine", () => {
             {
               sessionId: "session-2",
               deviceId: "device-2",
+              routeName: "Dashboard",
+              routePath: "/dashboard",
               routePattern: "/dashboard",
-              timestamp: "2024-01-01T11:00:00Z",
+              segments: ["dashboard"],
+              screenStartTime: Date.now(),
+              screenDuration: 3000,
+              fpsMetrics: [40, 38, 42],
+              memoryMetrics: [550, 540, 560],
+              cpuMetrics: [65, 60, 70],
               avgFps: 40,
               avgMemory: 550,
               avgCpu: 65,
-              screenDuration: 3000,
+              deviceType: "mobile",
+              appVersion: "1.0.0",
+              timestamp: "2024-01-01T11:00:00Z",
             },
           ],
         },
@@ -720,12 +727,21 @@ describe("RecommendationEngine", () => {
             {
               sessionId: "session-3",
               deviceId: "device-3",
+              routeName: "Profile",
+              routePath: "/profile",
               routePattern: "/profile",
-              timestamp: "2024-01-01T12:00:00Z",
+              segments: ["profile"],
+              screenStartTime: Date.now(),
+              screenDuration: 1500,
+              fpsMetrics: [55, 53, 57],
+              memoryMetrics: [280, 270, 290],
+              cpuMetrics: [35, 30, 40],
               avgFps: 55,
               avgMemory: 280,
               avgCpu: 35,
-              screenDuration: 1500,
+              deviceType: "mobile",
+              appVersion: "1.0.0",
+              timestamp: "2024-01-01T12:00:00Z",
             },
           ],
         },
@@ -733,11 +749,6 @@ describe("RecommendationEngine", () => {
       summary: {
         totalSessions: 200,
         totalRoutes: 2,
-        riskDistribution: {
-          high: 0,
-          medium: 1,
-          low: 1,
-        },
       },
       appAverages: {
         avgFps: 42.5,
@@ -1153,7 +1164,6 @@ describe("RecommendationEngine", () => {
           summary: {
             totalSessions: 0,
             totalRoutes: 0,
-            riskDistribution: { high: 0, medium: 0, low: 0 },
           },
           appAverages: { avgFps: 0, avgMemory: 0, avgCpu: 0 },
         }
@@ -1174,25 +1184,43 @@ describe("RecommendationEngine", () => {
         const minimalRouteData: RoutePerformanceAnalysis = {
           routes: [
             {
+              routeName: "Fast Route",
               routePattern: "/fast-route",
               totalSessions: 5, // Low traffic
               uniqueDevices: 2,
               avgFps: 60, // Good performance
               avgMemory: 200, // Low memory
               avgCpu: 20, // Low CPU
+              avgScreenDuration: 800,
+              fpsDistribution: { excellent: 100, good: 0, fair: 0, poor: 0 },
+              memoryDistribution: { excellent: 100, good: 0, fair: 0, poor: 0 },
               performanceScore: 95, // Excellent score
               riskLevel: "low",
               performanceTrend: "improving",
+              relativePerformance: {
+                fpsVsAverage: 1.0,
+                memoryVsAverage: 0.5,
+                cpuVsAverage: 0.5
+              },
               sessions: [
                 {
                   sessionId: "session-fast",
                   deviceId: "device-fast",
+                  routeName: "Fast Route",
+                  routePath: "/fast-route",
                   routePattern: "/fast-route",
-                  timestamp: "2024-01-01T10:00:00Z",
+                  segments: ["fast"],
+                  screenStartTime: Date.now(),
+                  screenDuration: 800, // Very fast
+                  fpsMetrics: [60, 58, 62],
+                  memoryMetrics: [200, 190, 210],
+                  cpuMetrics: [20, 18, 22],
                   avgFps: 60,
                   avgMemory: 200,
                   avgCpu: 20,
-                  screenDuration: 800, // Very fast
+                  deviceType: "mobile",
+                  appVersion: "1.0.0",
+                  timestamp: "2024-01-01T10:00:00Z",
                 },
               ],
             },
@@ -1200,7 +1228,6 @@ describe("RecommendationEngine", () => {
           summary: {
             totalSessions: 5,
             totalRoutes: 1,
-            riskDistribution: { high: 0, medium: 0, low: 1 },
           },
           appAverages: { avgFps: 60, avgMemory: 200, avgCpu: 20 },
         }

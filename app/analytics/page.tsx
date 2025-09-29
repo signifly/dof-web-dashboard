@@ -5,10 +5,13 @@ import { ABTestingPerformance } from "@/components/analytics/ab-testing-performa
 import { RegressionDetection } from "@/components/analytics/regression-detection"
 import { getPerformanceTrends, getRecentSessions } from "@/lib/performance-data"
 import { Button } from "@/components/ui/button"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
 export default async function AnalyticsPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const [trends, sessions] = await Promise.all([
       getPerformanceTrends(200),

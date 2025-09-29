@@ -227,7 +227,7 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                 />
                 <Tooltip
                   labelFormatter={label => `Time: ${label}`}
-                  formatter={(value: number, name: string, props: any) => {
+                  formatter={(value: number, _name: string, props: any) => {
                     const _data = props.payload
                     return [`${value.toFixed(1)} FPS`, "FPS"]
                   }}

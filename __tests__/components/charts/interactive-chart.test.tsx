@@ -3,8 +3,7 @@
  */
 
 import React from "react"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { InteractiveChart } from "@/components/charts/interactive-chart"
 import type { MetricsTrend } from "@/lib/performance-data"
 import type { ChartAnnotation } from "@/types/chart"
@@ -95,24 +94,24 @@ jest.mock("recharts", () => ({
   ),
   XAxis: ({
     dataKey,
-    tickFormatter,
+    tickFormatter: _tickFormatter,
   }: {
     dataKey: string
     tickFormatter?: Function
   }) => <div data-testid="x-axis" data-key={dataKey} />,
   YAxis: ({
-    domain,
-    tickFormatter,
+    domain: _domain,
+    tickFormatter: _tickFormatter,
   }: {
     domain?: any
     tickFormatter?: Function
   }) => <div data-testid="y-axis" />,
   CartesianGrid: () => <div data-testid="grid" />,
-  Tooltip: ({ content }: { content: React.ComponentType<any> }) => (
+  Tooltip: ({ content: _content }: { content: React.ComponentType<any> }) => (
     <div data-testid="tooltip" />
   ),
   Legend: () => <div data-testid="legend" />,
-  Brush: ({ dataKey, onChange }: { dataKey: string; onChange?: Function }) => (
+  Brush: ({ dataKey, onChange: _onChange }: { dataKey: string; onChange?: Function }) => (
     <div data-testid="brush" data-key={dataKey} />
   ),
   ReferenceLine: ({ x, stroke }: { x: number; stroke: string }) => (
@@ -451,7 +450,7 @@ describe("InteractiveChart", () => {
 
   describe("Export Functionality", () => {
     it("handles PNG export", async () => {
-      const { exportChart } = require("@/hooks/use-chart-export")().__values
+      const { exportChart: _exportChart } = require("@/hooks/use-chart-export")().__values
 
       render(<InteractiveChart {...defaultProps} enableExport={true} />)
 
@@ -463,7 +462,7 @@ describe("InteractiveChart", () => {
     })
 
     it("handles CSV export", async () => {
-      const { exportData } = require("@/hooks/use-chart-export")().__values
+      const { exportData: _exportData } = require("@/hooks/use-chart-export")().__values
 
       render(<InteractiveChart {...defaultProps} enableExport={true} />)
 

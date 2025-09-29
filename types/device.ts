@@ -39,7 +39,7 @@ export interface DeviceSession {
     loadTime: number
     score: number
   }
-  duration?: number // in minutes
+  duration?: number | undefined // in minutes
   screenTransitions: number
   crashCount: number
 }

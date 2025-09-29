@@ -9,10 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { AlertCircle, Brain, TrendingUp } from "lucide-react"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
 export default async function RoutesPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const dashboardData = await getEnhancedRouteAnalytics()
 

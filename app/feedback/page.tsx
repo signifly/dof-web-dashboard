@@ -7,8 +7,8 @@ import { isSuccess } from "@/lib/utils/result"
 export const dynamic = "force-dynamic"
 
 export default async function FeedbackPage() {
-  // Require authentication and get current user
-  const user = await requireAuth()
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
 
   const [initialDataResult, statsResult] = await Promise.all([
     getFeedbackList({ page: 1, limit: 20 }),
@@ -18,7 +18,7 @@ export default async function FeedbackPage() {
   // Handle any errors from the Result pattern
   if (!isSuccess(initialDataResult)) {
     return (
-      <DashboardLayout title="User Feedback" user={user}>
+      <DashboardLayout title="User Feedback" >
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -39,7 +39,7 @@ export default async function FeedbackPage() {
 
   if (!isSuccess(statsResult)) {
     return (
-      <DashboardLayout title="User Feedback" user={user}>
+      <DashboardLayout title="User Feedback" >
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -59,7 +59,7 @@ export default async function FeedbackPage() {
   }
 
   return (
-    <DashboardLayout title="User Feedback" user={user}>
+    <DashboardLayout title="User Feedback" >
       <FeedbackDashboard
         initialData={{
           feedback: initialDataResult.data.data,

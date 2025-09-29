@@ -8,7 +8,7 @@ interface DeviceBenchmarkingProps {
   sessions: PerformanceSession[]
 }
 
-export function DeviceBenchmarking({ _sessions }: DeviceBenchmarkingProps) {
+export function DeviceBenchmarking({ sessions: _sessions }: DeviceBenchmarkingProps) {
   return (
     <div className="space-y-6">
       <Card>

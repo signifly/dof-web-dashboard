@@ -599,7 +599,7 @@ export function AdvancedSearchForm({
                       <FormLabel>Sort By</FormLabel>
                       <FormControl>
                         <Select
-                          value={field.value}
+                          value={field.value || ""}
                           onValueChange={field.onChange}
                           disabled={isSearching}
                         >
@@ -630,7 +630,7 @@ export function AdvancedSearchForm({
                       <FormLabel>Sort Order</FormLabel>
                       <FormControl>
                         <Select
-                          value={field.value}
+                          value={field.value || ""}
                           onValueChange={field.onChange}
                           disabled={isSearching}
                         >

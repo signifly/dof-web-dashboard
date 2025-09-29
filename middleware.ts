@@ -89,7 +89,8 @@ export async function middleware(request: NextRequest) {
     // Cleanup expired cache entries periodically
     if (Math.random() < 0.01) { // 1% chance
       const now = Date.now()
-      for (const [key, value] of middlewareSessionCache.entries()) {
+      // Use Array.from to ensure compatibility with all TypeScript targets
+      for (const [key, value] of Array.from(middlewareSessionCache.entries())) {
         if (now > value.expiresAt) {
           middlewareSessionCache.delete(key)
         }

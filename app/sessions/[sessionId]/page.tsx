@@ -9,6 +9,7 @@ import { SessionOverview } from "@/components/sessions/session-overview"
 import { LiveSessionMonitor } from "@/components/sessions/live-session-monitor"
 import { SessionMetricsTimelineComponent } from "@/components/sessions/session-metrics-timeline"
 import { SessionPerformanceAnalysisComponent } from "@/components/sessions/session-performance-analysis"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -21,6 +22,9 @@ interface SessionDetailPageProps {
 export default async function SessionDetailPage({
   params,
 }: SessionDetailPageProps) {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
+
   const { sessionId } = params
 
   try {
