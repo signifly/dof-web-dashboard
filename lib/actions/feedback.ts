@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient, createServiceClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
 
 export type Feedback = Tables<"feedback">

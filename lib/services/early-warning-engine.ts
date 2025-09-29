@@ -10,7 +10,6 @@ import { PerformancePredictionEngine } from "@/lib/utils/performance-prediction"
 import { TimeSeriesAnalysis } from "@/lib/utils/statistical-analysis"
 import {
   EARLY_WARNING_THRESHOLDS,
-  PERFORMANCE_SCORING,
   ALERT_SEVERITY_THRESHOLDS,
   DEGRADATION_DETECTION,
 } from "@/constants/performance"

@@ -22,7 +22,7 @@ export default async function FeedbackPage() {
             feedback: initialData.data,
             stats: stats,
             total: initialData.total,
-            hasMore: initialData.hasMore
+            hasMore: initialData.hasMore,
           }}
         />
       </DashboardLayout>

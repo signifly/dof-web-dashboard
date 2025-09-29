@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import {
   Dialog,
   DialogContent,
@@ -355,10 +356,12 @@ export function FeedbackDetail({
                           </div>
                         </div>
                       )}
-                      <img
+                      <Image
                         src={feedback.screenshot_url}
                         alt="User feedback screenshot"
                         className="w-full h-auto max-h-96 object-contain"
+                        width={800}
+                        height={600}
                         onLoad={handleImageLoad}
                         onError={handleImageError}
                         style={{ display: imageError ? "none" : "block" }}

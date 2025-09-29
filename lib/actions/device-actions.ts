@@ -6,7 +6,6 @@ import {
   DeviceProfile,
   DeviceSession,
   DeviceMetricPoint,
-  DeviceHealthInput,
   PERFORMANCE_THRESHOLDS,
 } from "@/types/device"
 import {
