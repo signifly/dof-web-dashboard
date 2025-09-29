@@ -1,4 +1,6 @@
-import { createClient } from "@/lib/supabase/server"
+"use server"
+
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
 
 export type Feedback = Tables<"feedback">
@@ -34,7 +36,7 @@ export interface FeedbackStats {
 export async function getFeedbackList(
   options: FeedbackListOptions = {}
 ): Promise<FeedbackListResult> {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   const {
     page = 1,
@@ -43,7 +45,7 @@ export async function getFeedbackList(
     filterValue,
     dateRange,
     sortBy = "timestamp",
-    sortOrder = "desc"
+    sortOrder = "desc",
   } = options
 
   try {
@@ -96,7 +98,7 @@ export async function getFeedbackList(
     return {
       data: data || [],
       total,
-      hasMore
+      hasMore,
     }
   } catch (error) {
     console.error("Error in getFeedbackList:", error)
@@ -108,7 +110,7 @@ export async function getFeedbackList(
  * Get single feedback item by ID
  */
 export async function getFeedbackById(id: string): Promise<Feedback | null> {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   try {
     const { data, error } = await supabase
@@ -133,7 +135,7 @@ export async function getFeedbackById(id: string): Promise<Feedback | null> {
  * Get feedback statistics for dashboard overview
  */
 export async function getFeedbackStats(): Promise<FeedbackStats> {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   try {
     // Get total count
@@ -167,7 +169,11 @@ export async function getFeedbackStats(): Promise<FeedbackStats> {
 
     // Get today's count
     const today = new Date()
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    )
 
     const { count: todayCount } = await supabase
       .from("feedback")
@@ -189,7 +195,7 @@ export async function getFeedbackStats(): Promise<FeedbackStats> {
       uniqueUsers,
       uniqueRoutes,
       todayCount: todayCount || 0,
-      thisWeekCount: thisWeekCount || 0
+      thisWeekCount: thisWeekCount || 0,
     }
   } catch (error) {
     console.error("Error in getFeedbackStats:", error)
@@ -199,7 +205,7 @@ export async function getFeedbackStats(): Promise<FeedbackStats> {
       uniqueUsers: 0,
       uniqueRoutes: 0,
       todayCount: 0,
-      thisWeekCount: 0
+      thisWeekCount: 0,
     }
   }
 }
@@ -208,7 +214,7 @@ export async function getFeedbackStats(): Promise<FeedbackStats> {
  * Get recent feedback items (last 10)
  */
 export async function getRecentFeedback(): Promise<Feedback[]> {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   try {
     const { data, error } = await supabase
@@ -233,7 +239,7 @@ export async function getRecentFeedback(): Promise<Feedback[]> {
  * Get unique routes from feedback for filter suggestions
  */
 export async function getFeedbackRoutes(): Promise<string[]> {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   try {
     const { data, error } = await supabase
@@ -262,7 +268,7 @@ export async function getFeedbackRoutes(): Promise<string[]> {
  * Get unique user emails from feedback for filter suggestions
  */
 export async function getFeedbackUsers(): Promise<string[]> {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   try {
     const { data, error } = await supabase

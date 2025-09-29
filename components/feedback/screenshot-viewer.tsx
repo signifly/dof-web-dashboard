@@ -2,10 +2,22 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Download, ZoomIn, ZoomOut, RotateCcw, X, AlertCircle } from "lucide-react"
+import {
+  Download,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  X,
+  AlertCircle,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ScreenshotViewerProps {
@@ -23,7 +35,7 @@ export function ScreenshotViewer({
   screenshotUrl,
   filename = "screenshot",
   mimeType,
-  fileSize
+  fileSize,
 }: ScreenshotViewerProps) {
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
@@ -37,13 +49,17 @@ export function ScreenshotViewer({
       const blob = await response.blob()
 
       const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
+      const link = document.createElement("a")
       link.href = url
 
       // Create filename with extension based on mime type
-      const extension = mimeType?.includes('jpeg') ? 'jpg' :
-                      mimeType?.includes('png') ? 'png' :
-                      mimeType?.includes('webp') ? 'webp' : 'png'
+      const extension = mimeType?.includes("jpeg")
+        ? "jpg"
+        : mimeType?.includes("png")
+          ? "png"
+          : mimeType?.includes("webp")
+            ? "webp"
+            : "png"
 
       link.download = `${filename}.${extension}`
       document.body.appendChild(link)
@@ -51,16 +67,16 @@ export function ScreenshotViewer({
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error downloading screenshot:', error)
+      console.error("Error downloading screenshot:", error)
     }
   }
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
+    if (bytes === 0) return "0 Bytes"
     const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const sizes = ["Bytes", "KB", "MB", "GB"]
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
 
   const zoomIn = () => setZoom(prev => Math.min(prev + 25, 300))
@@ -98,12 +114,10 @@ export function ScreenshotViewer({
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 {mimeType && (
                   <Badge variant="secondary" className="text-xs">
-                    {mimeType.split('/')[1]?.toUpperCase() || 'IMAGE'}
+                    {mimeType.split("/")[1]?.toUpperCase() || "IMAGE"}
                   </Badge>
                 )}
-                {fileSize && (
-                  <span>{formatFileSize(fileSize)}</span>
-                )}
+                {fileSize && <span>{formatFileSize(fileSize)}</span>}
               </div>
 
               {/* Controls */}
@@ -168,9 +182,12 @@ export function ScreenshotViewer({
             {imageError ? (
               <div className="text-center">
                 <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Failed to load screenshot</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  Failed to load screenshot
+                </h3>
                 <p className="text-muted-foreground mb-4">
-                  The screenshot could not be loaded. It may have been moved or deleted.
+                  The screenshot could not be loaded. It may have been moved or
+                  deleted.
                 </p>
                 <Button onClick={onClose} variant="outline">
                   Close
@@ -181,8 +198,8 @@ export function ScreenshotViewer({
                 className="relative"
                 style={{
                   transform: `scale(${zoom / 100})`,
-                  transformOrigin: 'center',
-                  transition: 'transform 0.2s ease-in-out'
+                  transformOrigin: "center",
+                  transition: "transform 0.2s ease-in-out",
                 }}
               >
                 {imageLoading && (

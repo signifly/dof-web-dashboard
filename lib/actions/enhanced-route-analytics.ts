@@ -1,3 +1,5 @@
+"use server"
+
 import { RouteAnalyticsEngine } from "@/lib/services/route-analytics-engine"
 import { UserJourneyTracker } from "@/lib/services/user-journey-tracker"
 import { getRoutePerformanceAnalysis } from "@/lib/route-performance-data"

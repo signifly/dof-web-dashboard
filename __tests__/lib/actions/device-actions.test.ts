@@ -1,4 +1,4 @@
-import { calculateHealthScore } from "@/lib/actions/device-actions"
+import { calculateHealthScore } from "@/lib/utils/device-utils"
 import { DeviceHealthInput, PERFORMANCE_THRESHOLDS } from "@/types/device"
 
 // Mock Supabase

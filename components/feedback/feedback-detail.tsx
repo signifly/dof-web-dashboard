@@ -26,7 +26,7 @@ import {
   Check,
   Download,
   AlertCircle,
-  Mail
+  Mail,
 } from "lucide-react"
 
 interface FeedbackDetailProps {
@@ -38,7 +38,7 @@ interface FeedbackDetailProps {
 export function FeedbackDetail({
   feedback,
   open,
-  onClose
+  onClose,
 }: FeedbackDetailProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [imageError, setImageError] = useState(false)
@@ -53,21 +53,21 @@ export function FeedbackDetail({
           weekday: "long",
           year: "numeric",
           month: "long",
-          day: "numeric"
+          day: "numeric",
         }),
         time: date.toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
-          hour12: true
+          hour12: true,
         }),
-        relative: getRelativeTime(date)
+        relative: getRelativeTime(date),
       }
     } catch {
       return {
         date: "Invalid date",
         time: "Invalid time",
-        relative: "Unknown"
+        relative: "Unknown",
       }
     }
   }
@@ -81,9 +81,12 @@ export function FeedbackDetail({
     const diffInDays = Math.floor(diffInHours / 24)
 
     if (diffInMinutes < 1) return "Just now"
-    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes !== 1 ? "s" : ""} ago`
-    if (diffInHours < 24) return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`
-    if (diffInDays < 30) return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`
+    if (diffInMinutes < 60)
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? "s" : ""} ago`
+    if (diffInHours < 24)
+      return `${diffInHours} hour${diffInHours !== 1 ? "s" : ""} ago`
+    if (diffInDays < 30)
+      return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`
     return "More than a month ago"
   }
 
@@ -98,7 +101,7 @@ export function FeedbackDetail({
     const sizes = ["Bytes", "KB", "MB", "GB"]
     if (bytes === 0) return "0 Bytes"
     const i = Math.floor(Math.log(bytes) / Math.log(1024))
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + " " + sizes[i]
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i]
   }
 
   // Copy to clipboard function
@@ -166,12 +169,16 @@ export function FeedbackDetail({
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Email:</span>
                   <div className="flex items-center gap-1">
-                    <span className="text-sm font-mono">{feedback.user_email}</span>
+                    <span className="text-sm font-mono">
+                      {feedback.user_email}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-6 w-6 p-0"
-                      onClick={() => copyToClipboard(feedback.user_email, "email")}
+                      onClick={() =>
+                        copyToClipboard(feedback.user_email, "email")
+                      }
                     >
                       {copiedField === "email" ? (
                         <Check className="h-3 w-3 text-green-600" />
@@ -186,7 +193,9 @@ export function FeedbackDetail({
                     variant="outline"
                     size="sm"
                     className="w-full"
-                    onClick={() => window.open(`mailto:${feedback.user_email}`, "_blank")}
+                    onClick={() =>
+                      window.open(`mailto:${feedback.user_email}`, "_blank")
+                    }
                   >
                     <Mail className="h-3 w-3 mr-2" />
                     Send Email
@@ -319,7 +328,9 @@ export function FeedbackDetail({
                     )}
                     {feedback.screenshot_mime_type && (
                       <Badge variant="outline" className="text-xs">
-                        {feedback.screenshot_mime_type.split("/")[1]?.toUpperCase()}
+                        {feedback.screenshot_mime_type
+                          .split("/")[1]
+                          ?.toUpperCase()}
                       </Badge>
                     )}
                   </div>
@@ -331,14 +342,17 @@ export function FeedbackDetail({
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Failed to load screenshot. The image may have been removed or is temporarily unavailable.
+                        Failed to load screenshot. The image may have been
+                        removed or is temporarily unavailable.
                       </AlertDescription>
                     </Alert>
                   ) : (
                     <div className="relative">
                       {imageLoading && (
                         <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
-                          <div className="text-sm text-muted-foreground">Loading image...</div>
+                          <div className="text-sm text-muted-foreground">
+                            Loading image...
+                          </div>
                         </div>
                       )}
                       <img
@@ -379,7 +393,9 @@ export function FeedbackDetail({
           {/* System Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">System Information</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                System Information
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-2 text-xs">
@@ -403,11 +419,15 @@ export function FeedbackDetail({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Created:</span>
-                  <span className="font-mono">{new Date(feedback.created_at).toLocaleString()}</span>
+                  <span className="font-mono">
+                    {new Date(feedback.created_at).toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Event Time:</span>
-                  <span className="font-mono">{new Date(feedback.timestamp).toLocaleString()}</span>
+                  <span className="font-mono">
+                    {new Date(feedback.timestamp).toLocaleString()}
+                  </span>
                 </div>
               </div>
             </CardContent>

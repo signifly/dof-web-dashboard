@@ -5,15 +5,18 @@ This directory contains the feedback management components for the DOF Web Dashb
 ## Components Overview
 
 ### 1. FeedbackDashboard
+
 Main container component that coordinates all feedback functionality.
 
 **Features:**
+
 - Stats overview with cards showing total feedback, unique users, routes, and screenshots
 - Integrates filters, list, and detail modal
 - Handles state management and data loading
 - Real-time updates and error handling
 
 **Usage:**
+
 ```tsx
 import { FeedbackDashboard } from "@/components/feedback"
 
@@ -30,9 +33,11 @@ import { FeedbackDashboard } from "@/components/feedback"
 ```
 
 ### 2. FeedbackList
+
 Table/list component showing feedback entries with pagination.
 
 **Features:**
+
 - Responsive design (desktop table + mobile cards)
 - Columns: Date, User Email, Route, Comment (truncated), Screenshot indicator
 - Click to view details
@@ -40,9 +45,11 @@ Table/list component showing feedback entries with pagination.
 - Loading states and error handling
 
 ### 3. FeedbackFilters
+
 Filtering controls for feedback data.
 
 **Features:**
+
 - User email search with autocomplete
 - Route filter dropdown with search
 - Screenshot presence toggle
@@ -51,9 +58,11 @@ Filtering controls for feedback data.
 - Clear all filters functionality
 
 ### 4. FeedbackDetail
+
 Modal/dialog for detailed feedback view.
 
 **Features:**
+
 - Full comment display with copy functionality
 - User email with mailto link
 - Route information with external link
@@ -114,7 +123,7 @@ export default async function FeedbackPage() {
   // Optionally pre-load initial data
   const [feedbackResult, stats] = await Promise.all([
     getFeedbackList({ page: 1, limit: 20 }),
-    getFeedbackStats()
+    getFeedbackStats(),
   ])
 
   return (
@@ -124,7 +133,7 @@ export default async function FeedbackPage() {
           feedback: feedbackResult.data,
           stats,
           total: feedbackResult.total,
-          hasMore: feedbackResult.hasMore
+          hasMore: feedbackResult.hasMore,
         }}
       />
     </DashboardLayout>
@@ -146,18 +155,22 @@ The components integrate seamlessly with the existing server actions in `@/lib/a
 ## Design Patterns
 
 ### Server Components by Default
+
 Components use Server Components where possible, with `"use client"` only for interactivity:
+
 - FeedbackDashboard: Client (state management, event handlers)
 - FeedbackList: Client (click handlers, loading states)
 - FeedbackFilters: Client (form interactions)
 - FeedbackDetail: Client (modal functionality)
 
 ### Responsive Mobile-First Design
+
 - Desktop: Full table layout with all columns
 - Mobile: Card-based layout with condensed information
 - Tablet: Adaptive layout based on available space
 
 ### Accessibility
+
 - Proper ARIA labels and roles
 - Keyboard navigation support
 - Screen reader friendly
@@ -165,6 +178,7 @@ Components use Server Components where possible, with `"use client"` only for in
 - Focus management in modals
 
 ### Error Handling
+
 - Graceful fallbacks for failed data loading
 - User-friendly error messages
 - Retry mechanisms where appropriate
@@ -173,12 +187,14 @@ Components use Server Components where possible, with `"use client"` only for in
 ## Dependencies
 
 The components rely on these shadcn/ui components:
+
 - Card, Button, Badge, Dialog, Table
 - Select, Input, Switch, Calendar
 - Command, Popover, Separator
 - Alert, Skeleton (custom)
 
 External dependencies:
+
 - Lucide React icons
 - React Day Picker for date ranges
 - Next.js 14 App Router patterns

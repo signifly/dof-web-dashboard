@@ -23,7 +23,7 @@ import {
   Clock,
   ChevronRight,
   AlertCircle,
-  Loader2
+  Loader2,
 } from "lucide-react"
 
 interface FeedbackListProps {
@@ -41,7 +41,7 @@ export function FeedbackList({
   error,
   hasMore,
   onFeedbackSelect,
-  onLoadMore
+  onLoadMore,
 }: FeedbackListProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
@@ -59,7 +59,7 @@ export function FeedbackList({
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-        hour12: true
+        hour12: true,
       })
     } catch {
       return "Invalid date"
@@ -97,9 +97,7 @@ export function FeedbackList({
       <div className="p-6">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error}
-          </AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       </div>
     )
@@ -147,7 +145,7 @@ export function FeedbackList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {feedback.map((item) => (
+            {feedback.map(item => (
               <TableRow
                 key={item.id}
                 className={`cursor-pointer transition-colors hover:bg-muted/50 ${
@@ -166,9 +164,7 @@ export function FeedbackList({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <User className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-sm truncate">
-                      {item.user_email}
-                    </span>
+                    <span className="text-sm truncate">{item.user_email}</span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -205,7 +201,7 @@ export function FeedbackList({
 
       {/* Mobile Card View */}
       <div className="lg:hidden space-y-3 p-6">
-        {feedback.map((item) => (
+        {feedback.map(item => (
           <Card
             key={item.id}
             className={`cursor-pointer transition-all hover:shadow-md ${

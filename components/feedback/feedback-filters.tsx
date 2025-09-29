@@ -27,10 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  getFeedbackUsers,
-  getFeedbackRoutes,
-} from "@/lib/actions/feedback"
+import { getFeedbackUsers, getFeedbackRoutes } from "@/lib/actions/feedback"
 import {
   Search,
   Route,
@@ -41,7 +38,7 @@ import {
   Filter,
   Check,
   ChevronsUpDown,
-  Loader2
+  Loader2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { DateRange } from "react-day-picker"
@@ -68,7 +65,7 @@ const DATE_RANGES = [
       const start = new Date()
       start.setDate(end.getDate() - 7)
       return { start: start.toISOString(), end: end.toISOString() }
-    }
+    },
   },
   {
     label: "Last 30 days",
@@ -77,7 +74,7 @@ const DATE_RANGES = [
       const start = new Date()
       start.setDate(end.getDate() - 30)
       return { start: start.toISOString(), end: end.toISOString() }
-    }
+    },
   },
   {
     label: "Last 90 days",
@@ -86,14 +83,14 @@ const DATE_RANGES = [
       const start = new Date()
       start.setDate(end.getDate() - 90)
       return { start: start.toISOString(), end: end.toISOString() }
-    }
-  }
+    },
+  },
 ]
 
 export function FeedbackFilters({
   filters,
   onFiltersChange,
-  loading
+  loading,
 }: FeedbackFiltersProps) {
   const [users, setUsers] = useState<string[]>([])
   const [routes, setRoutes] = useState<string[]>([])
@@ -106,7 +103,9 @@ export function FeedbackFilters({
   const [customDateOpen, setCustomDateOpen] = useState(false)
 
   // Custom date range state
-  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>()
+  const [customDateRange, setCustomDateRange] = useState<
+    DateRange | undefined
+  >()
 
   // Load filter options
   const loadOptions = useCallback(async () => {
@@ -114,7 +113,7 @@ export function FeedbackFilters({
     try {
       const [usersData, routesData] = await Promise.all([
         getFeedbackUsers(),
-        getFeedbackRoutes()
+        getFeedbackRoutes(),
       ])
       setUsers(usersData)
       setRoutes(routesData)
@@ -130,38 +129,53 @@ export function FeedbackFilters({
   }, [loadOptions])
 
   // Handle individual filter changes
-  const handleUserEmailChange = useCallback((value: string) => {
-    onFiltersChange({ ...filters, userEmail: value })
-  }, [filters, onFiltersChange])
+  const handleUserEmailChange = useCallback(
+    (value: string) => {
+      onFiltersChange({ ...filters, userEmail: value })
+    },
+    [filters, onFiltersChange]
+  )
 
-  const handleRouteChange = useCallback((value: string) => {
-    onFiltersChange({ ...filters, route: value })
-  }, [filters, onFiltersChange])
+  const handleRouteChange = useCallback(
+    (value: string) => {
+      onFiltersChange({ ...filters, route: value })
+    },
+    [filters, onFiltersChange]
+  )
 
-  const handleScreenshotChange = useCallback((checked: boolean) => {
-    onFiltersChange({
-      ...filters,
-      hasScreenshot: checked ? true : null
-    })
-  }, [filters, onFiltersChange])
+  const handleScreenshotChange = useCallback(
+    (checked: boolean) => {
+      onFiltersChange({
+        ...filters,
+        hasScreenshot: checked ? true : null,
+      })
+    },
+    [filters, onFiltersChange]
+  )
 
-  const handleDateRangeChange = useCallback((range: { start: string; end: string } | null) => {
-    onFiltersChange({ ...filters, dateRange: range })
-  }, [filters, onFiltersChange])
+  const handleDateRangeChange = useCallback(
+    (range: { start: string; end: string } | null) => {
+      onFiltersChange({ ...filters, dateRange: range })
+    },
+    [filters, onFiltersChange]
+  )
 
   // Handle predefined date range selection
-  const handlePredefinedDateRange = useCallback((rangeConfig: typeof DATE_RANGES[0]) => {
-    const range = rangeConfig.getValue()
-    handleDateRangeChange(range)
-    setDateOpen(false)
-  }, [handleDateRangeChange])
+  const handlePredefinedDateRange = useCallback(
+    (rangeConfig: (typeof DATE_RANGES)[0]) => {
+      const range = rangeConfig.getValue()
+      handleDateRangeChange(range)
+      setDateOpen(false)
+    },
+    [handleDateRangeChange]
+  )
 
   // Handle custom date range
   const handleCustomDateRange = useCallback(() => {
     if (customDateRange?.from && customDateRange?.to) {
       const range = {
         start: customDateRange.from.toISOString(),
-        end: customDateRange.to.toISOString()
+        end: customDateRange.to.toISOString(),
       }
       handleDateRangeChange(range)
       setCustomDateOpen(false)
@@ -175,7 +189,7 @@ export function FeedbackFilters({
       userEmail: "",
       route: "",
       hasScreenshot: null,
-      dateRange: null
+      dateRange: null,
     })
     setCustomDateRange(undefined)
   }, [onFiltersChange])
@@ -192,28 +206,31 @@ export function FeedbackFilters({
     filters.userEmail,
     filters.route,
     filters.hasScreenshot !== null,
-    filters.dateRange
+    filters.dateRange,
   ].filter(Boolean).length
 
   // Format date range for display
-  const formatDateRange = useCallback((dateRange: { start: string; end: string }) => {
-    try {
-      const start = new Date(dateRange.start)
-      const end = new Date(dateRange.end)
-      const startFormatted = start.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric"
-      })
-      const endFormatted = end.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric"
-      })
-      return `${startFormatted} - ${endFormatted}`
-    } catch {
-      return "Invalid date range"
-    }
-  }, [])
+  const formatDateRange = useCallback(
+    (dateRange: { start: string; end: string }) => {
+      try {
+        const start = new Date(dateRange.start)
+        const end = new Date(dateRange.end)
+        const startFormatted = start.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })
+        const endFormatted = end.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+        return `${startFormatted} - ${endFormatted}`
+      } catch {
+        return "Invalid date range"
+      }
+    },
+    []
+  )
 
   return (
     <div className="space-y-4">
@@ -267,19 +284,25 @@ export function FeedbackFilters({
                       />
                       All users
                     </CommandItem>
-                    {users.map((user) => (
+                    {users.map(user => (
                       <CommandItem
                         key={user}
                         value={user}
-                        onSelect={(currentValue) => {
-                          handleUserEmailChange(currentValue === filters.userEmail ? "" : currentValue)
+                        onSelect={currentValue => {
+                          handleUserEmailChange(
+                            currentValue === filters.userEmail
+                              ? ""
+                              : currentValue
+                          )
                           setUserOpen(false)
                         }}
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            filters.userEmail === user ? "opacity-100" : "opacity-0"
+                            filters.userEmail === user
+                              ? "opacity-100"
+                              : "opacity-0"
                           )}
                         />
                         {user}
@@ -340,19 +363,23 @@ export function FeedbackFilters({
                       />
                       All routes
                     </CommandItem>
-                    {routes.map((route) => (
+                    {routes.map(route => (
                       <CommandItem
                         key={route}
                         value={route}
-                        onSelect={(currentValue) => {
-                          handleRouteChange(currentValue === filters.route ? "" : currentValue)
+                        onSelect={currentValue => {
+                          handleRouteChange(
+                            currentValue === filters.route ? "" : currentValue
+                          )
                           setRouteOpen(false)
                         }}
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            filters.route === route ? "opacity-100" : "opacity-0"
+                            filters.route === route
+                              ? "opacity-100"
+                              : "opacity-0"
                           )}
                         />
                         {route}
@@ -379,7 +406,9 @@ export function FeedbackFilters({
               disabled={loading}
             />
             <Label htmlFor="screenshot-filter" className="text-sm">
-              {filters.hasScreenshot === true ? "With screenshots" : "All feedback"}
+              {filters.hasScreenshot === true
+                ? "With screenshots"
+                : "All feedback"}
             </Label>
           </div>
         </div>
@@ -397,11 +426,9 @@ export function FeedbackFilters({
                 className="w-full justify-between"
                 disabled={loading}
               >
-                {filters.dateRange ? (
-                  formatDateRange(filters.dateRange)
-                ) : (
-                  "All time..."
-                )}
+                {filters.dateRange
+                  ? formatDateRange(filters.dateRange)
+                  : "All time..."}
                 <CalendarIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -418,7 +445,10 @@ export function FeedbackFilters({
                   </Button>
                 ))}
                 <div className="border-t pt-3">
-                  <Popover open={customDateOpen} onOpenChange={setCustomDateOpen}>
+                  <Popover
+                    open={customDateOpen}
+                    onOpenChange={setCustomDateOpen}
+                  >
                     <PopoverTrigger asChild>
                       <Button variant="ghost" className="w-full justify-start">
                         Custom Range...
@@ -438,7 +468,9 @@ export function FeedbackFilters({
                           <Button
                             size="sm"
                             onClick={handleCustomDateRange}
-                            disabled={!customDateRange?.from || !customDateRange?.to}
+                            disabled={
+                              !customDateRange?.from || !customDateRange?.to
+                            }
                           >
                             Apply Range
                           </Button>
@@ -466,7 +498,8 @@ export function FeedbackFilters({
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} active
+              {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""}{" "}
+              active
             </span>
             <div className="flex gap-1">
               {filters.userEmail && (

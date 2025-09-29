@@ -8,5 +8,5 @@ export type {
   Feedback,
   FeedbackListOptions,
   FeedbackListResult,
-  FeedbackStats
+  FeedbackStats,
 } from "@/lib/actions/feedback"

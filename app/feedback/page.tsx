@@ -1,9 +1,6 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { FeedbackDashboard } from "@/components/feedback/feedback-dashboard"
-import {
-  getFeedbackList,
-  getFeedbackStats,
-} from "@/lib/actions/feedback"
+import { getFeedbackList, getFeedbackStats } from "@/lib/actions/feedback"
 import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
@@ -21,8 +18,12 @@ export default async function FeedbackPage() {
     return (
       <DashboardLayout title="User Feedback" user={user}>
         <FeedbackDashboard
-          initialData={initialData}
-          stats={stats}
+          initialData={{
+            feedback: initialData.data,
+            stats: stats,
+            total: initialData.total,
+            hasMore: initialData.hasMore
+          }}
         />
       </DashboardLayout>
     )
@@ -37,7 +38,8 @@ export default async function FeedbackPage() {
               Unable to load feedback data
             </h2>
             <p className="text-gray-600">
-              Make sure your database is connected and the feedback table is accessible.
+              Make sure your database is connected and the feedback table is
+              accessible.
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Error: {error instanceof Error ? error.message : "Unknown error"}
