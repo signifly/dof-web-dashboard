@@ -1,3 +1,5 @@
+"use server"
+
 import { createClient } from "@/lib/supabase/server"
 import { PerformanceMetric } from "@/lib/performance-data"
 import {

@@ -9,6 +9,41 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      feedback: {
+        Row: {
+          id: string
+          comment: string
+          user_email: string
+          route: string
+          timestamp: string
+          created_at: string
+          screenshot_url: string | null
+          screenshot_file_size: number | null
+          screenshot_mime_type: string | null
+        }
+        Insert: {
+          id?: string
+          comment: string
+          user_email: string
+          route: string
+          timestamp?: string
+          created_at?: string
+          screenshot_url?: string | null
+          screenshot_file_size?: number | null
+          screenshot_mime_type?: string | null
+        }
+        Update: {
+          id?: string
+          comment?: string
+          user_email?: string
+          route?: string
+          timestamp?: string
+          created_at?: string
+          screenshot_url?: string | null
+          screenshot_file_size?: number | null
+          screenshot_mime_type?: string | null
+        }
+      }
       performance_metrics: {
         Row: {
           id: string

@@ -39,6 +39,10 @@ const navigationItems = [
     name: "Insights",
     href: "/insights" as const,
   },
+  {
+    name: "Feedback",
+    href: "/feedback" as const,
+  },
 ] as const
 
 interface HeaderProps {
