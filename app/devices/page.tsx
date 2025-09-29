@@ -2,8 +2,8 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DeviceProfiling } from "@/components/analytics/device-profiling"
 import {
-  getPerformanceSummary,
-  getDevicePerformanceData,
+  getCachedPerformanceSummary,
+  getCachedDevicePerformanceData,
 } from "@/lib/performance-data"
 import { requireAuth } from "@/lib/auth"
 
@@ -15,8 +15,8 @@ export default async function DevicesPage() {
   await requireAuth()
   try {
     const [summary, devices] = await Promise.all([
-      getPerformanceSummary(),
-      getDevicePerformanceData(),
+      getCachedPerformanceSummary(),
+      getCachedDevicePerformanceData(),
     ])
 
     return (

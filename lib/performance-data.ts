@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { createClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
 import {
@@ -965,3 +966,36 @@ export async function debugMetricTypes() {
     }
   }
 }
+
+/**
+ * React cached version of performance functions for server components
+ * These functions are cached per request to eliminate duplicate database calls
+ */
+
+/**
+ * Cached performance summary - shared across dashboard, metrics, devices pages
+ */
+export const getCachedPerformanceSummary = cache(async (): Promise<PerformanceSummary> => {
+  return await getPerformanceSummary()
+})
+
+/**
+ * Cached performance trends - shared across dashboard, metrics, analytics pages
+ */
+export const getCachedPerformanceTrends = cache(async (limit: number = 50): Promise<MetricsTrend[]> => {
+  return await getPerformanceTrends(limit)
+})
+
+/**
+ * Cached recent sessions - shared across analytics and other pages
+ */
+export const getCachedRecentSessions = cache(async (limit: number = 50): Promise<PerformanceSession[]> => {
+  return await getRecentSessions(limit)
+})
+
+/**
+ * Cached device performance data - used in devices page
+ */
+export const getCachedDevicePerformanceData = cache(async (): Promise<DeviceProfile[]> => {
+  return await getDevicePerformanceData()
+})

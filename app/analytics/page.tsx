@@ -3,7 +3,7 @@ import { UserEngagementCorrelation } from "@/components/analytics/user-engagemen
 import { DeviceBenchmarking } from "@/components/analytics/device-benchmarking"
 import { ABTestingPerformance } from "@/components/analytics/ab-testing-performance"
 import { RegressionDetection } from "@/components/analytics/regression-detection"
-import { getPerformanceTrends, getRecentSessions } from "@/lib/performance-data"
+import { getCachedPerformanceTrends, getCachedRecentSessions } from "@/lib/performance-data"
 import { Button } from "@/components/ui/button"
 import { requireAuth } from "@/lib/auth"
 
@@ -15,8 +15,8 @@ export default async function AnalyticsPage() {
   await requireAuth()
   try {
     const [trends, sessions] = await Promise.all([
-      getPerformanceTrends(200),
-      getRecentSessions(100),
+      getCachedPerformanceTrends(200),
+      getCachedRecentSessions(100),
     ])
 
     return (

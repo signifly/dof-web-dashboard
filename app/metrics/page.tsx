@@ -1,8 +1,8 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { MetricsContent } from "@/components/metrics/metrics-content"
 import {
-  getPerformanceSummary,
-  getPerformanceTrends,
+  getCachedPerformanceSummary,
+  getCachedPerformanceTrends,
 } from "@/lib/performance-data"
 import { requireAuth } from "@/lib/auth"
 
@@ -14,8 +14,8 @@ export default async function MetricsPage() {
   await requireAuth()
   try {
     const [summary, trends] = await Promise.all([
-      getPerformanceSummary(),
-      getPerformanceTrends(100),
+      getCachedPerformanceSummary(),
+      getCachedPerformanceTrends(100),
     ])
 
     return (
