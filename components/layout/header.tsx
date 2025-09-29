@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { useRealtime } from "@/lib/contexts/realtime-context"
 import { ConnectionStatus } from "@/components/ui/connection-status"
 import { GlobalSearch } from "@/components/search/global-search"
+import { UserMenu } from "./user-menu"
 
 const navigationItems = [
   {
@@ -127,6 +128,9 @@ export function Header({
               />
             </div>
           )}
+
+          {/* User Menu */}
+          <UserMenu />
         </div>
       </div>
     </Card>

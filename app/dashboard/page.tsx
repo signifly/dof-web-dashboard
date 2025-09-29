@@ -4,10 +4,13 @@ import {
   getPerformanceSummary,
   getPerformanceTrends,
 } from "@/lib/performance-data"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
+  // Require authentication and get current user
+  const user = await requireAuth()
   try {
     const [summary, trends] = await Promise.all([
       getPerformanceSummary(),
@@ -15,7 +18,7 @@ export default async function DashboardPage() {
     ])
 
     return (
-      <DashboardLayout title="Dashboard">
+      <DashboardLayout title="Dashboard" user={user}>
         <DashboardContent initialSummary={summary} initialTrends={trends} />
       </DashboardLayout>
     )
@@ -23,7 +26,7 @@ export default async function DashboardPage() {
     console.error("Error loading dashboard data:", error)
 
     return (
-      <DashboardLayout title="Dashboard">
+      <DashboardLayout title="Dashboard" user={user}>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
