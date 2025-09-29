@@ -210,7 +210,6 @@ export function ABTestingPerformance({
           <div className="space-y-6">
             {abTests.map(test => {
               const control = test.variants.find(v => v.isControl)!
-              const _variants = test.variants.filter(v => !v.isControl)
 
               return (
                 <div key={test.id} className="border rounded-lg p-6">
