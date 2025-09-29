@@ -1,14 +1,48 @@
 import { NextResponse, type NextRequest } from "next/server"
 
+// Simple cache for middleware session validation (Edge Runtime compatible)
+const middlewareSessionCache = new Map<string, { validated: boolean; expiresAt: number }>()
+const MIDDLEWARE_CACHE_TTL = 2 * 60 * 1000 // 2 minutes for middleware cache
+
 /**
- * Middleware for environment-based authentication with enhanced JWT validation
- * Protects all routes except login and public assets
- * Performs lightweight JWT structure validation for Edge Runtime compatibility
+ * Check if path is a static asset that should bypass auth
+ */
+function isStaticAsset(pathname: string): boolean {
+  return (
+    pathname.startsWith("/_next/") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/images/") ||
+    pathname.startsWith("/icons/") ||
+    /\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|woff|woff2|ttf|eot)$/.test(pathname)
+  )
+}
+
+/**
+ * Create cache key from token (simple hash for Edge Runtime)
+ */
+function createCacheKey(token: string): string {
+  let hash = 0
+  for (let i = 0; i < token.length; i++) {
+    const char = token.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  return Math.abs(hash).toString(36)
+}
+
+/**
+ * Optimized middleware with cache-first auth validation
+ * Fast path for static assets, minimal JWT validation, deferred full verification
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Allow access to login page and auth-related paths
+  // Fast path: Skip auth entirely for static assets
+  if (isStaticAsset(pathname)) {
+    return NextResponse.next()
+  }
+
+  // Allow access to auth-related paths
   if (pathname.startsWith("/auth/")) {
     return NextResponse.next()
   }
@@ -17,35 +51,55 @@ export async function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("auth-session")
 
   if (!sessionToken?.value) {
-    // No session, redirect to login with session_expired error
     const loginUrl = new URL("/auth/login", request.url)
     loginUrl.searchParams.set("error", "session_expired")
     return NextResponse.redirect(loginUrl)
   }
 
-  // Enhanced JWT structure validation (Edge Runtime compatible)
+  // Cache-first validation: Check if token was recently validated
+  const cacheKey = createCacheKey(sessionToken.value)
+  const cached = middlewareSessionCache.get(cacheKey)
+
+  if (cached && Date.now() < cached.expiresAt) {
+    // Cache hit - token was recently validated
+    return NextResponse.next()
+  }
+
+  // Cache miss - perform minimal JWT structure validation
   try {
     const parts = sessionToken.value.split(".")
 
-    // Validate JWT structure (header.payload.signature)
+    // Basic JWT structure check only (defer full verification to pages)
     if (parts.length !== 3) {
       throw new Error("Invalid JWT structure")
     }
 
-    // Decode payload to check expiration (without signature verification for Edge Runtime)
+    // Quick expiration check without full payload parsing
     const payload = JSON.parse(atob(parts[1]))
-
-    // Check if token is expired
     if (payload.exp && payload.exp < Date.now() / 1000) {
       throw new Error("Token expired")
     }
 
-    // Check if token has required fields
-    if (!payload.email) {
-      throw new Error("Invalid token payload")
+    // Cache the validation result
+    middlewareSessionCache.set(cacheKey, {
+      validated: true,
+      expiresAt: Date.now() + MIDDLEWARE_CACHE_TTL
+    })
+
+    // Cleanup expired cache entries periodically
+    if (Math.random() < 0.01) { // 1% chance
+      const now = Date.now()
+      for (const [key, value] of middlewareSessionCache.entries()) {
+        if (now > value.expiresAt) {
+          middlewareSessionCache.delete(key)
+        }
+      }
     }
+
   } catch (error) {
-    // Invalid or expired token, redirect to login
+    // Remove from cache and redirect to login
+    middlewareSessionCache.delete(cacheKey)
+
     console.error("Middleware JWT validation failed:", {
       timestamp: new Date().toISOString(),
       pathname,
@@ -57,8 +111,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Token structure is valid, proceed to route
-  // Full JWT signature verification happens server-side in each protected page
+  // Token passes basic validation - full verification at page level
   return NextResponse.next()
 }
 
