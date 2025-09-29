@@ -2,6 +2,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { FeedbackDashboard } from "@/components/feedback/feedback-dashboard"
 import { getFeedbackList, getFeedbackStats } from "@/lib/actions/feedback"
 import { requireAuth } from "@/lib/auth"
+import { isSuccess } from "@/lib/utils/result"
 
 export const dynamic = "force-dynamic"
 
@@ -9,27 +10,13 @@ export default async function FeedbackPage() {
   // Require authentication and get current user
   const user = await requireAuth()
 
-  try {
-    const [initialData, stats] = await Promise.all([
-      getFeedbackList({ page: 1, limit: 20 }),
-      getFeedbackStats(),
-    ])
+  const [initialDataResult, statsResult] = await Promise.all([
+    getFeedbackList({ page: 1, limit: 20 }),
+    getFeedbackStats(),
+  ])
 
-    return (
-      <DashboardLayout title="User Feedback" user={user}>
-        <FeedbackDashboard
-          initialData={{
-            feedback: initialData.data,
-            stats: stats,
-            total: initialData.total,
-            hasMore: initialData.hasMore,
-          }}
-        />
-      </DashboardLayout>
-    )
-  } catch (error) {
-    console.error("Error loading feedback data:", error)
-
+  // Handle any errors from the Result pattern
+  if (!isSuccess(initialDataResult)) {
     return (
       <DashboardLayout title="User Feedback" user={user}>
         <div className="space-y-6">
@@ -42,11 +29,45 @@ export default async function FeedbackPage() {
               accessible.
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              Error: {error instanceof Error ? error.message : "Unknown error"}
+              Error: {initialDataResult.error}
             </p>
           </div>
         </div>
       </DashboardLayout>
     )
   }
+
+  if (!isSuccess(statsResult)) {
+    return (
+      <DashboardLayout title="User Feedback" user={user}>
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Unable to load feedback statistics
+            </h2>
+            <p className="text-gray-600">
+              The feedback list is available, but statistics could not be
+              loaded.
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Error: {statsResult.error}
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  return (
+    <DashboardLayout title="User Feedback" user={user}>
+      <FeedbackDashboard
+        initialData={{
+          feedback: initialDataResult.data.data,
+          stats: statsResult.data,
+          total: initialDataResult.data.total,
+          hasMore: initialDataResult.data.hasMore,
+        }}
+      />
+    </DashboardLayout>
+  )
 }

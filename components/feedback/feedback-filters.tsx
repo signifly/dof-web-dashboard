@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { getFeedbackUsers, getFeedbackRoutes } from "@/lib/actions/feedback"
+import { isSuccess } from "@/lib/utils/result"
 import {
   Route,
   User,
@@ -102,12 +103,22 @@ export function FeedbackFilters({
   const loadOptions = useCallback(async () => {
     setLoadingOptions(true)
     try {
-      const [usersData, routesData] = await Promise.all([
+      const [usersResult, routesResult] = await Promise.all([
         getFeedbackUsers(),
         getFeedbackRoutes(),
       ])
-      setUsers(usersData)
-      setRoutes(routesData)
+
+      if (isSuccess(usersResult)) {
+        setUsers(usersResult.data)
+      } else {
+        console.error("Failed to load users for filters:", usersResult.error)
+      }
+
+      if (isSuccess(routesResult)) {
+        setRoutes(routesResult.data)
+      } else {
+        console.error("Failed to load routes for filters:", routesResult.error)
+      }
     } catch (error) {
       console.error("Failed to load filter options:", error)
     } finally {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, memo, useCallback } from "react"
 import {
   Table,
   TableBody,
@@ -45,25 +45,30 @@ export function FeedbackList({
 }: FeedbackListProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const handleRowClick = (item: Feedback) => {
-    setSelectedId(item.id)
-    onFeedbackSelect(item)
-  }
+  const handleRowClick = useCallback(
+    (item: Feedback) => {
+      setSelectedId(item.id)
+      onFeedbackSelect(item)
+    },
+    [onFeedbackSelect]
+  )
 
-  const formatDate = (timestamp: string) => {
-    try {
-      const date = new Date(timestamp)
-      return date.toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })
-    } catch {
+  const formatDate = (timestamp: string): string => {
+    const date = new Date(timestamp)
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
       return "Invalid date"
     }
+
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
   }
 
   const truncateText = (text: string, maxLength: number = 60) => {
@@ -75,6 +80,131 @@ export function FeedbackList({
     // Clean up route display
     return route.startsWith("/") ? route : `/${route}`
   }
+
+  // Memoized table row component to prevent unnecessary re-renders
+  const FeedbackTableRow = memo(
+    ({
+      item,
+      isSelected,
+      onRowClick,
+    }: {
+      item: Feedback
+      isSelected: boolean
+      onRowClick: (item: Feedback) => void
+    }) => (
+      <TableRow
+        className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+          isSelected ? "bg-muted" : ""
+        }`}
+        onClick={() => onRowClick(item)}
+      >
+        <TableCell>
+          <div className="flex items-center gap-2">
+            <Clock className="h-3 w-3 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {formatDate(item.timestamp)}
+            </span>
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center gap-2">
+            <User className="h-3 w-3 text-muted-foreground" />
+            <span className="text-sm truncate">{item.user_email}</span>
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center gap-2">
+            <Route className="h-3 w-3 text-muted-foreground" />
+            <Badge variant="outline" className="text-xs truncate">
+              {formatRoute(item.route)}
+            </Badge>
+          </div>
+        </TableCell>
+        <TableCell>
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {truncateText(item.comment, 80)}
+          </p>
+        </TableCell>
+        <TableCell className="text-center">
+          {item.screenshot_url ? (
+            <Badge variant="secondary" className="text-xs">
+              <ImageIcon className="h-3 w-3 mr-1" />
+              Yes
+            </Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground">No</span>
+          )}
+        </TableCell>
+        <TableCell>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </TableCell>
+      </TableRow>
+    )
+  )
+  FeedbackTableRow.displayName = "FeedbackTableRow"
+
+  // Memoized card component to prevent unnecessary re-renders
+  const FeedbackCard = memo(
+    ({
+      item,
+      isSelected,
+      onCardClick,
+    }: {
+      item: Feedback
+      isSelected: boolean
+      onCardClick: (item: Feedback) => void
+    }) => (
+      <Card
+        className={`cursor-pointer transition-all hover:shadow-md ${
+          isSelected ? "ring-2 ring-primary" : ""
+        }`}
+        onClick={() => onCardClick(item)}
+      >
+        <CardContent className="p-4 space-y-3">
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium truncate">
+                {item.user_email}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {item.screenshot_url && (
+                <Badge variant="secondary" className="text-xs">
+                  <ImageIcon className="h-3 w-3 mr-1" />
+                  Screenshot
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Route */}
+          <div className="flex items-center gap-2">
+            <Route className="h-3 w-3 text-muted-foreground" />
+            <Badge variant="outline" className="text-xs">
+              {formatRoute(item.route)}
+            </Badge>
+          </div>
+
+          {/* Comment */}
+          <p className="text-sm text-muted-foreground line-clamp-3">
+            {item.comment}
+          </p>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {formatDate(item.timestamp)}
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  )
+  FeedbackCard.displayName = "FeedbackCard"
 
   // Loading skeleton
   const LoadingSkeleton = () => (
@@ -146,54 +276,12 @@ export function FeedbackList({
           </TableHeader>
           <TableBody>
             {feedback.map(item => (
-              <TableRow
+              <FeedbackTableRow
                 key={item.id}
-                className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                  selectedId === item.id ? "bg-muted" : ""
-                }`}
-                onClick={() => handleRowClick(item)}
-              >
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-sm font-medium">
-                      {formatDate(item.timestamp)}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <User className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-sm truncate">{item.user_email}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Route className="h-3 w-3 text-muted-foreground" />
-                    <Badge variant="outline" className="text-xs truncate">
-                      {formatRoute(item.route)}
-                    </Badge>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {truncateText(item.comment, 80)}
-                  </p>
-                </TableCell>
-                <TableCell className="text-center">
-                  {item.screenshot_url ? (
-                    <Badge variant="secondary" className="text-xs">
-                      <ImageIcon className="h-3 w-3 mr-1" />
-                      Yes
-                    </Badge>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">No</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </TableCell>
-              </TableRow>
+                item={item}
+                isSelected={selectedId === item.id}
+                onRowClick={handleRowClick}
+              />
             ))}
           </TableBody>
         </Table>
@@ -202,55 +290,12 @@ export function FeedbackList({
       {/* Mobile Card View */}
       <div className="lg:hidden space-y-3 p-6">
         {feedback.map(item => (
-          <Card
+          <FeedbackCard
             key={item.id}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              selectedId === item.id ? "ring-2 ring-primary" : ""
-            }`}
-            onClick={() => handleRowClick(item)}
-          >
-            <CardContent className="p-4 space-y-3">
-              {/* Header */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium truncate">
-                    {item.user_email}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {item.screenshot_url && (
-                    <Badge variant="secondary" className="text-xs">
-                      <ImageIcon className="h-3 w-3 mr-1" />
-                      Screenshot
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Route */}
-              <div className="flex items-center gap-2">
-                <Route className="h-3 w-3 text-muted-foreground" />
-                <Badge variant="outline" className="text-xs">
-                  {formatRoute(item.route)}
-                </Badge>
-              </div>
-
-              {/* Comment */}
-              <p className="text-sm text-muted-foreground line-clamp-3">
-                {item.comment}
-              </p>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-2 border-t">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {formatDate(item.timestamp)}
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-            </CardContent>
-          </Card>
+            item={item}
+            isSelected={selectedId === item.id}
+            onCardClick={handleRowClick}
+          />
         ))}
       </div>
 

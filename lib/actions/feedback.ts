@@ -2,6 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
+import { tryCatch, type Result } from "@/lib/utils/result"
 
 export type Feedback = Tables<"feedback">
 
@@ -35,20 +36,20 @@ export interface FeedbackStats {
  */
 export async function getFeedbackList(
   options: FeedbackListOptions = {}
-): Promise<FeedbackListResult> {
-  const supabase = createServiceClient()
-
-  const {
-    page = 1,
-    limit = 20,
-    filterBy,
-    filterValue,
-    dateRange,
-    sortBy = "timestamp",
-    sortOrder = "desc",
-  } = options
-
+): Promise<Result<FeedbackListResult>> {
   try {
+    const supabase = createServiceClient()
+
+    const {
+      page = 1,
+      limit = 20,
+      filterBy,
+      filterValue,
+      dateRange,
+      sortBy = "timestamp",
+      sortOrder = "desc",
+    } = options
+
     let query = supabase.from("feedback").select("*", { count: "exact" })
 
     // Apply filters
@@ -88,31 +89,36 @@ export async function getFeedbackList(
     const { data, error, count } = await query
 
     if (error) {
-      console.error("Error fetching feedback list:", error)
-      return { data: [], total: 0, hasMore: false }
+      return { data: null, error: `Failed to fetch feedback list: ${error.message}` }
     }
 
     const total = count || 0
     const hasMore = from + limit < total
 
-    return {
+    const resultData: FeedbackListResult = {
       data: data || [],
       total,
       hasMore,
     }
+
+    return { data: resultData, error: null }
   } catch (error) {
-    console.error("Error in getFeedbackList:", error)
-    return { data: [], total: 0, hasMore: false }
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error"
+    }
   }
 }
 
 /**
  * Get single feedback item by ID
  */
-export async function getFeedbackById(id: string): Promise<Feedback | null> {
-  const supabase = createServiceClient()
-
+export async function getFeedbackById(
+  id: string
+): Promise<Result<Feedback | null>> {
   try {
+    const supabase = createServiceClient()
+
     const { data, error } = await supabase
       .from("feedback")
       .select("*")
@@ -120,92 +126,80 @@ export async function getFeedbackById(id: string): Promise<Feedback | null> {
       .single()
 
     if (error) {
-      console.error(`Error fetching feedback ${id}:`, error)
-      return null
+      if (error.code === "PGRST116") {
+        // No data found - this is not an error, just return null
+        return { data: null, error: null }
+      }
+      return { data: null, error: `Failed to fetch feedback ${id}: ${error.message}` }
     }
 
-    return data
+    return { data: data, error: null }
   } catch (error) {
-    console.error("Error in getFeedbackById:", error)
-    return null
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error"
+    }
   }
 }
 
 /**
  * Get feedback statistics for dashboard overview
+ * Optimized to use fewer database queries for better performance
  */
-export async function getFeedbackStats(): Promise<FeedbackStats> {
-  const supabase = createServiceClient()
-
+export async function getFeedbackStats(): Promise<Result<FeedbackStats>> {
   try {
-    // Get total count
-    const { count: total } = await supabase
-      .from("feedback")
-      .select("*", { count: "exact", head: true })
+    const supabase = createServiceClient()
 
-    // Get count with screenshots
-    const { count: withScreenshots } = await supabase
-      .from("feedback")
-      .select("*", { count: "exact", head: true })
-      .not("screenshot_url", "is", null)
-
-    // Get unique users count
-    const { data: uniqueUsersData } = await supabase
-      .from("feedback")
-      .select("user_email")
-
-    const uniqueUsers = new Set(
-      uniqueUsersData?.map(item => item.user_email) || []
-    ).size
-
-    // Get unique routes count
-    const { data: uniqueRoutesData } = await supabase
-      .from("feedback")
-      .select("route")
-
-    const uniqueRoutes = new Set(
-      uniqueRoutesData?.map(item => item.route) || []
-    ).size
-
-    // Get today's count
+    // Calculate date boundaries once
     const today = new Date()
     const todayStart = new Date(
       today.getFullYear(),
       today.getMonth(),
       today.getDate()
     )
-
-    const { count: todayCount } = await supabase
-      .from("feedback")
-      .select("*", { count: "exact", head: true })
-      .gte("timestamp", todayStart.toISOString())
-
-    // Get this week's count
     const weekStart = new Date(todayStart)
     weekStart.setDate(todayStart.getDate() - todayStart.getDay())
 
-    const { count: thisWeekCount } = await supabase
+    // Get all feedback data in a single query to calculate stats
+    const { data: allFeedback, error } = await supabase
       .from("feedback")
-      .select("*", { count: "exact", head: true })
-      .gte("timestamp", weekStart.toISOString())
+      .select("user_email, route, screenshot_url, timestamp")
 
-    return {
-      total: total || 0,
-      withScreenshots: withScreenshots || 0,
+    if (error) {
+      return { data: null, error: `Failed to fetch feedback stats: ${error.message}` }
+    }
+
+    const feedbackList = allFeedback || []
+
+    // Calculate all stats from the single dataset
+    const total = feedbackList.length
+    const withScreenshots = feedbackList.filter(
+      item => item.screenshot_url
+    ).length
+    const uniqueUsers = new Set(feedbackList.map(item => item.user_email)).size
+    const uniqueRoutes = new Set(feedbackList.map(item => item.route)).size
+
+    // Simplified date calculations to avoid closure issues
+    const todayISOString = todayStart.toISOString()
+    const weekISOString = weekStart.toISOString()
+
+    const todayCount = feedbackList.filter(item => item.timestamp >= todayISOString).length
+    const thisWeekCount = feedbackList.filter(item => item.timestamp >= weekISOString).length
+
+    const statsData: FeedbackStats = {
+      total,
+      withScreenshots,
       uniqueUsers,
       uniqueRoutes,
-      todayCount: todayCount || 0,
-      thisWeekCount: thisWeekCount || 0,
+      todayCount,
+      thisWeekCount,
     }
+
+    return { data: statsData, error: null }
   } catch (error) {
-    console.error("Error in getFeedbackStats:", error)
     return {
-      total: 0,
-      withScreenshots: 0,
-      uniqueUsers: 0,
-      uniqueRoutes: 0,
-      todayCount: 0,
-      thisWeekCount: 0,
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error"
     }
   }
 }
@@ -213,10 +207,10 @@ export async function getFeedbackStats(): Promise<FeedbackStats> {
 /**
  * Get recent feedback items (last 10)
  */
-export async function getRecentFeedback(): Promise<Feedback[]> {
-  const supabase = createServiceClient()
-
+export async function getRecentFeedback(): Promise<Result<Feedback[]>> {
   try {
+    const supabase = createServiceClient()
+
     const { data, error } = await supabase
       .from("feedback")
       .select("*")
@@ -224,32 +218,32 @@ export async function getRecentFeedback(): Promise<Feedback[]> {
       .limit(10)
 
     if (error) {
-      console.error("Error fetching recent feedback:", error)
-      return []
+      return { data: null, error: `Failed to fetch recent feedback: ${error.message}` }
     }
 
-    return data || []
+    return { data: data || [], error: null }
   } catch (error) {
-    console.error("Error in getRecentFeedback:", error)
-    return []
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error"
+    }
   }
 }
 
 /**
  * Get unique routes from feedback for filter suggestions
  */
-export async function getFeedbackRoutes(): Promise<string[]> {
-  const supabase = createServiceClient()
-
+export async function getFeedbackRoutes(): Promise<Result<string[]>> {
   try {
+    const supabase = createServiceClient()
+
     const { data, error } = await supabase
       .from("feedback")
       .select("route")
       .order("route")
 
     if (error) {
-      console.error("Error fetching feedback routes:", error)
-      return []
+      return { data: null, error: `Failed to fetch feedback routes: ${error.message}` }
     }
 
     // Get unique routes
@@ -257,28 +251,29 @@ export async function getFeedbackRoutes(): Promise<string[]> {
       new Set(data?.map(item => item.route) || [])
     ).filter(Boolean)
 
-    return uniqueRoutes
+    return { data: uniqueRoutes, error: null }
   } catch (error) {
-    console.error("Error in getFeedbackRoutes:", error)
-    return []
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error"
+    }
   }
 }
 
 /**
  * Get unique user emails from feedback for filter suggestions
  */
-export async function getFeedbackUsers(): Promise<string[]> {
-  const supabase = createServiceClient()
-
+export async function getFeedbackUsers(): Promise<Result<string[]>> {
   try {
+    const supabase = createServiceClient()
+
     const { data, error } = await supabase
       .from("feedback")
       .select("user_email")
       .order("user_email")
 
     if (error) {
-      console.error("Error fetching feedback users:", error)
-      return []
+      return { data: null, error: `Failed to fetch feedback users: ${error.message}` }
     }
 
     // Get unique users
@@ -286,9 +281,11 @@ export async function getFeedbackUsers(): Promise<string[]> {
       new Set(data?.map(item => item.user_email) || [])
     ).filter(Boolean)
 
-    return uniqueUsers
+    return { data: uniqueUsers, error: null }
   } catch (error) {
-    console.error("Error in getFeedbackUsers:", error)
-    return []
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error"
+    }
   }
 }

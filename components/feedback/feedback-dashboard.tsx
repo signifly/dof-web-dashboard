@@ -13,6 +13,7 @@ import {
   type FeedbackListOptions,
   type FeedbackStats,
 } from "@/lib/actions/feedback"
+import { isSuccess } from "@/lib/utils/result"
 import { MessageSquare, Users, Route, ImageIcon, Clock } from "lucide-react"
 import { useEffect } from "react"
 
@@ -94,14 +95,18 @@ export function FeedbackDashboard({ initialData }: FeedbackDashboardProps) {
 
         const result = await getFeedbackList(options)
 
-        if (page === 1) {
-          setFeedback(result.data)
-        } else {
-          setFeedback(prev => [...prev, ...result.data])
+        if (!isSuccess(result)) {
+          throw new Error(result.error)
         }
 
-        setTotal(result.total)
-        setHasMore(result.hasMore)
+        if (page === 1) {
+          setFeedback(result.data.data)
+        } else {
+          setFeedback(prev => [...prev, ...result.data.data])
+        }
+
+        setTotal(result.data.total)
+        setHasMore(result.data.hasMore)
         setCurrentPage(page)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load feedback")
@@ -115,8 +120,12 @@ export function FeedbackDashboard({ initialData }: FeedbackDashboardProps) {
   // Load stats
   const loadStats = useCallback(async () => {
     try {
-      const newStats = await getFeedbackStats()
-      setStats(newStats)
+      const result = await getFeedbackStats()
+      if (isSuccess(result)) {
+        setStats(result.data)
+      } else {
+        console.error("Failed to load feedback stats:", result.error)
+      }
     } catch (err) {
       console.error("Failed to load feedback stats:", err)
     }
