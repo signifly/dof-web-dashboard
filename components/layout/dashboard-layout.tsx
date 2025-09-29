@@ -11,7 +11,11 @@ interface DashboardLayoutProps {
   user?: AuthUser | null
 }
 
-export function DashboardLayout({ children, title, user }: DashboardLayoutProps) {
+export function DashboardLayout({
+  children,
+  title,
+  user,
+}: DashboardLayoutProps) {
   return (
     <AuthProvider initialUser={user}>
       <RealtimeProvider>

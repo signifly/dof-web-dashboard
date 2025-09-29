@@ -1,9 +1,10 @@
-import jwt from 'jsonwebtoken'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import { env, type AuthUser } from '@/lib/env'
+import jwt from "jsonwebtoken"
+import bcrypt from "bcryptjs"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import { env, type AuthUser } from "@/lib/env"
 
-const SESSION_COOKIE_NAME = 'auth-session'
+const SESSION_COOKIE_NAME = "auth-session"
 
 export interface AuthSession {
   email: string
@@ -12,36 +13,53 @@ export interface AuthSession {
 }
 
 /**
- * Authenticate user with environment-based credentials
+ * Authenticate user with environment-based credentials using bcrypt
  */
-export function authenticateUser(email: string, password: string): AuthUser | null {
+export function authenticateUser(
+  email: string,
+  password: string
+): AuthUser | null {
   const normalizedEmail = email.toLowerCase().trim()
 
-  return env.ALLOWED_USERS.find(
-    user => user.email === normalizedEmail && user.password === password
-  ) || null
+  // Find user by email first
+  const user = env.ALLOWED_USERS.find(u => u.email === normalizedEmail)
+
+  // If user not found or password doesn't match, return null
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    return null
+  }
+
+  return user
 }
 
 /**
- * Create a JWT session token for authenticated user
+ * Create a JWT session token for authenticated user with shorter expiration
  */
 export function createSession(user: AuthUser): string {
   return jwt.sign(
     { email: user.email },
     env.AUTH_SECRET,
-    { expiresIn: '7d' } // 7 day session
+    { expiresIn: "24h" } // 24 hour session for better security
   )
 }
 
 /**
- * Verify and decode a session token
+ * Verify and decode a session token with secure error handling
  */
 export function verifySession(token: string): AuthSession | null {
   try {
     const decoded = jwt.verify(token, env.AUTH_SECRET) as AuthSession
     return decoded
   } catch (error) {
-    console.error('Invalid session token:', error)
+    // Log securely without exposing sensitive data
+    console.error("Session verification failed:", {
+      timestamp: new Date().toISOString(),
+      errorType: error instanceof Error ? error.name : "Unknown",
+      reason:
+        error instanceof jwt.JsonWebTokenError
+          ? "invalid_token"
+          : "verification_error",
+    })
     return null
   }
 }
@@ -81,24 +99,24 @@ export async function requireAuth(): Promise<AuthUser> {
   const user = await getUser()
 
   if (!user) {
-    redirect('/auth/login')
+    redirect("/auth/login")
   }
 
   return user
 }
 
 /**
- * Set session cookie
+ * Set session cookie with enhanced security
  */
 export async function setSessionCookie(token: string): Promise<void> {
   const cookieStore = cookies()
 
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-    path: '/',
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict", // Enhanced CSRF protection
+    maxAge: 24 * 60 * 60, // 24 hours in seconds (matches JWT expiration)
+    path: "/",
   })
 }
 
