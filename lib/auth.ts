@@ -3,6 +3,11 @@ import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { env, type AuthUser } from "@/lib/env"
+import {
+  getCachedSession,
+  setCachedSession,
+  invalidateCachedSession,
+} from "@/lib/auth/session-cache"
 
 const SESSION_COOKIE_NAME = "auth-session"
 
@@ -65,7 +70,7 @@ export function verifySession(token: string): AuthSession | null {
 }
 
 /**
- * Get the current session from cookies
+ * Get the current session from cookies with caching
  */
 export async function getSession(): Promise<AuthSession | null> {
   const cookieStore = cookies()
@@ -75,15 +80,44 @@ export async function getSession(): Promise<AuthSession | null> {
     return null
   }
 
-  return verifySession(sessionToken.value)
+  // Check cache first
+  const cached = getCachedSession(sessionToken.value)
+  if (cached) {
+    return cached.session
+  }
+
+  // Cache miss - verify JWT and cache result
+  const session = verifySession(sessionToken.value)
+  if (session) {
+    // Find user to cache with session
+    const user = env.ALLOWED_USERS.find(u => u.email === session.email)
+    if (user) {
+      setCachedSession(sessionToken.value, user, session)
+    }
+  }
+
+  return session
 }
 
 /**
- * Get the current authenticated user
+ * Get the current authenticated user with caching
  */
 export async function getUser(): Promise<AuthUser | null> {
-  const session = await getSession()
+  const cookieStore = cookies()
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)
 
+  if (!sessionToken?.value) {
+    return null
+  }
+
+  // Check cache first for complete user data
+  const cached = getCachedSession(sessionToken.value)
+  if (cached) {
+    return cached.user
+  }
+
+  // Cache miss - fall back to session verification
+  const session = await getSession()
   if (!session) {
     return null
   }
@@ -121,10 +155,16 @@ export async function setSessionCookie(token: string): Promise<void> {
 }
 
 /**
- * Clear session cookie (sign out)
+ * Clear session cookie and cache (sign out)
  */
 export async function clearSessionCookie(): Promise<void> {
   const cookieStore = cookies()
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)
+
+  // Invalidate cache entry if token exists
+  if (sessionToken?.value) {
+    invalidateCachedSession(sessionToken.value)
+  }
 
   cookieStore.delete(SESSION_COOKIE_NAME)
 }

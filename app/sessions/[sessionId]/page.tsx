@@ -9,6 +9,7 @@ import { SessionOverview } from "@/components/sessions/session-overview"
 import { LiveSessionMonitor } from "@/components/sessions/live-session-monitor"
 import { SessionMetricsTimelineComponent } from "@/components/sessions/session-metrics-timeline"
 import { SessionPerformanceAnalysisComponent } from "@/components/sessions/session-performance-analysis"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -21,6 +22,9 @@ interface SessionDetailPageProps {
 export default async function SessionDetailPage({
   params,
 }: SessionDetailPageProps) {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
+
   const { sessionId } = params
 
   try {
@@ -44,7 +48,7 @@ export default async function SessionDetailPage({
     const sessionTitle = `Session ${session.id.slice(0, 8)}...`
 
     return (
-      <DashboardLayout title={sessionTitle}>
+      <DashboardLayout>
         <div className="space-y-8">
           {/* Page Header */}
           <div className="flex flex-col space-y-2">
@@ -159,7 +163,7 @@ export default async function SessionDetailPage({
     console.error("Error loading session details:", error)
 
     return (
-      <DashboardLayout title="Session Details">
+      <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">

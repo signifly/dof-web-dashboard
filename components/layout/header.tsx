@@ -46,14 +46,10 @@ const navigationItems = [
 ] as const
 
 interface HeaderProps {
-  title?: string
-  showConnectionStatus?: boolean
+  showConnectionStatus?: boolean | undefined
 }
 
-export function Header({
-  _title = "Dashboard",
-  showConnectionStatus = true,
-}: HeaderProps) {
+export function Header({ showConnectionStatus = true }: HeaderProps) {
   const pathname = usePathname()
 
   // Get shared realtime connection status

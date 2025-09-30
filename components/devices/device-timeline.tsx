@@ -8,7 +8,6 @@ import { useState } from "react"
 
 interface DeviceTimelineProps {
   sessions: DeviceSession[]
-  deviceId: string
 }
 
 interface SessionDetailsProps {
@@ -241,7 +240,7 @@ function SessionDetails({
   )
 }
 
-export function DeviceTimeline({ sessions, _deviceId }: DeviceTimelineProps) {
+export function DeviceTimeline({ sessions }: DeviceTimelineProps) {
   const [expandedSession, setExpandedSession] = useState<string | null>(null)
 
   const toggleSessionExpansion = (sessionId: string) => {

@@ -69,7 +69,7 @@ import { SearchQuery } from "@/lib/services/search-service"
 interface FilterPreset {
   id: string
   name: string
-  description?: string
+  description?: string | undefined
   query: SearchQuery
   category: string
   isStarred: boolean
@@ -239,7 +239,7 @@ export function FilterPresetManager({
     form.reset({
       name: preset.name,
       description: preset.description || "",
-      category: preset.category,
+      category: preset.category as PresetCategory,
     })
     setIsCreateDialogOpen(true)
   }
@@ -556,7 +556,8 @@ export function FilterPresetManager({
                 </Card>
               ) : (
                 sortedPresets.map(preset => {
-                  const categoryInfo = PRESET_CATEGORIES[preset.category]
+                  const categoryInfo =
+                    PRESET_CATEGORIES[preset.category as PresetCategory]
                   const CategoryIcon = categoryInfo.icon
 
                   return (

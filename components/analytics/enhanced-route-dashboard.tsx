@@ -471,7 +471,7 @@ export function EnhancedRouteDashboard({ data }: EnhancedRouteDashboardProps) {
         {/* Recommendations Tab */}
         <TabsContent value="recommendations" className="space-y-6">
           <ProactiveRecommendationsPanel
-            recommendations={data.proactive_recommendations}
+            recommendations={data.proactive_recommendations as any}
             routeContext={data.route_performance}
             showImplementationGuidance={true}
           />

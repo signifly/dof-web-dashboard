@@ -20,7 +20,6 @@ type MetricType = "fps" | "memory" | "cpu" | "all"
 
 export function SessionMetricsTimelineComponent({
   metrics,
-  _sessionId,
   isLive = false,
 }: SessionMetricsTimelineProps) {
   const [selectedMetric, setSelectedMetric] = useState<MetricType>("all")
@@ -54,41 +53,6 @@ export function SessionMetricsTimelineComponent({
       load_time: 0, // Not used anymore but required by MetricsTrend type
       screen_name: metric.screen_name,
     }))
-  }
-
-  const getChartConfig = () => {
-    const baseConfig = {
-      fps: {
-        key: "fps",
-        name: "FPS",
-        color: "#10b981",
-        unit: " FPS",
-      },
-      memory: {
-        key: "memory_usage",
-        name: "Memory",
-        color: "#f59e0b",
-        unit: "MB",
-      },
-      cpu: {
-        key: "cpu_usage",
-        name: "CPU",
-        color: "#ef4444",
-        unit: "%",
-      },
-    }
-
-    switch (selectedMetric) {
-      case "fps":
-        return [baseConfig.fps]
-      case "memory":
-        return [baseConfig.memory]
-      case "cpu":
-        return [baseConfig.cpu]
-      case "all":
-      default:
-        return Object.values(baseConfig)
-    }
   }
 
   const getMetricStats = () => {
@@ -171,7 +135,6 @@ export function SessionMetricsTimelineComponent({
   }
 
   const chartData = getChartData()
-  const _chartConfig = getChartConfig()
   const stats = getMetricStats()
   const screenTransitions = getScreenTransitions()
 

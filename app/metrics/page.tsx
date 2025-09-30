@@ -1,21 +1,25 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { MetricsContent } from "@/components/metrics/metrics-content"
 import {
-  getPerformanceSummary,
-  getPerformanceTrends,
+  getCachedPerformanceSummary,
+  getCachedPerformanceTrends,
 } from "@/lib/performance-data"
+import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Metrics page with performance data - shorter revalidation for fresh data
+export const revalidate = 60 // 1 minute
 
 export default async function MetricsPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const [summary, trends] = await Promise.all([
-      getPerformanceSummary(),
-      getPerformanceTrends(100),
+      getCachedPerformanceSummary(),
+      getCachedPerformanceTrends(100),
     ])
 
     return (
-      <DashboardLayout title="Performance Metrics">
+      <DashboardLayout>
         <MetricsContent initialSummary={summary} initialTrends={trends} />
       </DashboardLayout>
     )
@@ -23,7 +27,7 @@ export default async function MetricsPage() {
     console.error("Error loading metrics data:", error)
 
     return (
-      <DashboardLayout title="Performance Metrics">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">

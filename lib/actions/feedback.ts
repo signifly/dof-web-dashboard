@@ -2,7 +2,7 @@
 
 import { createServiceClient } from "@/lib/supabase/server"
 import { Tables } from "@/types/database"
-import { tryCatch, type Result } from "@/lib/utils/result"
+import { type Result } from "@/lib/utils/result"
 
 export type Feedback = Tables<"feedback">
 
@@ -89,7 +89,10 @@ export async function getFeedbackList(
     const { data, error, count } = await query
 
     if (error) {
-      return { data: null, error: `Failed to fetch feedback list: ${error.message}` }
+      return {
+        data: null,
+        error: `Failed to fetch feedback list: ${error.message}`,
+      }
     }
 
     const total = count || 0
@@ -105,7 +108,7 @@ export async function getFeedbackList(
   } catch (error) {
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }
@@ -130,14 +133,17 @@ export async function getFeedbackById(
         // No data found - this is not an error, just return null
         return { data: null, error: null }
       }
-      return { data: null, error: `Failed to fetch feedback ${id}: ${error.message}` }
+      return {
+        data: null,
+        error: `Failed to fetch feedback ${id}: ${error.message}`,
+      }
     }
 
     return { data: data, error: null }
   } catch (error) {
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }
@@ -166,7 +172,10 @@ export async function getFeedbackStats(): Promise<Result<FeedbackStats>> {
       .select("user_email, route, screenshot_url, timestamp")
 
     if (error) {
-      return { data: null, error: `Failed to fetch feedback stats: ${error.message}` }
+      return {
+        data: null,
+        error: `Failed to fetch feedback stats: ${error.message}`,
+      }
     }
 
     const feedbackList = allFeedback || []
@@ -183,8 +192,12 @@ export async function getFeedbackStats(): Promise<Result<FeedbackStats>> {
     const todayISOString = todayStart.toISOString()
     const weekISOString = weekStart.toISOString()
 
-    const todayCount = feedbackList.filter(item => item.timestamp >= todayISOString).length
-    const thisWeekCount = feedbackList.filter(item => item.timestamp >= weekISOString).length
+    const todayCount = feedbackList.filter(
+      item => item.timestamp >= todayISOString
+    ).length
+    const thisWeekCount = feedbackList.filter(
+      item => item.timestamp >= weekISOString
+    ).length
 
     const statsData: FeedbackStats = {
       total,
@@ -199,7 +212,7 @@ export async function getFeedbackStats(): Promise<Result<FeedbackStats>> {
   } catch (error) {
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }
@@ -218,14 +231,17 @@ export async function getRecentFeedback(): Promise<Result<Feedback[]>> {
       .limit(10)
 
     if (error) {
-      return { data: null, error: `Failed to fetch recent feedback: ${error.message}` }
+      return {
+        data: null,
+        error: `Failed to fetch recent feedback: ${error.message}`,
+      }
     }
 
     return { data: data || [], error: null }
   } catch (error) {
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }
@@ -243,7 +259,10 @@ export async function getFeedbackRoutes(): Promise<Result<string[]>> {
       .order("route")
 
     if (error) {
-      return { data: null, error: `Failed to fetch feedback routes: ${error.message}` }
+      return {
+        data: null,
+        error: `Failed to fetch feedback routes: ${error.message}`,
+      }
     }
 
     // Get unique routes
@@ -255,7 +274,7 @@ export async function getFeedbackRoutes(): Promise<Result<string[]>> {
   } catch (error) {
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }
@@ -273,7 +292,10 @@ export async function getFeedbackUsers(): Promise<Result<string[]>> {
       .order("user_email")
 
     if (error) {
-      return { data: null, error: `Failed to fetch feedback users: ${error.message}` }
+      return {
+        data: null,
+        error: `Failed to fetch feedback users: ${error.message}`,
+      }
     }
 
     // Get unique users
@@ -285,7 +307,7 @@ export async function getFeedbackUsers(): Promise<Result<string[]>> {
   } catch (error) {
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     }
   }
 }

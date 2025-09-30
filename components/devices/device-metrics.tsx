@@ -22,11 +22,10 @@ import {
 } from "recharts"
 
 interface DeviceMetricsProps {
-  deviceId: string
   metrics: DeviceMetricPoint[]
 }
 
-export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
+export function DeviceMetrics({ metrics }: DeviceMetricsProps) {
   // Prepare chart data
   const chartData = metrics.map(metric => ({
     ...metric,
@@ -227,10 +226,10 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                 />
                 <Tooltip
                   labelFormatter={label => `Time: ${label}`}
-                  formatter={(value: number, name: string, props: any) => {
-                    const _data = props.payload
-                    return [`${value.toFixed(1)} FPS`, "FPS"]
-                  }}
+                  formatter={(value: number) => [
+                    `${value.toFixed(1)} FPS`,
+                    "FPS",
+                  ]}
                   labelStyle={{ marginBottom: "8px" }}
                   content={({ active, payload, label }) => {
                     if (!active || !payload?.length) return null
@@ -347,7 +346,7 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, _value, percent }: any) =>
+                    label={({ name, percent }: any) =>
                       `${name}: ${((percent as number) * 100).toFixed(1)}%`
                     }
                     outerRadius={80}
@@ -405,7 +404,7 @@ export function DeviceMetrics({ _deviceId, metrics }: DeviceMetricsProps) {
                     tick={{ fontSize: 12 }}
                   />
                   <Tooltip
-                    content={({ active, payload, _label }) => {
+                    content={({ active, payload }) => {
                       if (!active || !payload?.length) return null
 
                       const data = payload[0].payload

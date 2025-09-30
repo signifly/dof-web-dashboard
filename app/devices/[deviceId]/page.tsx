@@ -4,6 +4,7 @@ import { getDeviceDetails } from "@/lib/actions/device-actions"
 import { DeviceOverview } from "@/components/devices/device-overview"
 import { DeviceTimeline } from "@/components/devices/device-timeline"
 import { DeviceMetrics } from "@/components/devices/device-metrics"
+import { requireAuth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -16,6 +17,9 @@ interface DeviceDetailPageProps {
 export default async function DeviceDetailPage({
   params,
 }: DeviceDetailPageProps) {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
+
   const { deviceId } = params
 
   try {
@@ -33,7 +37,7 @@ export default async function DeviceDetailPage({
     const deviceTitle = `Device ${device.deviceId.slice(0, 8)}...`
 
     return (
-      <DashboardLayout title={deviceTitle}>
+      <DashboardLayout>
         <div className="space-y-8">
           {/* Page Header */}
           <div className="flex flex-col space-y-2">
@@ -93,10 +97,7 @@ export default async function DeviceDetailPage({
                 Recent performance sessions and activity history
               </p>
             </div>
-            <DeviceTimeline
-              sessions={device.sessionHistory}
-              deviceId={device.deviceId}
-            />
+            <DeviceTimeline sessions={device.sessionHistory} />
           </section>
 
           {/* Device Metrics Section */}
@@ -109,10 +110,7 @@ export default async function DeviceDetailPage({
                 Detailed performance trends and analytics over time
               </p>
             </div>
-            <DeviceMetrics
-              deviceId={device.deviceId}
-              metrics={device.metricsOverTime}
-            />
+            <DeviceMetrics metrics={device.metricsOverTime} />
           </section>
         </div>
       </DashboardLayout>
@@ -121,7 +119,7 @@ export default async function DeviceDetailPage({
     console.error("Error loading device details:", error)
 
     return (
-      <DashboardLayout title="Device Details">
+      <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">

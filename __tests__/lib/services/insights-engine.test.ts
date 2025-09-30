@@ -1,9 +1,5 @@
 import { PerformanceInsightsEngine } from "@/lib/services/insights-engine"
-import {
-  InsightsReport,
-  PerformanceInsight,
-  AnomalyDetection,
-} from "@/types/insights"
+import { PerformanceInsight, AnomalyDetection } from "@/types/insights"
 import { PerformanceSummary, MetricsTrend } from "@/lib/performance-data"
 
 // Mock all the dependencies

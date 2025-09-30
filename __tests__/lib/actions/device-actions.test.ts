@@ -1,4 +1,3 @@
-import { calculateHealthScore } from "@/lib/utils/device-utils"
 import { DeviceHealthInput, PERFORMANCE_THRESHOLDS } from "@/types/device"
 
 // Mock Supabase
@@ -48,7 +47,7 @@ describe("Device Actions", () => {
     }
 
     it("should return 0 for empty metrics", () => {
-      const input: DeviceHealthInput = {
+      const _input: DeviceHealthInput = {
         ...mockHealthInput,
         recentMetrics: [],
       }

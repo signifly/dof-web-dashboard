@@ -3,20 +3,27 @@ import { UserEngagementCorrelation } from "@/components/analytics/user-engagemen
 import { DeviceBenchmarking } from "@/components/analytics/device-benchmarking"
 import { ABTestingPerformance } from "@/components/analytics/ab-testing-performance"
 import { RegressionDetection } from "@/components/analytics/regression-detection"
-import { getPerformanceTrends, getRecentSessions } from "@/lib/performance-data"
+import {
+  getCachedPerformanceTrends,
+  getCachedRecentSessions,
+} from "@/lib/performance-data"
 import { Button } from "@/components/ui/button"
+import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Analytics page - medium caching for computed insights
+export const revalidate = 180 // 3 minutes
 
 export default async function AnalyticsPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const [trends, sessions] = await Promise.all([
-      getPerformanceTrends(200),
-      getRecentSessions(100),
+      getCachedPerformanceTrends(200),
+      getCachedRecentSessions(100),
     ])
 
     return (
-      <DashboardLayout title="Advanced Analytics">
+      <DashboardLayout>
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <div>
@@ -64,7 +71,7 @@ export default async function AnalyticsPage() {
     console.error("Error loading analytics data:", error)
 
     return (
-      <DashboardLayout title="Advanced Analytics">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">

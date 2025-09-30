@@ -5,8 +5,8 @@ import { useState, useCallback, useMemo } from "react"
 export interface BrushSelection {
   startIndex: number
   endIndex: number
-  startTime?: Date
-  endTime?: Date
+  startTime?: Date | undefined
+  endTime?: Date | undefined
 }
 
 export interface BrushState {
@@ -24,7 +24,7 @@ export interface BrushHandlers {
 }
 
 export interface UseChartBrushProps {
-  onSelectionChange?: (selection: BrushSelection | null) => void
+  onSelectionChange?: ((selection: BrushSelection | null) => void) | undefined
   minSelectionSize?: number
   snapToDataPoints?: boolean
 }
@@ -186,7 +186,7 @@ export function useChartBrush({
   )
 
   // Calculate time range for the current selection
-  const selectedTimeRange = useMemo(() => {
+  const _selectedTimeRange = useMemo(() => {
     if (!brushState.selection) return null
 
     return {

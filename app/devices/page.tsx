@@ -2,21 +2,25 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DeviceProfiling } from "@/components/analytics/device-profiling"
 import {
-  getPerformanceSummary,
-  getDevicePerformanceData,
+  getCachedPerformanceSummary,
+  getCachedDevicePerformanceData,
 } from "@/lib/performance-data"
+import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Devices page - medium caching for device performance data
+export const revalidate = 120 // 2 minutes
 
 export default async function DevicesPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const [summary, devices] = await Promise.all([
-      getPerformanceSummary(),
-      getDevicePerformanceData(),
+      getCachedPerformanceSummary(),
+      getCachedDevicePerformanceData(),
     ])
 
     return (
-      <DashboardLayout title="Devices">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <div>
@@ -99,7 +103,7 @@ export default async function DevicesPage() {
     console.error("Error loading devices data:", error)
 
     return (
-      <DashboardLayout title="Devices">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">

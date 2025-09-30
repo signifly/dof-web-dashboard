@@ -45,11 +45,7 @@ import {
 } from "@/lib/utils/chart-helpers"
 
 // Import types
-import type {
-  InteractiveChartProps,
-  ChartDataPoint,
-  ChartAnnotation,
-} from "@/types/chart"
+import type { InteractiveChartProps, ChartDataPoint } from "@/types/chart"
 
 // Chart toolbar component
 interface ChartToolbarProps {
@@ -145,12 +141,7 @@ interface CustomTooltipProps {
   metric: string
 }
 
-function CustomTooltip({
-  active,
-  payload,
-  _label,
-  metric,
-}: CustomTooltipProps) {
+function CustomTooltip({ active, payload, metric }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
 
   const data = payload[0].payload as ChartDataPoint
@@ -223,76 +214,6 @@ function CustomTooltip({
   )
 }
 
-// Annotation marker component
-interface AnnotationMarkerProps {
-  annotation: ChartAnnotation
-  x: number
-  y: number
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function AnnotationMarker({ annotation, x, y }: AnnotationMarkerProps) {
-  const [showTooltip, setShowTooltip] = useState(false)
-
-  const getIcon = () => {
-    switch (annotation.type) {
-      case "error":
-        return <XCircle className="h-4 w-4" />
-      case "warning":
-        return <AlertTriangle className="h-4 w-4" />
-      case "success":
-        return <CheckCircle className="h-4 w-4" />
-      default:
-        return <Info className="h-4 w-4" />
-    }
-  }
-
-  const getColor = () => {
-    switch (annotation.type) {
-      case "error":
-        return "text-red-500"
-      case "warning":
-        return "text-yellow-500"
-      case "success":
-        return "text-green-500"
-      default:
-        return "text-blue-500"
-    }
-  }
-
-  return (
-    <g>
-      <circle
-        cx={x}
-        cy={y}
-        r={8}
-        fill="white"
-        stroke="currentColor"
-        strokeWidth={2}
-        className={getColor()}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        style={{ cursor: "pointer" }}
-      />
-      <foreignObject x={x - 8} y={y - 8} width={16} height={16}>
-        <div className={cn("flex items-center justify-center", getColor())}>
-          {getIcon()}
-        </div>
-      </foreignObject>
-      {showTooltip && (
-        <foreignObject x={x + 15} y={y - 20} width={200} height={60}>
-          <div className="bg-black text-white text-xs p-2 rounded shadow-lg">
-            <div className="font-medium">{annotation.label}</div>
-            {annotation.description && (
-              <div className="mt-1 opacity-90">{annotation.description}</div>
-            )}
-          </div>
-        </foreignObject>
-      )}
-    </g>
-  )
-}
-
 /**
  * Interactive chart component with zoom, brush, and export capabilities
  */
@@ -302,7 +223,6 @@ export function InteractiveChart({
   chartType,
   title,
   height = 400,
-  _width,
   enableBrush = true,
   enableZoom = true,
   enableExport = true,
@@ -316,7 +236,6 @@ export function InteractiveChart({
   className,
   ariaLabel,
   ariaDescription,
-  ..._props
 }: InteractiveChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
   const [__containerDimensions, setContainerDimensions] = useState({
@@ -379,7 +298,7 @@ export function InteractiveChart({
     onZoomChange: onZoom,
   })
 
-  const { _brushState, brushHandlers, _getSelectedData } = useChartBrush({
+  const { brushHandlers } = useChartBrush({
     onSelectionChange: onBrush,
   })
 

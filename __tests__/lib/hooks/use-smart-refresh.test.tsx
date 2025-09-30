@@ -336,9 +336,9 @@ describe("useSmartRefresh", () => {
   })
 
   it("should abort previous request when new one starts", async () => {
-    let abortController: AbortController | null = null
+    let _abortController: AbortController | null = null
     mockFetchFn.mockImplementation(() => {
-      abortController = new AbortController()
+      _abortController = new AbortController()
       return new Promise(resolve => {
         setTimeout(() => resolve({ data: "test" }), 1000)
       })

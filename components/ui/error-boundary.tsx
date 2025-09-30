@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface ErrorBoundaryState {
   hasError: boolean
-  error?: Error
+  error?: Error | undefined
 }
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
-  fallback?: React.ComponentType<{ error?: Error; reset: () => void }>
+  fallback?:
+    | React.ComponentType<{ error?: Error | undefined; reset: () => void }>
+    | undefined
 }
 
 class ErrorBoundaryClass extends React.Component<
@@ -50,7 +52,7 @@ function DefaultErrorFallback({
   error,
   reset,
 }: {
-  error?: Error
+  error?: Error | undefined
   reset: () => void
 }) {
   return (

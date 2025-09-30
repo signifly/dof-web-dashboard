@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Download, RotateCcw, Eye, EyeOff, ZoomIn, ZoomOut } from "lucide-react"
 
 import { useChartZoom } from "@/hooks/use-chart-zoom"
-import { useChartBrush } from "@/hooks/use-chart-brush"
+import { useChartBrush, type BrushSelection } from "@/hooks/use-chart-brush"
 import { useChartExport } from "@/hooks/use-chart-export"
 
 import type { MetricsTrend } from "@/lib/performance-data"
@@ -48,14 +48,7 @@ interface MultiSeriesChartProps {
   enableExport?: boolean
   enableLegend?: boolean
   className?: string
-  onBrush?: (
-    selection: {
-      startTime?: Date
-      endTime?: Date
-      startIndex?: number
-      endIndex?: number
-    } | null
-  ) => void
+  onBrush?: (selection: BrushSelection | null) => void
   onZoom?: (zoomState: any) => void
   onDatasetToggle?: (datasetName: string, visible: boolean) => void
 }
@@ -225,7 +218,7 @@ export function MultiSeriesChart({
     onZoomChange: onZoom,
   })
 
-  const { _brushState, brushHandlers } = useChartBrush({
+  const { brushHandlers } = useChartBrush({
     onSelectionChange: onBrush,
   })
 

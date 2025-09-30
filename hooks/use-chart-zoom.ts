@@ -22,7 +22,7 @@ export interface UseChartZoomProps {
   minScale?: number
   maxScale?: number
   scaleStep?: number
-  onZoomChange?: (zoomState: ZoomState) => void
+  onZoomChange?: ((zoomState: ZoomState) => void) | undefined
 }
 
 export interface UseChartZoomReturn {

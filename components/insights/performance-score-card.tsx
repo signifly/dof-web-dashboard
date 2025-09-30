@@ -47,14 +47,6 @@ export function PerformanceScoreCard({ score }: PerformanceScoreCardProps) {
     return "text-red-600"
   }
 
-  const _getProgressColor = (score: number) => {
-    if (score >= 90) return "bg-green-500"
-    if (score >= 80) return "bg-blue-500"
-    if (score >= 70) return "bg-yellow-500"
-    if (score >= 60) return "bg-orange-500"
-    return "bg-red-500"
-  }
-
   const formatLastCalculated = (dateString: string) => {
     try {
       const date = new Date(dateString)

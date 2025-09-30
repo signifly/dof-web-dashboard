@@ -80,20 +80,24 @@ jest.mock("recharts", () => ({
   ),
   XAxis: ({
     dataKey,
-    tickFormatter,
+    tickFormatter: _tickFormatter,
   }: {
     dataKey: string
     tickFormatter?: Function
   }) => <div data-testid="x-axis" data-key={dataKey} />,
   YAxis: () => <div data-testid="y-axis" />,
   CartesianGrid: () => <div data-testid="grid" />,
-  Tooltip: ({ content }: { content: React.ComponentType<any> }) => (
+  Tooltip: ({ content: _content }: { content: React.ComponentType<any> }) => (
     <div data-testid="tooltip" />
   ),
   Legend: () => <div data-testid="legend" />,
-  Brush: ({ dataKey, onChange }: { dataKey: string; onChange?: Function }) => (
-    <div data-testid="brush" data-key={dataKey} />
-  ),
+  Brush: ({
+    dataKey,
+    onChange: _onChange,
+  }: {
+    dataKey: string
+    onChange?: Function
+  }) => <div data-testid="brush" data-key={dataKey} />,
 }))
 
 // Mock custom hooks

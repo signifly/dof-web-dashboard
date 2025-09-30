@@ -20,11 +20,11 @@ import { AlertSeverity } from "@/constants/enums"
  * Generates proactive alerts based on performance predictions and seasonal patterns
  */
 export class EarlyWarningEngine {
-  private predictionEngine: PerformancePredictionEngine
+  private _predictionEngine: PerformancePredictionEngine
   private thresholds: EarlyWarningThresholds
 
   constructor(thresholds?: Partial<EarlyWarningThresholds>) {
-    this.predictionEngine = new PerformancePredictionEngine()
+    this._predictionEngine = new PerformancePredictionEngine()
     this.thresholds = {
       fps_degradation_threshold:
         EARLY_WARNING_THRESHOLDS.FPS_DEGRADATION_THRESHOLD,

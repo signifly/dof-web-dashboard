@@ -23,9 +23,9 @@ export interface ExportState {
 
 export interface UseChartExportProps {
   defaultFilename?: string
-  onExportStart?: () => void
-  onExportComplete?: (filename: string, format: string) => void
-  onExportError?: (error: string) => void
+  onExportStart?: (() => void) | undefined
+  onExportComplete?: ((filename: string, format: string) => void) | undefined
+  onExportError?: ((error: string) => void) | undefined
 }
 
 export interface UseChartExportReturn {

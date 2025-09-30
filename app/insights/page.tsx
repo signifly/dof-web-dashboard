@@ -1,17 +1,20 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
+import { requireAuth } from "@/lib/auth"
 import { InsightsDashboard } from "@/components/insights/insights-dashboard"
-import { PerformanceInsightsEngine } from "@/lib/services/insights-engine"
+import { getPerformanceInsights } from "@/lib/actions/insights-actions"
 
-export const dynamic = "force-dynamic"
+// Insights page - longer caching for AI-generated insights
+export const revalidate = 300 // 5 minutes
 
 export default async function InsightsPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
-    // Generate performance insights
-    const insightsEngine = new PerformanceInsightsEngine()
-    const performanceReport = await insightsEngine.generateInsights()
+    // Generate performance insights with caching
+    const performanceReport = await getPerformanceInsights()
 
     return (
-      <DashboardLayout title="Performance Insights">
+      <DashboardLayout>
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
@@ -31,7 +34,7 @@ export default async function InsightsPage() {
     console.error("Error generating insights:", error)
 
     return (
-      <DashboardLayout title="Performance Insights">
+      <DashboardLayout>
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center space-y-4">
             <h2 className="text-lg font-semibold text-muted-foreground">

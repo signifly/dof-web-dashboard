@@ -149,9 +149,11 @@ export class SearchService {
 
       // Process metric types
       const metricTypeCounts = new Map<string, number>()
-      metricTypes?.forEach(item => {
+      metricTypes?.forEach((item: { metric_type: string }) => {
         const type = item.metric_type
-        metricTypeCounts.set(type, (metricTypeCounts.get(type) || 0) + 1)
+        if (type) {
+          metricTypeCounts.set(type, (metricTypeCounts.get(type) || 0) + 1)
+        }
       })
 
       metricTypeCounts.forEach((count, type) => {
@@ -165,9 +167,11 @@ export class SearchService {
 
       // Process platforms
       const platformCounts = new Map<string, number>()
-      platforms?.forEach(item => {
+      platforms?.forEach((item: { device_type: string }) => {
         const platform = item.device_type
-        platformCounts.set(platform, (platformCounts.get(platform) || 0) + 1)
+        if (platform) {
+          platformCounts.set(platform, (platformCounts.get(platform) || 0) + 1)
+        }
       })
 
       platformCounts.forEach((count, platform) => {
@@ -181,9 +185,11 @@ export class SearchService {
 
       // Process app versions
       const versionCounts = new Map<string, number>()
-      appVersions?.forEach(item => {
+      appVersions?.forEach((item: { app_version: string }) => {
         const version = item.app_version
-        versionCounts.set(version, (versionCounts.get(version) || 0) + 1)
+        if (version) {
+          versionCounts.set(version, (versionCounts.get(version) || 0) + 1)
+        }
       })
 
       versionCounts.forEach((count, version) => {
@@ -256,33 +262,35 @@ export class SearchService {
       // Extract unique metric types
       const metricTypes = Array.from(
         new Set(
-          metricTypesResult.data
-            ?.map(item => item.metric_type)
-            .filter(Boolean) || []
+          (metricTypesResult.data || [])
+            .map((item: { metric_type: string }) => item.metric_type)
+            .filter(Boolean)
         )
       )
 
       // Extract unique platforms
       const platforms = Array.from(
         new Set(
-          platformsResult.data?.map(item => item.device_type).filter(Boolean) ||
-            []
+          (platformsResult.data || [])
+            .map((item: { device_type: string }) => item.device_type)
+            .filter(Boolean)
         )
       )
 
       // Extract unique app versions
       const appVersions = Array.from(
         new Set(
-          versionsResult.data?.map(item => item.app_version).filter(Boolean) ||
-            []
+          (versionsResult.data || [])
+            .map((item: { app_version: string }) => item.app_version)
+            .filter(Boolean)
         )
       )
 
       // Extract screen names from context JSON
       const screenNames = new Set<string>()
-      screenNamesResult.data?.forEach(item => {
+      screenNamesResult.data?.forEach((item: { context: any }) => {
         if (item.context && typeof item.context === "object") {
-          const context = item.context as any
+          const context = item.context as { screen_name?: string }
           if (context.screen_name && typeof context.screen_name === "string") {
             screenNames.add(context.screen_name)
           }
@@ -292,9 +300,11 @@ export class SearchService {
       // Extract unique devices
       const devices = Array.from(
         new Set(
-          devicesResult.data
-            ?.map(item => item.anonymous_user_id)
-            .filter(Boolean) || []
+          (devicesResult.data || [])
+            .map(
+              (item: { anonymous_user_id: string }) => item.anonymous_user_id
+            )
+            .filter(Boolean)
         )
       )
 
@@ -527,30 +537,38 @@ export class SearchService {
 
       // Calculate metric types facet
       const metricTypeCounts = new Map<string, number>()
-      metricsData.data?.forEach(metric => {
+      metricsData.data?.forEach((metric: { metric_type: string }) => {
         const type = metric.metric_type
-        metricTypeCounts.set(type, (metricTypeCounts.get(type) || 0) + 1)
+        if (type) {
+          metricTypeCounts.set(type, (metricTypeCounts.get(type) || 0) + 1)
+        }
       })
 
       // Calculate platforms facet
       const platformCounts = new Map<string, number>()
-      sessionsData.data?.forEach(session => {
+      sessionsData.data?.forEach((session: { device_type: string }) => {
         const platform = session.device_type
-        platformCounts.set(platform, (platformCounts.get(platform) || 0) + 1)
+        if (platform) {
+          platformCounts.set(platform, (platformCounts.get(platform) || 0) + 1)
+        }
       })
 
       // Calculate app versions facet
       const versionCounts = new Map<string, number>()
-      sessionsData.data?.forEach(session => {
+      sessionsData.data?.forEach((session: { app_version: string }) => {
         const version = session.app_version
-        versionCounts.set(version, (versionCounts.get(version) || 0) + 1)
+        if (version) {
+          versionCounts.set(version, (versionCounts.get(version) || 0) + 1)
+        }
       })
 
       // Calculate devices facet
       const deviceCounts = new Map<string, number>()
-      sessionsData.data?.forEach(session => {
+      sessionsData.data?.forEach((session: { anonymous_user_id: string }) => {
         const deviceId = session.anonymous_user_id
-        deviceCounts.set(deviceId, (deviceCounts.get(deviceId) || 0) + 1)
+        if (deviceId) {
+          deviceCounts.set(deviceId, (deviceCounts.get(deviceId) || 0) + 1)
+        }
       })
 
       return {
@@ -577,38 +595,6 @@ export class SearchService {
         devices: [],
       }
     }
-  }
-
-  /**
-   * Rank search results based on relevance
-   */
-  private rankResults<
-    T extends { metric_type?: string; metric_value?: number },
-  >(results: T[], query: SearchQuery): T[] {
-    if (!query.text) {
-      return results
-    }
-
-    const searchText = query.text.toLowerCase()
-
-    return results.sort((a, b) => {
-      let scoreA = 0
-      let scoreB = 0
-
-      // Exact matches get highest score
-      if (a.metric_type?.toLowerCase() === searchText) scoreA += 100
-      if (b.metric_type?.toLowerCase() === searchText) scoreB += 100
-
-      // Starts with gets medium score
-      if (a.metric_type?.toLowerCase().startsWith(searchText)) scoreA += 50
-      if (b.metric_type?.toLowerCase().startsWith(searchText)) scoreB += 50
-
-      // Contains gets low score
-      if (a.metric_type?.toLowerCase().includes(searchText)) scoreA += 10
-      if (b.metric_type?.toLowerCase().includes(searchText)) scoreB += 10
-
-      return scoreB - scoreA
-    })
   }
 }
 

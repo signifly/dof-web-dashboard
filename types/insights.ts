@@ -87,11 +87,13 @@ export interface PerformanceScore {
   grade: "A" | "B" | "C" | "D" | "F"
   trend: "improving" | "stable" | "declining"
   last_calculated: string
-  baseline_comparison?: {
-    fps_vs_baseline: number
-    cpu_vs_baseline: number
-    memory_vs_baseline: number
-  }
+  baseline_comparison?:
+    | {
+        fps_vs_baseline: number
+        cpu_vs_baseline: number
+        memory_vs_baseline: number
+      }
+    | undefined
 }
 
 export interface TrendAnalysis {
@@ -315,7 +317,7 @@ export interface PerformancePredictionModel {
 export interface PerformancePrediction {
   prediction_id: string
   metric_type: string
-  route_pattern?: string
+  route_pattern?: string | undefined
   predicted_value: number
   confidence_interval: [number, number]
   time_horizon: "1h" | "24h" | "7d" | "30d"
@@ -323,7 +325,7 @@ export interface PerformancePrediction {
   contributing_factors: PredictionFactor[]
   recommended_actions: string[]
   model_used: string
-  seasonal_adjustment?: number
+  seasonal_adjustment?: number | undefined
 }
 
 export interface PredictionFactor {
@@ -342,7 +344,7 @@ export interface EarlyWarningAlert {
   predicted_issue_date: string
   time_to_issue: string
   confidence: number
-  affected_routes?: string[]
+  affected_routes?: string[] | undefined
   severity: "critical" | "high" | "medium" | "low"
   prevention_recommendations: string[]
   monitoring_suggestions: string[]

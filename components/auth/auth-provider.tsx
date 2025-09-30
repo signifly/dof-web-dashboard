@@ -23,7 +23,7 @@ export function useAuth() {
 
 interface AuthProviderProps {
   children: React.ReactNode
-  initialUser?: AuthUser | null
+  initialUser?: AuthUser | null | undefined
 }
 
 export function AuthProvider({

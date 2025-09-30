@@ -9,15 +9,19 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { AlertCircle, Brain, TrendingUp } from "lucide-react"
+import { requireAuth } from "@/lib/auth"
 
-export const dynamic = "force-dynamic"
+// Routes page - medium caching for route analytics
+export const revalidate = 180 // 3 minutes
 
 export default async function RoutesPage() {
+  // Require authentication (DashboardLayout will get user from server context)
+  await requireAuth()
   try {
     const dashboardData = await getEnhancedRouteAnalytics()
 
     return (
-      <DashboardLayout title="Route Performance">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-between items-start">
             <div>
@@ -61,7 +65,7 @@ export default async function RoutesPage() {
     console.error("Error loading enhanced route dashboard:", error)
 
     return (
-      <DashboardLayout title="Route Performance">
+      <DashboardLayout>
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight flex items-center space-x-3">
