@@ -186,7 +186,7 @@ export function useChartBrush({
   )
 
   // Calculate time range for the current selection
-  const selectedTimeRange = useMemo(() => {
+  const _selectedTimeRange = useMemo(() => {
     if (!brushState.selection) return null
 
     return {

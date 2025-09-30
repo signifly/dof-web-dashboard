@@ -1,5 +1,6 @@
 "use server"
 
+import { cache } from "react"
 import { RouteAnalyticsEngine } from "@/lib/services/route-analytics-engine"
 import { UserJourneyTracker } from "@/lib/services/user-journey-tracker"
 import { getRoutePerformanceAnalysis } from "@/lib/route-performance-data"
@@ -51,108 +52,117 @@ interface RouteAnalyticsReport {
 /**
  * Get comprehensive route analytics dashboard data
  * Aggregates data from all analytics engines for the enhanced dashboard interface
+ * Cached with React cache for request deduplication
  */
-export async function getEnhancedRouteAnalytics(): Promise<RouteAnalyticsDashboard> {
-  const startTime = performance.now()
+export const getEnhancedRouteAnalytics = cache(
+  async (): Promise<RouteAnalyticsDashboard> => {
+    const startTime = performance.now()
 
-  try {
-    // Get base route performance data
-    const routePerformance = await getRoutePerformanceAnalysis()
+    try {
+      // Get base route performance data
+      const routePerformance = await getRoutePerformanceAnalysis()
 
-    // Get session data for journey analysis
-    const sessionData = await getSessionDataForAnalysis()
+      // Get session data for journey analysis
+      const sessionData = await getSessionDataForAnalysis()
 
-    let advancedAnalytics: RouteAnalyticsReport | null = null
-    let journeyPatterns: JourneyPattern[] = []
+      let advancedAnalytics: RouteAnalyticsReport | null = null
+      let journeyPatterns: JourneyPattern[] = []
 
-    // Generate advanced analytics if we have sufficient data
-    if (routePerformance.routes && routePerformance.routes.length > 0) {
-      try {
-        const routeAnalyticsEngine = new RouteAnalyticsEngine()
-        advancedAnalytics =
-          await routeAnalyticsEngine.generateAdvancedInsights(routePerformance)
-      } catch (error) {
-        console.warn("Advanced analytics generation failed:", error)
+      // Generate advanced analytics if we have sufficient data
+      if (routePerformance.routes && routePerformance.routes.length > 0) {
+        try {
+          const routeAnalyticsEngine = new RouteAnalyticsEngine()
+          advancedAnalytics =
+            await routeAnalyticsEngine.generateAdvancedInsights(
+              routePerformance
+            )
+        } catch (error) {
+          console.warn("Advanced analytics generation failed:", error)
+        }
       }
-    }
 
-    // Generate journey analytics if we have session data
-    if (sessionData.length > 0) {
-      try {
-        const journeyTracker = new UserJourneyTracker()
-        const journeys = await journeyTracker.reconstructJourneys(24)
-        journeyPatterns = await journeyTracker.analyzeJourneyPatterns(journeys)
-      } catch (error) {
-        console.warn("Journey analytics generation failed:", error)
+      // Generate journey analytics if we have session data
+      if (sessionData.length > 0) {
+        try {
+          const journeyTracker = new UserJourneyTracker()
+          const journeys = await journeyTracker.reconstructJourneys(24)
+          journeyPatterns =
+            await journeyTracker.analyzeJourneyPatterns(journeys)
+        } catch (error) {
+          console.warn("Journey analytics generation failed:", error)
+        }
       }
-    }
 
-    const processingTime = performance.now() - startTime
+      const processingTime = performance.now() - startTime
 
-    return {
-      route_performance: routePerformance,
-      advanced_analytics: advancedAnalytics,
-      journey_patterns: journeyPatterns,
-      performance_predictions: advancedAnalytics?.performance_predictions || [],
-      seasonal_insights: advancedAnalytics?.seasonal_patterns || [],
-      proactive_recommendations:
-        advancedAnalytics?.proactive_recommendations || [],
-      correlation_analysis: advancedAnalytics?.route_correlations || [],
-      processing_metadata: {
-        generated_at: new Date().toISOString(),
-        processing_time_ms: processingTime,
-        data_quality_score: calculateDataQualityScore(
-          routePerformance,
-          sessionData,
-          journeyPatterns
-        ),
-        sessions_analyzed: sessionData.length,
-        routes_analyzed: routePerformance.routes?.length || 0,
-      },
-    }
-  } catch (error) {
-    console.error("Error generating enhanced route analytics:", error)
+      return {
+        route_performance: routePerformance,
+        advanced_analytics: advancedAnalytics,
+        journey_patterns: journeyPatterns,
+        performance_predictions:
+          advancedAnalytics?.performance_predictions || [],
+        seasonal_insights: advancedAnalytics?.seasonal_patterns || [],
+        proactive_recommendations:
+          advancedAnalytics?.proactive_recommendations || [],
+        correlation_analysis: advancedAnalytics?.route_correlations || [],
+        processing_metadata: {
+          generated_at: new Date().toISOString(),
+          processing_time_ms: processingTime,
+          data_quality_score: calculateDataQualityScore(
+            routePerformance,
+            sessionData,
+            journeyPatterns
+          ),
+          sessions_analyzed: sessionData.length,
+          routes_analyzed: routePerformance.routes?.length || 0,
+        },
+      }
+    } catch (error) {
+      console.error("Error generating enhanced route analytics:", error)
 
-    // Return minimal dashboard data in case of error
-    const routePerformance = await getRoutePerformanceAnalysis().catch(() => ({
-      routes: [],
-      summary: {
-        totalRoutes: 0,
-        totalSessions: 0,
-        worstPerformingRoutes: [],
-        bestPerformingRoutes: [],
-        routesWithHighMemoryUsage: [],
-        routesWithLowFps: [],
-      },
-      appAverages: {
-        avgFps: 0,
-        avgMemory: 0,
-        avgCpu: 0,
-      },
-      trends: [],
-      anomalies: [],
-    }))
+      // Return minimal dashboard data in case of error
+      const routePerformance = await getRoutePerformanceAnalysis().catch(
+        () => ({
+          routes: [],
+          summary: {
+            totalRoutes: 0,
+            totalSessions: 0,
+            worstPerformingRoutes: [],
+            bestPerformingRoutes: [],
+            routesWithHighMemoryUsage: [],
+            routesWithLowFps: [],
+          },
+          appAverages: {
+            avgFps: 0,
+            avgMemory: 0,
+            avgCpu: 0,
+          },
+          trends: [],
+          anomalies: [],
+        })
+      )
 
-    const processingTime = performance.now() - startTime
+      const processingTime = performance.now() - startTime
 
-    return {
-      route_performance: routePerformance,
-      advanced_analytics: null,
-      journey_patterns: [],
-      performance_predictions: [],
-      seasonal_insights: [],
-      proactive_recommendations: [],
-      correlation_analysis: [],
-      processing_metadata: {
-        generated_at: new Date().toISOString(),
-        processing_time_ms: processingTime,
-        data_quality_score: 0,
-        sessions_analyzed: 0,
-        routes_analyzed: routePerformance.routes?.length || 0,
-      },
+      return {
+        route_performance: routePerformance,
+        advanced_analytics: null,
+        journey_patterns: [],
+        performance_predictions: [],
+        seasonal_insights: [],
+        proactive_recommendations: [],
+        correlation_analysis: [],
+        processing_metadata: {
+          generated_at: new Date().toISOString(),
+          processing_time_ms: processingTime,
+          data_quality_score: 0,
+          sessions_analyzed: 0,
+          routes_analyzed: routePerformance.routes?.length || 0,
+        },
+      }
     }
   }
-}
+)
 
 /**
  * Get session data optimized for analytics processing
