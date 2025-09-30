@@ -1,12 +1,7 @@
 import { RecommendationEngine } from "@/lib/services/recommendation-engine"
-import {
-  PerformanceInsight,
-  OptimizationOpportunity,
-} from "@/types/insights"
+import { PerformanceInsight, OptimizationOpportunity } from "@/types/insights"
 import { PerformanceSummary } from "@/lib/performance-data"
-import {
-  RoutePerformanceAnalysis,
-} from "@/types/route-performance"
+import { RoutePerformanceAnalysis } from "@/types/route-performance"
 
 // Mock crypto.randomUUID
 Object.defineProperty(global, "crypto", {
@@ -1200,7 +1195,7 @@ describe("RecommendationEngine", () => {
               relativePerformance: {
                 fpsVsAverage: 1.0,
                 memoryVsAverage: 0.5,
-                cpuVsAverage: 0.5
+                cpuVsAverage: 0.5,
               },
               sessions: [
                 {

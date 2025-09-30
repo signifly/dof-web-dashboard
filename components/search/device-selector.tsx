@@ -25,14 +25,6 @@ interface DeviceSelectorProps {
   maxItems?: number | undefined
 }
 
-// Platform icons mapping
-const PLATFORM_ICONS = {
-  ios: Smartphone,
-  android: Smartphone,
-  web: Monitor,
-  tablet: Tablet,
-} as const
-
 const PLATFORM_FILTERS = [
   { value: "all", label: "All Platforms", icon: Monitor },
   { value: "ios", label: "iOS", icon: Smartphone },
@@ -158,10 +150,6 @@ export function DeviceSelector({
   // Convert filtered devices to multi-select options
   const deviceOptions: MultiSelectOption[] = React.useMemo(() => {
     return filteredDevices.map(device => {
-      const _PlatformIcon =
-        PLATFORM_ICONS[device.platform as keyof typeof PLATFORM_ICONS] ||
-        Monitor
-
       return {
         value: device.deviceId,
         label: `${device.deviceId} (${device.platform || "unknown"}) - ${device.sessionCount || 0} sessions`,

@@ -132,6 +132,7 @@ export function GlobalSearch({
         <div className="absolute top-full left-0 right-0 z-50 mt-1">
           <SearchSuggestions
             value={searchText}
+            onValueChange={setSearchText}
             onSuggestionSelect={handleSuggestionSelect}
             maxSuggestions={5}
           />
@@ -186,9 +187,9 @@ function GlobalSearchContent({
           </h4>
           <SearchSuggestions
             value={searchText}
+            onValueChange={setSearchText}
             onSuggestionSelect={onSuggestionSelect}
             maxSuggestions={8}
-            showCategories={true}
           />
         </div>
       )}
@@ -200,9 +201,8 @@ function GlobalSearchContent({
             Recent Searches
           </h4>
           <SearchHistory
+            currentQuery={{ text: searchText }}
             onLoadHistory={onHistorySelect}
-            maxItems={5}
-            compact={true}
           />
         </div>
       )}

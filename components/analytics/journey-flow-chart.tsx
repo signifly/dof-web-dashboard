@@ -30,10 +30,6 @@ export function JourneyFlowChart({
     .sort((a, b) => b.user_impact_score - a.user_impact_score)
     .slice(0, 5)
 
-  const _selectedPatternData = selectedPattern
-    ? journeyPatterns.find(p => p.pattern_id === selectedPattern)
-    : topPatterns[0]
-
   if (topPatterns.length === 0) {
     return (
       <Card className="col-span-2">

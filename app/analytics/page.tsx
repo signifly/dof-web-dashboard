@@ -3,7 +3,10 @@ import { UserEngagementCorrelation } from "@/components/analytics/user-engagemen
 import { DeviceBenchmarking } from "@/components/analytics/device-benchmarking"
 import { ABTestingPerformance } from "@/components/analytics/ab-testing-performance"
 import { RegressionDetection } from "@/components/analytics/regression-detection"
-import { getCachedPerformanceTrends, getCachedRecentSessions } from "@/lib/performance-data"
+import {
+  getCachedPerformanceTrends,
+  getCachedRecentSessions,
+} from "@/lib/performance-data"
 import { Button } from "@/components/ui/button"
 import { requireAuth } from "@/lib/auth"
 
@@ -20,7 +23,7 @@ export default async function AnalyticsPage() {
     ])
 
     return (
-      <DashboardLayout title="Advanced Analytics">
+      <DashboardLayout>
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <div>
@@ -68,7 +71,7 @@ export default async function AnalyticsPage() {
     console.error("Error loading analytics data:", error)
 
     return (
-      <DashboardLayout title="Advanced Analytics">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">

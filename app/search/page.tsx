@@ -10,7 +10,7 @@ export default async function SearchPage() {
   // Require authentication (DashboardLayout will get user from server context)
   await requireAuth()
   return (
-    <DashboardLayout title="Search Performance Data">
+    <DashboardLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-start">
           <div>

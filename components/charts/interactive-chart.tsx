@@ -45,11 +45,7 @@ import {
 } from "@/lib/utils/chart-helpers"
 
 // Import types
-import type {
-  InteractiveChartProps,
-  ChartDataPoint,
-  ChartAnnotation,
-} from "@/types/chart"
+import type { InteractiveChartProps, ChartDataPoint } from "@/types/chart"
 
 // Chart toolbar component
 interface ChartToolbarProps {
@@ -145,12 +141,7 @@ interface CustomTooltipProps {
   metric: string
 }
 
-function CustomTooltip({
-  active,
-  payload,
-  _label,
-  metric,
-}: CustomTooltipProps) {
+function CustomTooltip({ active, payload, metric }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
 
   const data = payload[0].payload as ChartDataPoint
@@ -223,7 +214,6 @@ function CustomTooltip({
   )
 }
 
-
 /**
  * Interactive chart component with zoom, brush, and export capabilities
  */
@@ -233,7 +223,6 @@ export function InteractiveChart({
   chartType,
   title,
   height = 400,
-  _width,
   enableBrush = true,
   enableZoom = true,
   enableExport = true,
@@ -247,7 +236,6 @@ export function InteractiveChart({
   className,
   ariaLabel,
   ariaDescription,
-  ..._props
 }: InteractiveChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
   const [__containerDimensions, setContainerDimensions] = useState({
@@ -310,7 +298,7 @@ export function InteractiveChart({
     onZoomChange: onZoom,
   })
 
-  const { _brushState, brushHandlers, _getSelectedData } = useChartBrush({
+  const { brushHandlers } = useChartBrush({
     onSelectionChange: onBrush,
   })
 

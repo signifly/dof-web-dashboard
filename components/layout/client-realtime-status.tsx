@@ -11,7 +11,7 @@ interface ClientRealtimeStatusProps {
 
 export function ClientRealtimeStatus({
   showConnectionStatus = true,
-  className
+  className,
 }: ClientRealtimeStatusProps) {
   const { isConnected, lastUpdate, error, reconnect } = useRealtime()
 
@@ -40,9 +40,7 @@ export function ClientRealtimeStatus({
             isConnected && !error && "bg-green-500",
             !isConnected && !error && "bg-yellow-500 animate-pulse"
           )}
-          title={
-            error?.message || (isConnected ? "Live" : "Connecting...")
-          }
+          title={error?.message || (isConnected ? "Live" : "Connecting...")}
         />
       </div>
     </>

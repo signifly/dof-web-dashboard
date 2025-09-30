@@ -43,14 +43,16 @@ export interface ServerAuthContext {
  * Get complete server auth context with caching
  * Use this in layout components to share auth state across child components
  */
-export const getServerAuthContext = cache(async (): Promise<ServerAuthContext> => {
-  const user = await getCachedUser()
+export const getServerAuthContext = cache(
+  async (): Promise<ServerAuthContext> => {
+    const user = await getCachedUser()
 
-  return {
-    user,
-    isAuthenticated: user !== null
+    return {
+      user,
+      isAuthenticated: user !== null,
+    }
   }
-})
+)
 
 /**
  * Check if user is authenticated without throwing
@@ -85,5 +87,5 @@ export default {
   getServerAuthContext,
   isAuthenticated,
   getUserEmail,
-  preloadAuthContext
+  preloadAuthContext,
 }

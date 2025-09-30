@@ -73,28 +73,24 @@ export function ProactiveRecommendationsPanel({
     .map(rec => ({
       ...rec,
       // Map properties to match expected interface
-      id: rec.recommendation_id || rec.id || `rec_${Math.random()}`,
-      impact: rec.impact_estimate || rec.impact || "medium",
-      effort: rec.effort_estimate || rec.effort || "medium",
+      id: rec.recommendation_id || `rec_${Math.random()}`,
+      impact: rec.impact_estimate || "medium",
+      effort: rec.effort_estimate || "medium",
       priority_score:
-        rec.priority_score ||
-        (rec.priority === "high"
+        rec.priority === "high"
           ? 85
           : rec.priority === "medium"
             ? 65
             : rec.priority === "critical"
               ? 95
-              : 45),
-      actionable_steps: rec.implementation_steps || rec.actionable_steps || [],
-      estimated_improvement:
-        rec.expected_improvement ||
-        rec.estimated_improvement ||
-        "Not specified",
-      related_metrics: rec.related_metrics || ["performance", "fps", "memory"],
-      implementation_time: rec.implementation_time || "1-2 weeks",
-      status: rec.status || "pending",
-      created_at: rec.created_at || new Date().toISOString(),
-      insight_id: rec.insight_id || `insight_${rec.recommendation_id}`,
+              : 45,
+      actionable_steps: rec.implementation_steps || [],
+      estimated_improvement: rec.expected_improvement || "Not specified",
+      related_metrics: ["performance", "fps", "memory"],
+      implementation_time: "1-2 weeks",
+      status: "pending",
+      created_at: new Date().toISOString(),
+      insight_id: `insight_${rec.recommendation_id}`,
       prediction_based:
         rec.prediction_based ||
         rec.category.includes("performance_optimization") ||
@@ -103,9 +99,7 @@ export function ProactiveRecommendationsPanel({
       prevention_priority:
         rec.prevention_priority ||
         rec.priority ||
-        (rec.impact_estimate === "high" || rec.impact === "high"
-          ? "high"
-          : "medium"),
+        (rec.impact_estimate === "high" ? "high" : "medium"),
     }))
     .filter(rec => rec && rec.id) // Filter out any malformed recommendations
 

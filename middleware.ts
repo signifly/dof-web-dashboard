@@ -1,7 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server"
 
 // Simple cache for middleware session validation (Edge Runtime compatible)
-const middlewareSessionCache = new Map<string, { validated: boolean; expiresAt: number }>()
+const middlewareSessionCache = new Map<
+  string,
+  { validated: boolean; expiresAt: number }
+>()
 const MIDDLEWARE_CACHE_TTL = 2 * 60 * 1000 // 2 minutes for middleware cache
 
 /**
@@ -13,7 +16,9 @@ function isStaticAsset(pathname: string): boolean {
     pathname.startsWith("/favicon") ||
     pathname.startsWith("/images/") ||
     pathname.startsWith("/icons/") ||
-    /\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|woff|woff2|ttf|eot)$/.test(pathname)
+    /\.(ico|png|jpg|jpeg|gif|webp|svg|css|js|woff|woff2|ttf|eot)$/.test(
+      pathname
+    )
   )
 }
 
@@ -24,7 +29,7 @@ function createCacheKey(token: string): string {
   let hash = 0
   for (let i = 0; i < token.length; i++) {
     const char = token.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash
   }
   return Math.abs(hash).toString(36)
@@ -83,11 +88,12 @@ export async function middleware(request: NextRequest) {
     // Cache the validation result
     middlewareSessionCache.set(cacheKey, {
       validated: true,
-      expiresAt: Date.now() + MIDDLEWARE_CACHE_TTL
+      expiresAt: Date.now() + MIDDLEWARE_CACHE_TTL,
     })
 
     // Cleanup expired cache entries periodically
-    if (Math.random() < 0.01) { // 1% chance
+    if (Math.random() < 0.01) {
+      // 1% chance
       const now = Date.now()
       // Use Array.from to ensure compatibility with all TypeScript targets
       for (const [key, value] of Array.from(middlewareSessionCache.entries())) {
@@ -96,7 +102,6 @@ export async function middleware(request: NextRequest) {
         }
       }
     }
-
   } catch (error) {
     // Remove from cache and redirect to login
     middlewareSessionCache.delete(cacheKey)

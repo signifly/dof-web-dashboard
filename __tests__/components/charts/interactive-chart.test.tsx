@@ -111,9 +111,13 @@ jest.mock("recharts", () => ({
     <div data-testid="tooltip" />
   ),
   Legend: () => <div data-testid="legend" />,
-  Brush: ({ dataKey, onChange: _onChange }: { dataKey: string; onChange?: Function }) => (
-    <div data-testid="brush" data-key={dataKey} />
-  ),
+  Brush: ({
+    dataKey,
+    onChange: _onChange,
+  }: {
+    dataKey: string
+    onChange?: Function
+  }) => <div data-testid="brush" data-key={dataKey} />,
   ReferenceLine: ({ x, stroke }: { x: number; stroke: string }) => (
     <div data-testid="reference-line" data-x={x} data-stroke={stroke} />
   ),
@@ -450,7 +454,8 @@ describe("InteractiveChart", () => {
 
   describe("Export Functionality", () => {
     it("handles PNG export", async () => {
-      const { exportChart: _exportChart } = require("@/hooks/use-chart-export")().__values
+      const { exportChart: _exportChart } =
+        require("@/hooks/use-chart-export")().__values
 
       render(<InteractiveChart {...defaultProps} enableExport={true} />)
 
@@ -462,7 +467,8 @@ describe("InteractiveChart", () => {
     })
 
     it("handles CSV export", async () => {
-      const { exportData: _exportData } = require("@/hooks/use-chart-export")().__values
+      const { exportData: _exportData } = require("@/hooks/use-chart-export")()
+        .__values
 
       render(<InteractiveChart {...defaultProps} enableExport={true} />)
 

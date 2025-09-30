@@ -3,7 +3,11 @@ import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { env, type AuthUser } from "@/lib/env"
-import { getCachedSession, setCachedSession, invalidateCachedSession } from "@/lib/auth/session-cache"
+import {
+  getCachedSession,
+  setCachedSession,
+  invalidateCachedSession,
+} from "@/lib/auth/session-cache"
 
 const SESSION_COOKIE_NAME = "auth-session"
 

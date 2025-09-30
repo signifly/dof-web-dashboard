@@ -15,7 +15,9 @@ import {
 } from "@/types/route-performance"
 
 // Helper function to create properly typed test session data
-function createTestSession(overrides: Partial<RoutePerformanceSession> = {}): RoutePerformanceSession {
+function createTestSession(
+  overrides: Partial<RoutePerformanceSession> = {}
+): RoutePerformanceSession {
   return {
     sessionId: "test-session",
     deviceId: "test-device",

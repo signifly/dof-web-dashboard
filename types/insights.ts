@@ -87,11 +87,13 @@ export interface PerformanceScore {
   grade: "A" | "B" | "C" | "D" | "F"
   trend: "improving" | "stable" | "declining"
   last_calculated: string
-  baseline_comparison?: {
-    fps_vs_baseline: number
-    cpu_vs_baseline: number
-    memory_vs_baseline: number
-  } | undefined
+  baseline_comparison?:
+    | {
+        fps_vs_baseline: number
+        cpu_vs_baseline: number
+        memory_vs_baseline: number
+      }
+    | undefined
 }
 
 export interface TrendAnalysis {

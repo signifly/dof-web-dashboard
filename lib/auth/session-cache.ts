@@ -41,7 +41,7 @@ class SessionCache {
 
     return {
       user: cached.user,
-      session: cached.session
+      session: cached.session,
     }
   }
 
@@ -60,7 +60,7 @@ class SessionCache {
       user,
       session,
       cachedAt: now,
-      expiresAt: now + ttl
+      expiresAt: now + ttl,
     })
   }
 
@@ -90,8 +90,10 @@ class SessionCache {
       totalEntries: this.cache.size,
       expiredEntries: expired.length,
       activeEntries: this.cache.size - expired.length,
-      oldestEntry: entries.length > 0 ? Math.min(...entries.map(e => e.cachedAt)) : null,
-      newestEntry: entries.length > 0 ? Math.max(...entries.map(e => e.cachedAt)) : null
+      oldestEntry:
+        entries.length > 0 ? Math.min(...entries.map(e => e.cachedAt)) : null,
+      newestEntry:
+        entries.length > 0 ? Math.max(...entries.map(e => e.cachedAt)) : null,
     }
   }
 
@@ -126,7 +128,7 @@ export function createTokenHash(token: string): string {
   let hash = 0
   for (let i = 0; i < token.length; i++) {
     const char = token.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash // Convert to 32-bit integer
   }
   return Math.abs(hash).toString(36)
@@ -135,7 +137,9 @@ export function createTokenHash(token: string): string {
 /**
  * Get cached session for a token
  */
-export function getCachedSession(token: string): { user: AuthUser; session: AuthSession } | null {
+export function getCachedSession(
+  token: string
+): { user: AuthUser; session: AuthSession } | null {
   const tokenHash = createTokenHash(token)
   return sessionCache.get(tokenHash)
 }

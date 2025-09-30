@@ -19,7 +19,7 @@ export default async function FeedbackPage() {
   // Handle any errors from the Result pattern
   if (!isSuccess(initialDataResult)) {
     return (
-      <DashboardLayout title="User Feedback" >
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -40,7 +40,7 @@ export default async function FeedbackPage() {
 
   if (!isSuccess(statsResult)) {
     return (
-      <DashboardLayout title="User Feedback" >
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -60,7 +60,7 @@ export default async function FeedbackPage() {
   }
 
   return (
-    <DashboardLayout title="User Feedback" >
+    <DashboardLayout>
       <FeedbackDashboard
         initialData={{
           feedback: initialDataResult.data.data,

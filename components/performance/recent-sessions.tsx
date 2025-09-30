@@ -25,14 +25,6 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
     )
   }
 
-  const _formatDuration = (seconds: number | null) => {
-    if (!seconds) return "Unknown"
-    if (seconds < 60) return `${Math.round(seconds)}s`
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = Math.round(seconds % 60)
-    return `${minutes}m ${remainingSeconds}s`
-  }
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
@@ -47,14 +39,6 @@ export function RecentSessions({ sessions }: RecentSessionsProps) {
     } else {
       return date.toLocaleDateString()
     }
-  }
-
-  const _getPerformanceColor = (fps: number | null) => {
-    if (!fps) return "bg-gray-500"
-    if (fps >= 50) return "bg-green-900/200"
-    if (fps >= 30) return "bg-yellow-900/200"
-    if (fps >= 20) return "bg-orange-900/200"
-    return "bg-red-900/200"
   }
 
   const getSessionStatus = (session: PerformanceSession) => {

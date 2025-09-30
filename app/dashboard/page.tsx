@@ -20,7 +20,7 @@ export default async function DashboardPage() {
     ])
 
     return (
-      <DashboardLayout title="Dashboard">
+      <DashboardLayout>
         <DashboardContent initialSummary={summary} initialTrends={trends} />
       </DashboardLayout>
     )
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     console.error("Error loading dashboard data:", error)
 
     return (
-      <DashboardLayout title="Dashboard">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">

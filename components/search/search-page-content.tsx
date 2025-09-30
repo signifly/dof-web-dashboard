@@ -19,7 +19,6 @@ export function SearchPageContent() {
   const [query, setQuery] = useState<SearchQuery>({})
   const [results, setResults] = useState<SearchResultsType | null>(null)
   const [isLoading, __setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   // Load initial query from URL parameters
   useEffect(() => {
@@ -35,12 +34,6 @@ export function SearchPageContent() {
   ) => {
     setQuery(newQuery)
     setResults(searchResults)
-    setError(null)
-  }
-
-  const handleSearchError = (error: string) => {
-    setError(error)
-    setResults(null)
   }
 
   const handlePresetLoad = (presetQuery: SearchQuery) => {
@@ -52,11 +45,13 @@ export function SearchPageContent() {
   }
 
   const handleSort = (
-    sortBy: "timestamp" | "metric_value" | "created_at",
-    sortOrder: "asc" | "desc"
+    sortBy: "timestamp" | "metric_value" | "created_at" | undefined,
+    sortOrder: "asc" | "desc" | undefined
   ) => {
-    const newQuery = { ...query, sortBy, sortOrder }
-    setQuery(newQuery)
+    if (sortBy && sortOrder) {
+      const newQuery = { ...query, sortBy, sortOrder }
+      setQuery(newQuery)
+    }
   }
 
   const handlePageChange = (offset: number) => {
@@ -79,7 +74,6 @@ export function SearchPageContent() {
               <AdvancedSearchForm
                 initialQuery={query}
                 onSearch={handleSearch}
-                onError={handleSearchError}
                 autoSearch={false}
                 showPreview={true}
               />
@@ -91,7 +85,6 @@ export function SearchPageContent() {
               results={results}
               query={query}
               isLoading={isLoading}
-              error={error}
               onSort={handleSort}
               onPageChange={handlePageChange}
             />

@@ -10,7 +10,9 @@ interface ErrorBoundaryState {
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
-  fallback?: React.ComponentType<{ error?: Error | undefined; reset: () => void }> | undefined
+  fallback?:
+    | React.ComponentType<{ error?: Error | undefined; reset: () => void }>
+    | undefined
 }
 
 class ErrorBoundaryClass extends React.Component<

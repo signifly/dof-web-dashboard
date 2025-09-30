@@ -61,7 +61,6 @@ const RECENT_SEARCHES_KEY = "recent-searches"
 const SEARCH_FREQUENCY_KEY = "search-frequency"
 
 export function SearchHistory({
-  _currentQuery,
   onLoadHistory,
   onNewSearch,
   className,
@@ -118,7 +117,9 @@ export function SearchHistory({
     try {
       const stored = localStorage.getItem(SEARCH_FREQUENCY_KEY)
       if (stored) {
-        const parsedFrequency = new Map(JSON.parse(stored))
+        const parsedFrequency = new Map(
+          JSON.parse(stored) as [string, number][]
+        )
         setSearchFrequency(parsedFrequency)
       }
     } catch (error) {
@@ -225,15 +226,6 @@ export function SearchHistory({
     saveHistory(newHistory)
   }
 
-  // Public method to add search (for external use)
-  const addSearch = (
-    query: SearchQuery,
-    resultsCount: number,
-    executionTime: number
-  ) => {
-    addToHistory(query, resultsCount, executionTime)
-  }
-
   // Load a search from history
   const loadSearch = (entry: SearchHistoryEntry) => {
     // Update frequency
@@ -267,14 +259,6 @@ export function SearchHistory({
         return bFreq - aFreq
       })
       .slice(0, 5)
-  }
-
-  // Get recent searches (last 7 days)
-  const _getRecentSearches = (): SearchHistoryEntry[] => {
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-
-    return history.filter(entry => entry.timestamp >= sevenDaysAgo)
   }
 
   // Format relative time
@@ -439,15 +423,6 @@ export function SearchHistory({
         </div>
       )}
     </div>
-  )
-
-  // Expose addSearch method for external use
-  React.useImperativeHandle(
-    React.useRef(),
-    () => ({
-      addSearch,
-    }),
-    [addSearch]
   )
 
   if (showAsPopover) {

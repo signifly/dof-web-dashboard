@@ -67,7 +67,9 @@ interface MobileClientNavigationProps {
   className?: string
 }
 
-export function MobileClientNavigation({ className }: MobileClientNavigationProps) {
+export function MobileClientNavigation({
+  className,
+}: MobileClientNavigationProps) {
   const pathname = usePathname()
 
   return (

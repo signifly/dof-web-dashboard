@@ -133,12 +133,18 @@ export function SearchResults({
 
       const sessionsData = results.sessions.map(session => [
         ...(activeTab === "all" ? ["Session"] : []),
-        session.session_id,
+        session.id,
         session.device_type,
         session.app_version,
         session.os_version,
         new Date(session.session_start).toISOString(),
-        session.session_duration || "",
+        session.session_end
+          ? Math.round(
+              (new Date(session.session_end).getTime() -
+                new Date(session.session_start).getTime()) /
+                1000
+            ) + "s"
+          : "",
         session.anonymous_user_id,
       ])
 
@@ -146,7 +152,7 @@ export function SearchResults({
     }
 
     const csvContent = [headers, ...dataToExport]
-      .map(row => row.map(cell => `"${cell}"`).join(","))
+      .map(row => row.map((cell: any) => `"${cell}"`).join(","))
       .join("\n")
 
     const blob = new Blob([csvContent], { type: "text/csv" })
@@ -193,7 +199,9 @@ export function SearchResults({
   }
 
   // Get metric type badge variant
-  const getMetricBadgeVariant = (metricType: string) => {
+  const getMetricBadgeVariant = (
+    metricType: string
+  ): "default" | "secondary" | "destructive" | "outline" => {
     switch (metricType) {
       case "fps":
       case "cpu_usage":
@@ -445,7 +453,9 @@ function AllResultsTable({
   sessions: SearchSession[]
   formatMetricValue: (value: number, type: string) => string
   formatDuration: (duration: number | null) => string
-  getMetricBadgeVariant: (type: string) => string
+  getMetricBadgeVariant: (
+    type: string
+  ) => "default" | "secondary" | "destructive" | "outline"
 }) {
   // Combine and sort all results by timestamp
   const allResults = [
@@ -518,7 +528,16 @@ function AllResultsTable({
                 ) : (
                   <div>
                     <div>
-                      Duration: {formatDuration(result.data.session_duration)}
+                      Duration:{" "}
+                      {formatDuration(
+                        result.data.session_end
+                          ? Math.round(
+                              (new Date(result.data.session_end).getTime() -
+                                new Date(result.data.session_start).getTime()) /
+                                1000
+                            )
+                          : null
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       OS: {result.data.os_version}
@@ -535,7 +554,7 @@ function AllResultsTable({
                 {result.type === "metric" ? (
                   <div className="max-w-xs">
                     <code className="text-xs bg-muted px-2 py-1 rounded">
-                      {result.data.session_id.substring(0, 8)}...
+                      {result.data.session_id?.substring(0, 8)}...
                     </code>
                   </div>
                 ) : (
@@ -563,7 +582,9 @@ function MetricsTable({
 }: {
   metrics: SearchMetric[]
   formatMetricValue: (value: number, type: string) => string
-  getMetricBadgeVariant: (type: string) => string
+  getMetricBadgeVariant: (
+    type: string
+  ) => "default" | "secondary" | "destructive" | "outline"
 }) {
   if (metrics.length === 0) {
     return (
@@ -603,7 +624,7 @@ function MetricsTable({
               </TableCell>
               <TableCell>
                 <code className="text-xs bg-muted px-2 py-1 rounded">
-                  {metric.session_id.substring(0, 12)}...
+                  {metric.session_id?.substring(0, 12)}...
                 </code>
               </TableCell>
               <TableCell>
@@ -666,7 +687,7 @@ function SessionsTable({
             <TableRow key={index}>
               <TableCell>
                 <code className="text-xs bg-muted px-2 py-1 rounded">
-                  {session.session_id.substring(0, 12)}...
+                  {session.id.substring(0, 12)}...
                 </code>
               </TableCell>
               <TableCell>
@@ -680,7 +701,17 @@ function SessionsTable({
               <TableCell>
                 <Badge variant="outline">v{session.app_version}</Badge>
               </TableCell>
-              <TableCell>{formatDuration(session.session_duration)}</TableCell>
+              <TableCell>
+                {formatDuration(
+                  session.session_end
+                    ? Math.round(
+                        (new Date(session.session_end).getTime() -
+                          new Date(session.session_start).getTime()) /
+                          1000
+                      )
+                    : null
+                )}
+              </TableCell>
               <TableCell>
                 <div className="text-sm">
                   {new Date(session.session_start).toLocaleString()}

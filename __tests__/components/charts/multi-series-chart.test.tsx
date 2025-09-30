@@ -91,9 +91,13 @@ jest.mock("recharts", () => ({
     <div data-testid="tooltip" />
   ),
   Legend: () => <div data-testid="legend" />,
-  Brush: ({ dataKey, onChange: _onChange }: { dataKey: string; onChange?: Function }) => (
-    <div data-testid="brush" data-key={dataKey} />
-  ),
+  Brush: ({
+    dataKey,
+    onChange: _onChange,
+  }: {
+    dataKey: string
+    onChange?: Function
+  }) => <div data-testid="brush" data-key={dataKey} />,
 }))
 
 // Mock custom hooks

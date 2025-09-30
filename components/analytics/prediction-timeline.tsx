@@ -37,7 +37,6 @@ interface PredictionTimelineProps {
 export function PredictionTimeline({
   predictions,
   timeRange = "7d",
-  _metricFilter,
   showConfidenceIntervals = true,
 }: PredictionTimelineProps) {
   const [selectedTimeRange, setSelectedTimeRange] = useState<

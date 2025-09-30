@@ -19,7 +19,7 @@ export default async function MetricsPage() {
     ])
 
     return (
-      <DashboardLayout title="Performance Metrics">
+      <DashboardLayout>
         <MetricsContent initialSummary={summary} initialTrends={trends} />
       </DashboardLayout>
     )
@@ -27,7 +27,7 @@ export default async function MetricsPage() {
     console.error("Error loading metrics data:", error)
 
     return (
-      <DashboardLayout title="Performance Metrics">
+      <DashboardLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">

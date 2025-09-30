@@ -301,7 +301,9 @@ export class SearchService {
       const devices = Array.from(
         new Set(
           (devicesResult.data || [])
-            .map((item: { anonymous_user_id: string }) => item.anonymous_user_id)
+            .map(
+              (item: { anonymous_user_id: string }) => item.anonymous_user_id
+            )
             .filter(Boolean)
         )
       )
@@ -594,7 +596,6 @@ export class SearchService {
       }
     }
   }
-
 }
 
 // Export a singleton instance

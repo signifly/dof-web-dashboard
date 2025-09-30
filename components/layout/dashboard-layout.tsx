@@ -4,7 +4,6 @@ import { ClientProviders } from "./client-providers"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  title?: string
   user?: never // Remove user prop - we'll get it from server context
 }
 
@@ -12,10 +11,7 @@ interface DashboardLayoutProps {
  * Server Component DashboardLayout
  * Optimized for performance with minimal client-side hydration
  */
-export async function DashboardLayout({
-  children,
-  title = "Dashboard",
-}: DashboardLayoutProps) {
+export async function DashboardLayout({ children }: DashboardLayoutProps) {
   // Get authenticated user using cached server context
   const { user } = await getServerAuthContext()
 
@@ -24,13 +20,11 @@ export async function DashboardLayout({
       {/* Wrap entire layout content that needs client context */}
       <ClientProviders user={user}>
         {/* Server-rendered header with client components properly scoped */}
-        <ServerHeader title={title} user={user} />
+        <ServerHeader />
 
         {/* Main content area */}
         <main className="p-6 overflow-auto">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+          <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </ClientProviders>
     </div>

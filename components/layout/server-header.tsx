@@ -4,11 +4,8 @@ import { ClientNavigation, MobileClientNavigation } from "./client-navigation"
 import { ClientRealtimeStatus } from "./client-realtime-status"
 import { GlobalSearch } from "@/components/search/global-search"
 import { UserMenu } from "./user-menu"
-import type { AuthUser } from "@/lib/env"
 
 interface ServerHeaderProps {
-  title?: string
-  user: AuthUser | null
   showConnectionStatus?: boolean
 }
 
@@ -17,8 +14,6 @@ interface ServerHeaderProps {
  * Renders static parts on server, uses client components only for interactivity
  */
 export function ServerHeader({
-  title = "Dashboard",
-  user,
   showConnectionStatus = true,
 }: ServerHeaderProps) {
   return (
@@ -44,9 +39,7 @@ export function ServerHeader({
           </div>
 
           {/* Connection Status - Client component for realtime status */}
-          <ClientRealtimeStatus
-            showConnectionStatus={showConnectionStatus}
-          />
+          <ClientRealtimeStatus showConnectionStatus={showConnectionStatus} />
 
           {/* User Menu - Client component for auth interactions */}
           <UserMenu />

@@ -16,9 +16,7 @@ interface ClientProvidersProps {
 export function ClientProviders({ children, user }: ClientProvidersProps) {
   return (
     <AuthProvider initialUser={user}>
-      <RealtimeProvider>
-        {children}
-      </RealtimeProvider>
+      <RealtimeProvider>{children}</RealtimeProvider>
     </AuthProvider>
   )
 }
