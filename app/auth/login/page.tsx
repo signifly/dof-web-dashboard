@@ -19,9 +19,14 @@ interface LoginPageProps {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   // Redirect if user is already authenticated
-  const user = await getUser()
-  if (user) {
-    redirect("/dashboard")
+  try {
+    const user = await getUser()
+    if (user) {
+      redirect("/dashboard")
+    }
+  } catch (error) {
+    // If getUser fails (e.g., env validation issues), just continue to login page
+    console.error("Error checking user auth:", error)
   }
 
   const { error } = searchParams
