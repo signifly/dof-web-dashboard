@@ -1,6 +1,4 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
-import { getUser } from "@/lib/auth"
 import { LoginForm } from "@/components/auth/login-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
@@ -20,16 +18,9 @@ interface LoginPageProps {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  // Redirect if user is already authenticated
-  try {
-    const user = await getUser()
-    if (user) {
-      redirect("/dashboard")
-    }
-  } catch (error) {
-    // If getUser fails (e.g., env validation issues), just continue to login page
-    console.error("Error checking user auth:", error)
-  }
+  // Note: We intentionally don't check for existing auth here to avoid
+  // env validation errors during login page render. The LoginForm component
+  // handles client-side redirect if already authenticated.
 
   const { error } = searchParams
 
