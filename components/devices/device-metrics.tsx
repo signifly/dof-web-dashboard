@@ -26,12 +26,18 @@ interface DeviceMetricsProps {
 }
 
 export function DeviceMetrics({ metrics }: DeviceMetricsProps) {
-  // Prepare chart data
-  const chartData = metrics.map(metric => ({
-    ...metric,
-    timestamp: format(new Date(metric.timestamp), "MMM d, HH:mm"),
-    timestampFull: metric.timestamp,
-  }))
+  // Prepare chart data with timestamp validation
+  const chartData = metrics
+    .filter(metric => {
+      if (!metric.timestamp) return false
+      const date = new Date(metric.timestamp)
+      return !isNaN(date.getTime())
+    })
+    .map(metric => ({
+      ...metric,
+      timestamp: format(new Date(metric.timestamp), "MMM d, HH:mm"),
+      timestampFull: metric.timestamp,
+    }))
 
   // Calculate performance distribution
   const performanceDistribution = metrics.reduce(
@@ -472,6 +478,11 @@ export function DeviceMetrics({ metrics }: DeviceMetricsProps) {
               </thead>
               <tbody>
                 {metrics
+                  .filter(metric => {
+                    if (!metric.timestamp) return false
+                    const date = new Date(metric.timestamp)
+                    return !isNaN(date.getTime())
+                  })
                   .slice(-10)
                   .reverse()
                   .map((metric, index) => (

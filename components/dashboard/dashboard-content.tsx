@@ -47,7 +47,7 @@ export function DashboardContent({
     refresh,
   } = useSmartRefresh<DashboardData>(
     async () => {
-      return await getDashboardDataClient(50)
+      return await getDashboardDataClient(5000) // Show days worth of data for better zoom experience
     },
     {
       interval: 30000, // 30 seconds for active dashboard data

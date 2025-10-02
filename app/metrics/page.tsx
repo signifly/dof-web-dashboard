@@ -15,7 +15,7 @@ export default async function MetricsPage() {
   try {
     const [summary, trends] = await Promise.all([
       getCachedPerformanceSummary(),
-      getCachedPerformanceTrends(100),
+      getCachedPerformanceTrends(5000), // Show days worth of data for better zoom experience
     ])
 
     return (

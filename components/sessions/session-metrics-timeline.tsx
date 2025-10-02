@@ -26,7 +26,10 @@ export function SessionMetricsTimelineComponent({
   const [timeRange, setTimeRange] = useState<"all" | "last10" | "last5">("all")
 
   const formatTime = (timestamp: string) => {
-    return format(new Date(timestamp), "HH:mm:ss")
+    if (!timestamp) return "Invalid"
+    const date = new Date(timestamp)
+    if (isNaN(date.getTime())) return "Invalid"
+    return format(date, "HH:mm:ss")
   }
 
   const getFilteredMetrics = () => {

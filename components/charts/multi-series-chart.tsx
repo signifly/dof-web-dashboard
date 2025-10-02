@@ -193,14 +193,22 @@ export function MultiSeriesChart({
       if (!datasetVisibility[dataset.name]) return
 
       dataset.data.forEach(point => {
-        const timestamp = new Date(point.timestamp).getTime()
+        // Validate timestamp before processing
+        if (!point.timestamp) return
+
+        const date = new Date(point.timestamp)
+        const timestamp = date.getTime()
+
+        // Skip invalid dates (NaN timestamps)
+        if (isNaN(timestamp)) return
+
         const key = `${dataset.name}_${dataset.metric}`
 
         if (!timeMap.has(timestamp)) {
           timeMap.set(timestamp, {
             timestamp: point.timestamp,
             timestamp_number: timestamp,
-            timestamp_formatted: format(new Date(point.timestamp), "HH:mm:ss"),
+            timestamp_formatted: format(date, "HH:mm:ss"),
           })
         }
 

@@ -289,11 +289,13 @@ export async function getPerformanceTrends(
 
   try {
     // Get all performance metrics with normalized schema
+    // Note: We fetch many rows since multiple metric types share the same timestamp
+    // and we group them into single time points
     const { data, error } = await supabase
       .from("performance_metrics")
       .select("*")
-      .order("timestamp", { ascending: true })
-      .limit(limit * 3) // Get more data to account for screen_time association
+      .order("timestamp", { ascending: false })
+      .limit(limit * 10) // Fetch more rows to account for grouping by timestamp
 
     if (error) {
       console.warn(`Performance trends error: ${error.message}`)
@@ -332,7 +334,8 @@ export async function getPerformanceTrends(
       return point
     })
 
-    return finalTrends.slice(0, limit) // Return requested limit
+    // Return requested limit in chronological order (oldest to newest for charts)
+    return finalTrends.slice(0, limit).reverse()
   } catch (error) {
     console.error("Error fetching performance trends:", error)
     return []

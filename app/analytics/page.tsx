@@ -18,7 +18,7 @@ export default async function AnalyticsPage() {
   await requireAuth()
   try {
     const [trends, sessions] = await Promise.all([
-      getCachedPerformanceTrends(200),
+      getCachedPerformanceTrends(5000), // Show days worth of data for better zoom experience
       getCachedRecentSessions(100),
     ])
 
