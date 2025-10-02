@@ -5,6 +5,8 @@ import { LoginForm } from "@/components/auth/login-form"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Login - DOF Dashboard",
   description: "Sign in to access the DOF performance monitoring dashboard",
