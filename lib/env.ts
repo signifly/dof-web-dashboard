@@ -55,9 +55,10 @@ const envSchema = z.object({
           )
         }
 
-        // Production password complexity validation
+        // Production password complexity validation (skip during build)
         if (
           process.env.NODE_ENV === "production" &&
+          process.env.NEXT_PHASE !== "phase-production-build" &&
           trimmedPassword.length < 12
         ) {
           throw new Error(
