@@ -33,7 +33,7 @@ import {
 } from "@/types/insights"
 import { RoutePerformanceAnalysis } from "@/types/route-performance"
 import { UserJourney, JourneyAbandonmentPattern } from "@/types/user-journey"
-import { PerformancePredictionEngine } from "@/lib/utils/performance-prediction"
+// import { PerformancePredictionEngine } from "@/lib/utils/performance-prediction" // Reserved for future use
 import { EarlyWarningEngine } from "./early-warning-engine"
 import { TimeSeriesAnalysis } from "@/lib/utils/statistical-analysis"
 
@@ -42,7 +42,7 @@ export class PerformanceInsightsEngine {
   private scoringEngine: PerformanceScoringEngine
   private recommendationEngine: RecommendationEngine
   private journeyTracker: UserJourneyTracker
-  private _predictionEngine: PerformancePredictionEngine
+  // private _predictionEngine: PerformancePredictionEngine // Reserved for future use
   private earlyWarningEngine: EarlyWarningEngine
   private config: InsightsEngineConfig
 
@@ -85,7 +85,7 @@ export class PerformanceInsightsEngine {
     })
     this.recommendationEngine = new RecommendationEngine()
     this.journeyTracker = new UserJourneyTracker()
-    this._predictionEngine = new PerformancePredictionEngine()
+    // this._predictionEngine = new PerformancePredictionEngine() // Reserved for future use
     this.earlyWarningEngine = new EarlyWarningEngine()
   }
 
@@ -324,8 +324,8 @@ export class PerformanceInsightsEngine {
   private identifyOptimizationOpportunities(
     summary: PerformanceSummary,
     _devices: any[],
-    trends: {
-      // TODO: Fix unused variable trends
+    _trends: {
+      // Reserved for future trend-based optimization analysis
       fps: TrendAnalysis
       memory: TrendAnalysis
       cpu: TrendAnalysis
@@ -530,7 +530,7 @@ export class PerformanceInsightsEngine {
    * Create performance-based insights
    */
   private createPerformanceInsights(
-    summary: PerformanceSummary,
+    _summary: PerformanceSummary, // Reserved for future detailed performance analysis
     score: any
   ): PerformanceInsight[] {
     const insights: PerformanceInsight[] = []
@@ -564,7 +564,7 @@ export class PerformanceInsightsEngine {
    */
   private createRoutePerformanceInsights(
     routeAnalysis: RoutePerformanceAnalysis,
-    globalPerformance: PerformanceSummary // TODO: Fix unused variable globalPerformance
+    _globalPerformance: PerformanceSummary // Reserved for future global comparison analysis
   ): PerformanceInsight[] {
     const insights: PerformanceInsight[] = []
 
@@ -1052,7 +1052,7 @@ export class PerformanceInsightsEngine {
    * Generate predictive insights using multiple models
    */
   private async generatePredictiveInsights(
-    routeData: RoutePerformanceAnalysis | null,
+    _routeData: RoutePerformanceAnalysis | null, // Reserved for future route-specific predictions
     trends: MetricsTrend[]
   ): Promise<PerformancePrediction[]> {
     const predictions: PerformancePrediction[] = []

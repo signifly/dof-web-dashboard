@@ -121,7 +121,7 @@ export function getPerformanceTier(
  */
 export function transformDataForChart(
   data: MetricsTrend[],
-  chartType: "line" | "area" | "bar" | "scatter",
+  _chartType: "line" | "area" | "bar" | "scatter", // Reserved for future chart-specific transformations
   metric: string
 ): any[] {
   if (!data.length) return []
@@ -264,7 +264,7 @@ export function generatePerformanceAnnotations(
 export function aggregateDataByInterval(
   data: MetricsTrend[],
   interval: "minute" | "hour" | "day",
-  metric: string // TODO: Fix unused variable metric
+  _metric: string // Reserved for future metric-specific aggregation logic
 ): MetricsTrend[] {
   if (!data.length) return []
 

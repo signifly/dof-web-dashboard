@@ -105,7 +105,6 @@ export async function getDeviceDetails(
 
     // Get session history with health snapshots
     const sessionHistory = await getDeviceSessionsWithHealth(
-      deviceId,
       sessions.slice(0, 20)
     )
 
@@ -182,7 +181,7 @@ export async function getDeviceSessions(
       return []
     }
 
-    return await getDeviceSessionsWithHealth(deviceId, sessions)
+    return await getDeviceSessionsWithHealth(sessions)
   } catch (error) {
     console.error("Error fetching device sessions:", error)
     return []
@@ -414,7 +413,6 @@ function transformMetricsToTimePoints(
  * Helper function to get sessions with health snapshots
  */
 async function getDeviceSessionsWithHealth(
-  deviceId: string,
   sessions: PerformanceSession[]
 ): Promise<DeviceSession[]> {
   const supabase = createClient()

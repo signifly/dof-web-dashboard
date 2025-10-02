@@ -181,7 +181,7 @@ export class PerformanceService {
    * Get metrics filtered by platform
    */
   async getMetricsByPlatform(
-    platform: string,
+    _platform: string, // Reserved for future platform filtering implementation
     limit = QUERY_LIMITS.DEFAULT_PAGE_SIZE
   ) {
     // Note: Platform filtering would need to be done via context or session join
@@ -204,7 +204,7 @@ export class PerformanceService {
    * Get metrics filtered by device model
    */
   async getMetricsByDevice(
-    deviceModel: string,
+    _deviceModel: string, // Reserved for future device filtering implementation
     limit = QUERY_LIMITS.DEFAULT_PAGE_SIZE
   ) {
     // Note: Device filtering would need to be done via context or session join

@@ -22,7 +22,7 @@ export interface LoginResult {
 // Rate limiting storage (in production, use Redis)
 const loginAttempts = new Map<
   string,
-  { count: number; lastAttempt: number; blockedUntil?: number }
+  { count: number; lastAttempt: number; blockedUntil?: number | undefined }
 >()
 
 /**

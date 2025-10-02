@@ -89,7 +89,7 @@ export async function getSessionDetails(
     const performanceScore = calculatePerformanceScore(healthIndicators)
 
     // Calculate risk level
-    const riskLevel = calculateRiskLevel(healthIndicators, isActive)
+    const riskLevel = calculateRiskLevel(healthIndicators)
 
     const sessionDetails: SessionDetails = {
       ...session,
@@ -304,8 +304,8 @@ function calculateRiskLevel(
     avgMemory: number
     avgCpu: number
     avgLoadTime: number
-  },
-  isActive: boolean // TODO: Fix unused variable isActive
+  }
+  // isActive parameter removed - not used in risk calculation
 ): "low" | "medium" | "high" {
   const { avgFps, avgMemory, avgCpu, avgLoadTime } = healthIndicators
 

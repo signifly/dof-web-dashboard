@@ -1,5 +1,6 @@
 import { MetricsTrend } from "@/lib/performance-data"
-import { CSS_VARIABLES, CHART_COLORS } from "@/constants/ui/colors"
+import { CSS_VARIABLES } from "@/constants/ui/colors"
+// import { CHART_COLORS } from "@/constants/ui/colors" // Reserved for future chart color customization
 
 // Chart annotation types
 export interface ChartAnnotation {

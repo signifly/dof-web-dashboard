@@ -834,7 +834,7 @@ export class TimeSeriesAnalysis {
     isStart: boolean
   ): string {
     const periodNum = parseInt(period)
-    const _now = new Date()
+    // const _now = new Date() // Reserved for future date-based formatting
 
     switch (patternType) {
       case "hourly":

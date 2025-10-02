@@ -6,7 +6,7 @@ import {
   SeasonalPattern,
 } from "@/types/insights"
 import { RoutePerformancePrediction } from "@/types/route-analytics"
-import { PerformancePredictionEngine } from "@/lib/utils/performance-prediction"
+// import { PerformancePredictionEngine } from "@/lib/utils/performance-prediction" // Reserved for future use
 import { TimeSeriesAnalysis } from "@/lib/utils/statistical-analysis"
 import {
   EARLY_WARNING_THRESHOLDS,
@@ -20,11 +20,11 @@ import { AlertSeverity } from "@/constants/enums"
  * Generates proactive alerts based on performance predictions and seasonal patterns
  */
 export class EarlyWarningEngine {
-  private _predictionEngine: PerformancePredictionEngine
+  // private _predictionEngine: PerformancePredictionEngine // Reserved for future use
   private thresholds: EarlyWarningThresholds
 
   constructor(thresholds?: Partial<EarlyWarningThresholds>) {
-    this._predictionEngine = new PerformancePredictionEngine()
+    // this._predictionEngine = new PerformancePredictionEngine() // Reserved for future use
     this.thresholds = {
       fps_degradation_threshold:
         EARLY_WARNING_THRESHOLDS.FPS_DEGRADATION_THRESHOLD,
@@ -200,7 +200,7 @@ export class EarlyWarningEngine {
    */
   private checkSeasonalPeakAlerts(
     seasonalPatterns: SeasonalPattern[],
-    currentPerformance: PerformanceSummary // TODO: Fix unused variable currentPerformance
+    _currentPerformance: PerformanceSummary // Reserved for future correlation analysis
   ): EarlyWarningAlert[] {
     const alerts: EarlyWarningAlert[] = []
 

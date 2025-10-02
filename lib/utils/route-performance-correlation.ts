@@ -305,10 +305,11 @@ export function compareRoutesAgainstGlobalPerformance(
   const FPS_TARGET_OPTIMAL = 55
 
   routeAnalysis.routes.forEach(route => {
-    const _insight = correlateRouteWithGlobalPerformance(
-      route,
-      routeAnalysis.appAverages
-    )
+    // Reserved for future: correlate with global performance
+    // const _insight = correlateRouteWithGlobalPerformance(
+    //   route,
+    //   routeAnalysis.appAverages
+    // )
 
     // FPS comparison - against target performance, not just app average
     const fpsDeviationFromTarget =

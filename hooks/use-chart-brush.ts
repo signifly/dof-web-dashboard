@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback } from "react"
 
 export interface BrushSelection {
   startIndex: number
@@ -185,20 +185,20 @@ export function useChartBrush({
     [brushState.selection]
   )
 
-  // Calculate time range for the current selection
-  const _selectedTimeRange = useMemo(() => {
-    if (!brushState.selection) return null
+  // Calculate time range for the current selection (for potential future use)
+  // const _selectedTimeRange = useMemo(() => {
+  //   if (!brushState.selection) return null
 
-    return {
-      startTime: brushState.selection.startTime,
-      endTime: brushState.selection.endTime,
-      duration:
-        brushState.selection.startTime && brushState.selection.endTime
-          ? brushState.selection.endTime.getTime() -
-            brushState.selection.startTime.getTime()
-          : 0,
-    }
-  }, [brushState.selection])
+  //   return {
+  //     startTime: brushState.selection.startTime,
+  //     endTime: brushState.selection.endTime,
+  //     duration:
+  //       brushState.selection.startTime && brushState.selection.endTime
+  //         ? brushState.selection.endTime.getTime() -
+  //           brushState.selection.startTime.getTime()
+  //         : 0,
+  //   }
+  // }, [brushState.selection])
 
   const brushHandlers: BrushHandlers = {
     onBrushStart,

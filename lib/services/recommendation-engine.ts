@@ -234,8 +234,8 @@ export class RecommendationEngine {
         description: "Proactive memory optimization for increasing usage",
         condition: insight =>
           insight.type === "trend_decline" && insight.category === "memory",
-        recommendation: insight => ({
-          // TODO: Fix unused variable insight
+        recommendation: _insight => ({
+          // Parameter reserved for future dynamic recommendations based on insight data
           title: "Proactive Memory Leak Prevention",
           description:
             "Memory usage is trending upward. Implement preventive measures to avoid future memory issues.",
@@ -293,8 +293,8 @@ export class RecommendationEngine {
         description: "Holistic approach for multiple performance problems",
         condition: insight =>
           insight.type === "alert" && insight.impact === "high",
-        recommendation: insight => ({
-          // TODO: Fix unused variable insight
+        recommendation: _insight => ({
+          // Parameter reserved for future dynamic recommendations based on insight data
           title: "Comprehensive Performance Audit",
           description:
             "Multiple performance issues detected. Conduct comprehensive optimization review.",
@@ -327,8 +327,8 @@ export class RecommendationEngine {
             insight.category === "memory") &&
           insight.data_context.value !== undefined &&
           insight.confidence > ANALYTICS_THRESHOLDS.CORRELATION_THRESHOLD,
-        recommendation: insight => ({
-          // TODO: Fix unused variable insight
+        recommendation: _insight => ({
+          // Parameter reserved for future dynamic recommendations based on insight data
           title: "Low-End Device Compatibility",
           description:
             "Optimize performance for lower-end devices to ensure broad compatibility.",
@@ -365,8 +365,8 @@ export class RecommendationEngine {
             insight.data_context.route_context.route_specific_metrics
               .avg_screen_duration > 3000
           ),
-        recommendation: insight => ({
-          // TODO: Fix unused variable insight
+        recommendation: _insight => ({
+          // Parameter reserved for future dynamic recommendations based on insight data
           title: "Implement Route Preloading",
           description:
             "Long-duration route detected. Implement preloading for better UX.",
@@ -400,8 +400,8 @@ export class RecommendationEngine {
             insight.data_context.route_context.route_specific_metrics
               .avg_screen_duration > 5000
           ),
-        recommendation: insight => ({
-          // TODO: Fix unused variable insight
+        recommendation: _insight => ({
+          // Parameter reserved for future dynamic recommendations based on insight data
           title: "Optimize Route for Low-End Devices",
           description:
             "Route performs poorly on low-end devices. Implement device-specific optimizations.",
@@ -436,8 +436,8 @@ export class RecommendationEngine {
               insight.data_context.route_context.route_specific_metrics
                 .avg_screen_duration > 5000
             )),
-        recommendation: insight => ({
-          // TODO: Fix unused variable insight
+        recommendation: _insight => ({
+          // Parameter reserved for future dynamic recommendations based on insight data
           title: "Route Exceeds Performance Budget",
           description:
             "Route loading time exceeds performance budget. Optimization required.",
@@ -472,8 +472,8 @@ export class RecommendationEngine {
             insight.data_context.route_context.route_specific_metrics
               .sessions_count > 50
           ),
-        recommendation: insight => ({
-          // TODO: Fix unused variable insight
+        recommendation: _insight => ({
+          // Parameter reserved for future dynamic recommendations based on insight data
           title: "Implement Route Caching Strategy",
           description:
             "High-traffic route detected. Implement caching for improved performance.",
@@ -629,7 +629,7 @@ export class RecommendationEngine {
   private calculateRouteOptimizationPriorityScore(
     optimization: RouteOptimizationRecommendation,
     routeAnalysis: RouteOptimizationAnalysis,
-    context: PerformanceSummary // TODO: Fix unused variable context
+    _context: PerformanceSummary // Reserved for future context-aware priority calculation
   ): number {
     const priorityWeight = { high: 3, medium: 2, low: 1 }[optimization.priority]
     const complexityWeight = { simple: 3, moderate: 2, complex: 1 }[
@@ -722,7 +722,7 @@ export class RecommendationEngine {
    */
   private getRouteOptimizationActionSteps(
     optimization: RouteOptimizationRecommendation,
-    routeAnalysis: RouteOptimizationAnalysis // TODO: Fix unused variable routeAnalysis
+    _routeAnalysis: RouteOptimizationAnalysis // Reserved for future route-specific action steps
   ): string[] {
     const baseSteps: Record<string, string[]> = {
       preloading: [
@@ -870,7 +870,7 @@ export class RecommendationEngine {
    */
   private calculateOpportunityPriorityScore(
     opportunity: OptimizationOpportunity,
-    context: PerformanceSummary // TODO: Fix unused variable context
+    _context: PerformanceSummary // Reserved for future context-aware priority calculation
   ): number {
     const impactWeight = { high: 3, medium: 2, low: 1 }[
       opportunity.potential_impact

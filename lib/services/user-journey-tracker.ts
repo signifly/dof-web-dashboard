@@ -342,7 +342,7 @@ export class UserJourneyTracker {
     })
 
     // Convert screen groups to route visits
-    const _sessionStart = new Date(session.session_start).getTime()
+    // const _sessionStart = new Date(session.session_start).getTime() // Reserved for future timestamp calculations
     let visitIndex = 0
 
     for (const [screenName, screenMetrics] of Array.from(

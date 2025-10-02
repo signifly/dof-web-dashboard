@@ -1,4 +1,5 @@
-import { PerformanceSession, PerformanceMetric } from "@/lib/performance-data"
+import { PerformanceSession } from "@/lib/performance-data"
+// import { PerformanceMetric } from "@/lib/performance-data" // Reserved for future metric-level session analysis
 
 export interface SessionDetails extends PerformanceSession {
   isActive: boolean

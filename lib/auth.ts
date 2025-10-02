@@ -3,6 +3,9 @@ import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { env, type AuthUser } from "@/lib/env"
+
+// Re-export AuthUser type for use in other modules
+export type { AuthUser }
 import {
   getCachedSession,
   setCachedSession,

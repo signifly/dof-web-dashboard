@@ -18,7 +18,7 @@ export interface ExportState {
     format: string
     timestamp: Date
   }
-  error?: string
+  error?: string | undefined
 }
 
 export interface UseChartExportProps {

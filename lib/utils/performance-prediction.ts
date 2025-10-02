@@ -146,7 +146,7 @@ export class PerformancePredictionEngine {
     const sumY = y.reduce((sum, val) => sum + val, 0)
     const sumXY = x.reduce((sum, val, i) => sum + val * y[i], 0)
     const sumXX = x.reduce((sum, val) => sum + val * val, 0)
-    const _sumYY = y.reduce((sum, val) => sum + val * val, 0)
+    // const _sumYY = y.reduce((sum, val) => sum + val * val, 0) // Reserved for future R-squared calculation
 
     const denominator = n * sumXX - sumX * sumX
 
@@ -306,7 +306,7 @@ export class PerformancePredictionEngine {
    */
   async predictWithEnsemble(
     route: RoutePerformanceData,
-    appAverages: { avgFps: number; avgMemory: number; avgCpu: number },
+    _appAverages: { avgFps: number; avgMemory: number; avgCpu: number }, // Reserved for future app-wide comparison
     historicalTrends?: MetricsTrend[],
     models: (
       | "linear_regression"
@@ -457,7 +457,7 @@ export class PerformancePredictionEngine {
    * Seasonal pattern-based prediction
    */
   async predictWithSeasonalDecomposition(
-    route: RoutePerformanceData,
+    _route: RoutePerformanceData, // Reserved for future route-specific seasonal patterns
     historicalTrends: MetricsTrend[],
     seasonalPeriod: number = 7
   ): Promise<PredictionResult> {
