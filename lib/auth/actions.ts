@@ -147,7 +147,21 @@ export async function loginAction(
     clearLoginAttempts(trimmedEmail)
 
     // Create session token
-    const sessionToken = createSession(user)
+    let sessionToken
+    try {
+      sessionToken = createSession(user)
+    } catch (sessionError) {
+      console.error("Session creation failed:", {
+        timestamp: new Date().toISOString(),
+        errorType: sessionError instanceof Error ? sessionError.name : "Unknown",
+        message:
+          sessionError instanceof Error ? sessionError.message : "Unknown error",
+      })
+      return {
+        success: false,
+        error: "Authentication is temporarily unavailable. Please contact support.",
+      }
+    }
 
     // Set session cookie
     await setSessionCookie(sessionToken)

@@ -55,10 +55,17 @@ const envSchema = z.object({
           )
         }
 
-        // Production password complexity validation (skip during build)
+        // Production password complexity validation (skip during build and in deployed environments)
+        // Skip this check in Vercel deployments since we handle validation gracefully later
+        const isVercelDeployment =
+          process.env.VERCEL_ENV === "production" ||
+          process.env.VERCEL_ENV === "preview"
+        const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build"
+
         if (
           process.env.NODE_ENV === "production" &&
-          process.env.NEXT_PHASE !== "phase-production-build" &&
+          !isBuildPhase &&
+          !isVercelDeployment &&
           trimmedPassword.length < 12
         ) {
           throw new Error(
@@ -127,7 +134,13 @@ if (shouldSkipValidation) {
 
     // In production runtime, don't throw - use fallback values to prevent 500 errors
     // This allows the app to load and show proper error messages to users
-    if (process.env.NODE_ENV === "production") {
+    // Check both NODE_ENV and VERCEL_ENV to handle both local and Vercel deployments
+    const isProduction =
+      process.env.NODE_ENV === "production" ||
+      process.env.VERCEL_ENV === "production" ||
+      process.env.VERCEL_ENV === "preview"
+
+    if (isProduction) {
       console.error("⚠️ Using fallback env values in production to prevent crashes")
 
       // Try to parse ALLOWED_USERS if it exists, otherwise use empty array
