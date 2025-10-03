@@ -29,6 +29,12 @@ export function authenticateUser(
 ): AuthUser | null {
   const normalizedEmail = email.toLowerCase().trim()
 
+  // Safely check if ALLOWED_USERS is available
+  if (!env.ALLOWED_USERS || !Array.isArray(env.ALLOWED_USERS)) {
+    console.error("ALLOWED_USERS not properly configured")
+    return null
+  }
+
   // Find user by email first
   const user = env.ALLOWED_USERS.find(u => u.email === normalizedEmail)
 
@@ -44,6 +50,10 @@ export function authenticateUser(
  * Create a JWT session token for authenticated user with shorter expiration
  */
 export function createSession(user: AuthUser): string {
+  if (!env.AUTH_SECRET) {
+    throw new Error("AUTH_SECRET not configured")
+  }
+
   return jwt.sign(
     { email: user.email },
     env.AUTH_SECRET,
@@ -55,6 +65,11 @@ export function createSession(user: AuthUser): string {
  * Verify and decode a session token with secure error handling
  */
 export function verifySession(token: string): AuthSession | null {
+  if (!env.AUTH_SECRET) {
+    console.error("AUTH_SECRET not configured")
+    return null
+  }
+
   try {
     const decoded = jwt.verify(token, env.AUTH_SECRET) as AuthSession
     return decoded
@@ -91,7 +106,7 @@ export async function getSession(): Promise<AuthSession | null> {
 
   // Cache miss - verify JWT and cache result
   const session = verifySession(sessionToken.value)
-  if (session) {
+  if (session && env.ALLOWED_USERS && Array.isArray(env.ALLOWED_USERS)) {
     // Find user to cache with session
     const user = env.ALLOWED_USERS.find(u => u.email === session.email)
     if (user) {
@@ -126,6 +141,11 @@ export async function getUser(): Promise<AuthUser | null> {
   }
 
   // Find user in allowed users list
+  if (!env.ALLOWED_USERS || !Array.isArray(env.ALLOWED_USERS)) {
+    console.error("ALLOWED_USERS not properly configured")
+    return null
+  }
+
   return env.ALLOWED_USERS.find(user => user.email === session.email) || null
 }
 
@@ -176,6 +196,11 @@ export async function clearSessionCookie(): Promise<void> {
  * Check if a user is authorized (exists in allowed users)
  */
 export function isUserAuthorized(email: string): boolean {
+  if (!env.ALLOWED_USERS || !Array.isArray(env.ALLOWED_USERS)) {
+    console.error("ALLOWED_USERS not properly configured")
+    return false
+  }
+
   const normalizedEmail = email.toLowerCase().trim()
   return env.ALLOWED_USERS.some(user => user.email === normalizedEmail)
 }

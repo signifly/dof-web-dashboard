@@ -109,7 +109,21 @@ export async function loginAction(
     }
 
     // Authenticate user against environment variables
-    const user = authenticateUser(trimmedEmail, password)
+    // Wrapped in try-catch to handle env validation errors gracefully
+    let user
+    try {
+      user = authenticateUser(trimmedEmail, password)
+    } catch (envError) {
+      console.error("Authentication configuration error:", {
+        timestamp: new Date().toISOString(),
+        errorType: envError instanceof Error ? envError.name : "Unknown",
+        message: envError instanceof Error ? envError.message : "Unknown error",
+      })
+      return {
+        success: false,
+        error: "Authentication is temporarily unavailable. Please contact support.",
+      }
+    }
 
     if (!user) {
       // Record failed attempt

@@ -100,15 +100,37 @@ const envSchema = z.object({
 })
 
 // Validate environment variables at module load time
-const parsed = envSchema.safeParse(process.env)
+// Skip validation during production build phase to avoid build-time errors
+const shouldSkipValidation =
+  process.env.NEXT_PHASE === "phase-production-build" ||
+  process.env.NEXT_PHASE === "phase-export"
 
-if (!parsed.success) {
-  console.error("❌ Environment variable validation failed:")
-  console.error(parsed.error.format())
-  throw new Error("Invalid environment variables")
+let parsedEnv: z.infer<typeof envSchema>
+
+if (shouldSkipValidation) {
+  // During build, use a dummy env object that won't be used
+  console.warn("⚠️ Skipping environment validation during build phase")
+  parsedEnv = {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+    ALLOWED_USERS: [],
+    AUTH_SECRET: process.env.AUTH_SECRET || "",
+  } as z.infer<typeof envSchema>
+} else {
+  const parsed = envSchema.safeParse(process.env)
+
+  if (!parsed.success) {
+    console.error("❌ Environment variable validation failed:")
+    console.error(parsed.error.format())
+    throw new Error("Invalid environment variables")
+  }
+
+  parsedEnv = parsed.data
 }
 
-export const env = parsed.data
+export const env = parsedEnv
 
 export type Env = typeof env
 export type { AuthUser }
