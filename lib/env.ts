@@ -124,10 +124,53 @@ if (shouldSkipValidation) {
   if (!parsed.success) {
     console.error("❌ Environment variable validation failed:")
     console.error(parsed.error.format())
-    throw new Error("Invalid environment variables")
-  }
 
-  parsedEnv = parsed.data
+    // In production runtime, don't throw - use fallback values to prevent 500 errors
+    // This allows the app to load and show proper error messages to users
+    if (process.env.NODE_ENV === "production") {
+      console.error("⚠️ Using fallback env values in production to prevent crashes")
+
+      // Try to parse ALLOWED_USERS if it exists, otherwise use empty array
+      let allowedUsers: AuthUser[] = []
+      if (process.env.ALLOWED_USERS) {
+        try {
+          // Attempt to parse ALLOWED_USERS even if validation failed
+          const userPairs = process.env.ALLOWED_USERS.split(",").map(pair =>
+            pair.trim()
+          )
+          allowedUsers = userPairs
+            .map(pair => {
+              const [email, password] = pair.split(":")
+              if (email && password) {
+                const hashedPassword = bcrypt.hashSync(password.trim(), 12)
+                return {
+                  email: email.trim().toLowerCase(),
+                  password: hashedPassword,
+                }
+              }
+              return null
+            })
+            .filter((u): u is AuthUser => u !== null)
+        } catch (e) {
+          console.error("Failed to parse ALLOWED_USERS:", e)
+        }
+      }
+
+      parsedEnv = {
+        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY:
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+        ALLOWED_USERS: allowedUsers,
+        AUTH_SECRET: process.env.AUTH_SECRET || "",
+      } as z.infer<typeof envSchema>
+    } else {
+      // In development, throw immediately to catch config issues early
+      throw new Error("Invalid environment variables")
+    }
+  } else {
+    parsedEnv = parsed.data
+  }
 }
 
 export const env = parsedEnv
