@@ -390,8 +390,8 @@ export async function getVersionDetails(
 
     return {
       version,
-      commit: typedSessions[0]?.commit || "N/A",
-      branch: typedSessions[0]?.branch || "main",
+      commit: "N/A", // Not available in current schema
+      branch: "main", // Default - not tracked in current schema
       firstSeen: typedSessions[typedSessions.length - 1].created_at,
       lastSeen: typedSessions[0].created_at,
       totalSessions: typedSessions.length,
