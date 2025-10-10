@@ -261,18 +261,21 @@ export async function getVersionDetails(
           device.platform
         )
 
+        // Calculate risk level based primarily on performance metrics
+        // Session count has lower weight
         let riskLevel: "low" | "medium" | "high" = "low"
         if (
           deviceAvgFps < 20 ||
-          deviceAvgMemory > 800 ||
-          device.totalSessions < 2
+          deviceAvgMemory > 800
         ) {
           riskLevel = "high"
         } else if (
           deviceAvgFps < 45 ||
-          deviceAvgMemory > 400 ||
-          device.totalSessions < 5
+          deviceAvgMemory > 400
         ) {
+          riskLevel = "medium"
+        } else if (device.totalSessions < 3) {
+          // Low sample size - mark as medium risk for statistical reliability
           riskLevel = "medium"
         }
 
