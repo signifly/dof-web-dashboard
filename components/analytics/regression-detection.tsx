@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { MetricsTrend } from "@/lib/performance-data"
@@ -345,48 +346,66 @@ export function RegressionDetection({}: RegressionDetectionProps) {
           ) : (
             <div className="space-y-4">
               {builds.map((build, index) => (
-                <div
+                <Link
                   key={index}
-                  className="flex justify-between items-center p-4 border rounded-lg"
+                  href={`/versions/${encodeURIComponent(build.version)}`}
+                  className="block"
                 >
-                  <div className="flex items-center space-x-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs border ${getStatusColor(build.status)}`}
-                    >
-                      {build.status}
-                    </span>
-                    <div>
-                      <div className="font-medium">{build.version}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {build.commit} • {build.branch} •{" "}
-                        {new Date(build.timestamp).toLocaleDateString()}
+                  <div className="flex justify-between items-center p-4 border rounded-lg hover:border-primary hover:bg-accent/50 transition-colors cursor-pointer">
+                    <div className="flex items-center space-x-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs border ${getStatusColor(build.status)}`}
+                      >
+                        {build.status}
+                      </span>
+                      <div>
+                        <div className="font-medium">{build.version}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {build.commit} • {build.branch} •{" "}
+                          {new Date(build.timestamp).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center space-x-6 text-sm">
-                    <div className="text-center">
-                      <div className="font-medium">{build.regressionScore}</div>
-                      <div className="text-muted-foreground">Score</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-medium">
-                        {build.avgFps.toFixed(1)}
+                    <div className="flex items-center space-x-6 text-sm">
+                      <div className="text-center">
+                        <div className="font-medium">{build.regressionScore}</div>
+                        <div className="text-muted-foreground">Score</div>
                       </div>
-                      <div className="text-muted-foreground">FPS</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-medium">{build.avgMemory}</div>
-                      <div className="text-muted-foreground">MB</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-medium">
-                        {build.avgCpu === 0 ? "N/A" : `${build.avgCpu}%*`}
+                      <div className="text-center">
+                        <div className="font-medium">
+                          {build.avgFps.toFixed(1)}
+                        </div>
+                        <div className="text-muted-foreground">FPS</div>
                       </div>
-                      <div className="text-muted-foreground">CPU</div>
+                      <div className="text-center">
+                        <div className="font-medium">{build.avgMemory}</div>
+                        <div className="text-muted-foreground">MB</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium">
+                          {build.avgCpu === 0 ? "N/A" : `${build.avgCpu}%*`}
+                        </div>
+                        <div className="text-muted-foreground">CPU</div>
+                      </div>
+                      <div className="text-muted-foreground">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
