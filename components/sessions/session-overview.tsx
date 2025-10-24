@@ -228,6 +228,14 @@ export function SessionOverview({ session }: SessionOverviewProps) {
                 {session.healthIndicators.avgCpu.toFixed(0)}%
               </span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Cache Size</span>
+              <span className="font-medium">
+                {session.healthIndicators.avgCacheSize === 0
+                  ? "No data"
+                  : `${(session.healthIndicators.avgCacheSize / 1024 / 1024).toFixed(1)}MB`}
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>
