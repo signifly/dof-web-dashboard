@@ -158,6 +158,7 @@ const mockData1: MetricsTrend[] = [
     memory_usage: 256,
     cpu_usage: 30,
     load_time: 800,
+      cache_size: 0,
     screen_name: "HomeScreen",
   },
   {
@@ -166,6 +167,7 @@ const mockData1: MetricsTrend[] = [
     memory_usage: 280,
     cpu_usage: 35,
     load_time: 850,
+      cache_size: 0,
     screen_name: "HomeScreen",
   },
 ]
@@ -177,6 +179,7 @@ const mockData2: MetricsTrend[] = [
     memory_usage: 320,
     cpu_usage: 40,
     load_time: 900,
+      cache_size: 0,
     screen_name: "DetailScreen",
   },
   {
@@ -185,6 +188,7 @@ const mockData2: MetricsTrend[] = [
     memory_usage: 300,
     cpu_usage: 38,
     load_time: 880,
+      cache_size: 0,
     screen_name: "DetailScreen",
   },
 ]

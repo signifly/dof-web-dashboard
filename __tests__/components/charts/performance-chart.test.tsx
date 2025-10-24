@@ -17,6 +17,7 @@ describe("PerformanceChart", () => {
       memory_usage: 100,
       cpu_usage: 50,
       load_time: 1000,
+      cache_size: 0,
       screen_name: "test",
     },
     {
@@ -25,6 +26,7 @@ describe("PerformanceChart", () => {
       memory_usage: 120,
       cpu_usage: 55,
       load_time: 1100,
+      cache_size: 0,
       screen_name: "test",
     },
   ]
@@ -65,6 +67,7 @@ describe("PerformanceChart", () => {
         memory_usage: 90,
         cpu_usage: 45,
         load_time: 900,
+      cache_size: 0,
         screen_name: "realtime",
       },
     ]
@@ -171,6 +174,7 @@ describe("PerformanceChart", () => {
       memory_usage: 100 + i,
       cpu_usage: 50 + i,
       load_time: 1000 + i,
+      cache_size: 100 + i,
       screen_name: "test",
     }))
 

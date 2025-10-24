@@ -189,6 +189,7 @@ const mockData: MetricsTrend[] = [
     memory_usage: 256,
     cpu_usage: 30,
     load_time: 800,
+      cache_size: 0,
     screen_name: "HomeScreen",
   },
   {
@@ -197,6 +198,7 @@ const mockData: MetricsTrend[] = [
     memory_usage: 280,
     cpu_usage: 35,
     load_time: 850,
+      cache_size: 0,
     screen_name: "HomeScreen",
   },
   {
@@ -205,6 +207,7 @@ const mockData: MetricsTrend[] = [
     memory_usage: 270,
     cpu_usage: 32,
     load_time: 820,
+      cache_size: 0,
     screen_name: "HomeScreen",
   },
 ]

@@ -532,6 +532,7 @@ export class PerformancePredictionEngine {
       cpu_usage: session.avgCpu,
       screen_name: "route_session",
       load_time: session.screenDuration || 1000,
+      cache_size: 0,
     }))
 
     return TimeSeriesAnalysis.detectSeasonalPatterns(

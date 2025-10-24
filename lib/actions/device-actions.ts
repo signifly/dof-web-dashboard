@@ -369,6 +369,7 @@ function transformMetricsToTimePoints(
         fps: 0,
         memory: 0,
         loadTime: 0,
+        cacheSize: 0,
         screenName: routeInfo.screenName,
         sessionId,
         routePath: routeInfo.routePath,

@@ -51,6 +51,7 @@ describe("PerformanceInsightsEngine", () => {
       avgMemory: 450,
       avgCpu: 55,
       avgLoadTime: 2500,
+      avgCacheSize: 150,
       deviceCount: 25,
       platformBreakdown: [
         { platform: "android", count: 15 },
@@ -80,6 +81,7 @@ describe("PerformanceInsightsEngine", () => {
       memory_usage: 450 + Math.random() * 100,
       cpu_usage: 55 + Math.random() * 20,
       load_time: 2500 + Math.random() * 500,
+      cache_size: 150 + Math.random() * 50,
     }))
 
     jest.clearAllMocks()

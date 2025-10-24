@@ -14,6 +14,7 @@ export function ChartTestExample() {
       memory_usage: 350,
       cpu_usage: 45,
       load_time: 1200,
+      cache_size: 150,
       screen_name: "HomeScreen",
     },
     {
@@ -22,6 +23,7 @@ export function ChartTestExample() {
       memory_usage: 320,
       cpu_usage: 38,
       load_time: 900,
+      cache_size: 120,
       screen_name: "ProfileScreen",
     },
     {
@@ -30,6 +32,7 @@ export function ChartTestExample() {
       memory_usage: 380,
       cpu_usage: 42,
       load_time: 1100,
+      cache_size: 180,
       screen_name: "SettingsScreen",
     },
   ]

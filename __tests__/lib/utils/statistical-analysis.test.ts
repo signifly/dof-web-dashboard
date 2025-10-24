@@ -22,6 +22,7 @@ describe("StatisticalAnalysisUtils", () => {
       memory_usage: value * 10,
       cpu_usage: value * 0.5,
       load_time: value * 20,
+      cache_size: value * 3,
     }))
   }
 

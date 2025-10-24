@@ -53,6 +53,7 @@ describe("useRealtimePerformance", () => {
         memory_usage: 100,
         cpu_usage: 50,
         load_time: 1000,
+      cache_size: 0,
         screen_name: "test",
       },
     ]

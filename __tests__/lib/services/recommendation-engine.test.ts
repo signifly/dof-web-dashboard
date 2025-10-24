@@ -21,6 +21,7 @@ describe("RecommendationEngine", () => {
     avgMemory: 500,
     avgCpu: 60,
     avgLoadTime: 3000,
+    avgCacheSize: 150,
     platformBreakdown: [
       { platform: "android", count: 15 },
       { platform: "ios", count: 10 },

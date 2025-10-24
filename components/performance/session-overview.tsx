@@ -58,6 +58,7 @@ export function SessionOverview({ summary, isLoading }: SessionOverviewProps) {
                 memory_usage: 0,
                 cpu_usage: 0,
                 load_time: 0,
+                cache_size: 0,
                 screen_name: p.platform,
               }))}
               metric="fps"

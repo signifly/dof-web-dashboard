@@ -303,6 +303,8 @@ export function aggregateDataByInterval(
         items.reduce((sum, item) => sum + item.cpu_usage, 0) / items.length
       const avgLoadTime =
         items.reduce((sum, item) => sum + item.load_time, 0) / items.length
+      const avgCacheSize =
+        items.reduce((sum, item) => sum + item.cache_size, 0) / items.length
 
       return {
         timestamp: items[0].timestamp, // Use first timestamp as representative
@@ -310,6 +312,7 @@ export function aggregateDataByInterval(
         memory_usage: Math.round(avgMemory * 10) / 10,
         cpu_usage: Math.round(avgCpu * 10) / 10,
         load_time: Math.round(avgLoadTime * 10) / 10,
+        cache_size: Math.round(avgCacheSize * 10) / 10,
         screen_name: items[0].screen_name, // Use first screen name
       }
     })
