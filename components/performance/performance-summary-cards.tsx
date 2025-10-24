@@ -12,8 +12,8 @@ export function PerformanceSummaryCards({
 }: PerformanceSummaryCardsProps) {
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        {[...Array(5)].map((_, i) => (
           <div key={i} className="h-32 bg-muted rounded-lg animate-pulse" />
         ))}
       </div>
@@ -86,12 +86,36 @@ export function PerformanceSummaryCards({
     return { grade: "Poor", trend: "down" as const, type: "negative" as const }
   }
 
+  const getCacheSizeGrade = (cacheSize: number) => {
+    const sizeMB = cacheSize / 1024 / 1024
+    if (sizeMB <= 50)
+      return {
+        grade: "Excellent",
+        trend: "up" as const,
+        type: "positive" as const,
+      }
+    if (sizeMB <= 100)
+      return {
+        grade: "Good",
+        trend: "stable" as const,
+        type: "neutral" as const,
+      }
+    if (sizeMB <= 200)
+      return {
+        grade: "Fair",
+        trend: "down" as const,
+        type: "negative" as const,
+      }
+    return { grade: "Poor", trend: "down" as const, type: "negative" as const }
+  }
+
   const performanceGrade = getPerformanceGrade(data.avgFps)
   const cpuGrade = getCpuGrade(data.avgCpu)
   const memoryGrade = getMemoryGrade(data.avgMemory)
+  const cacheSizeGrade = getCacheSizeGrade(data.avgCacheSize)
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       <MetricCard
         title="Active Sessions"
         value={data.totalSessions}
@@ -125,6 +149,20 @@ export function PerformanceSummaryCards({
         change={memoryGrade.grade}
         changeType={memoryGrade.type}
         trend={memoryGrade.trend}
+      />
+
+      <MetricCard
+        title="Cache Size"
+        value={
+          data.avgCacheSize === 0
+            ? "No data"
+            : `${(data.avgCacheSize / 1024 / 1024).toFixed(1)} MB`
+        }
+        change={
+          data.avgCacheSize === 0 ? "No data available" : cacheSizeGrade.grade
+        }
+        changeType={data.avgCacheSize === 0 ? "neutral" : cacheSizeGrade.type}
+        trend={data.avgCacheSize === 0 ? "stable" : cacheSizeGrade.trend}
       />
     </div>
   )
