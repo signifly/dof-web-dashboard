@@ -104,6 +104,7 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
         avgMemory: 0,
         avgCpu: 0,
         avgLoadTime: 0,
+        avgCacheSize: 0,
         deviceCount: 0,
         platformBreakdown: [],
         performanceTiers: [],
@@ -135,6 +136,11 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
     const { average: avgLoadTime } = extractMetricsByType(
       metrics || [],
       "LOAD_TIME",
+      0
+    )
+    const { average: avgCacheSize } = extractMetricsByType(
+      metrics || [],
+      "CACHE_SIZE",
       0
     )
 
@@ -254,6 +260,7 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
       avgMemory: Math.round(avgMemory * 100) / 100,
       avgCpu: Math.round(avgInferredCpu * 100) / 100, // Inferred CPU usage
       avgLoadTime: Math.round(avgLoadTime * 100) / 100,
+      avgCacheSize: Math.round(avgCacheSize * 100) / 100,
       deviceCount: uniqueDevices.size,
       platformBreakdown,
       performanceTiers,
@@ -271,6 +278,7 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
       avgMemory: 0,
       avgCpu: 0,
       avgLoadTime: 0,
+      avgCacheSize: 0,
       deviceCount: 0,
       platformBreakdown: [],
       performanceTiers: [],
@@ -404,6 +412,7 @@ function transformMetricsToTimePoints(
           memory_usage: 0,
           cpu_usage: 0,
           load_time: 0,
+          cache_size: 0,
           screen_name:
             screenTimeInfo?.displayName || extractScreenName(metric.context),
           route_path: screenTimeInfo?.routePath,
@@ -434,6 +443,9 @@ function transformMetricsToTimePoints(
         case "screen_load":
         case "load_time":
           point.load_time = metric.metric_value
+          break
+        case "cache_size":
+          point.cache_size = metric.metric_value
           break
       }
     })
@@ -483,6 +495,7 @@ export async function getSessionPerformance(
         memory_usage: 0,
         cpu_usage: 0,
         load_time: 0,
+        cache_size: 0,
         screen_name: extractScreenName(metric.context),
       })
     }
@@ -505,6 +518,9 @@ export async function getSessionPerformance(
       case "screen_load":
       case "load_time":
         point.load_time = metric.metric_value
+        break
+      case "cache_size":
+        point.cache_size = metric.metric_value
         break
     }
   })
