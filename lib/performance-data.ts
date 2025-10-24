@@ -24,6 +24,7 @@ export interface PerformanceSummary {
   avgMemory: number
   avgCpu: number
   avgLoadTime: number
+  avgCacheSize: number
   deviceCount: number
   platformBreakdown: { platform: string; count: number }[]
   performanceTiers: { tier: string; count: number }[]
@@ -38,6 +39,7 @@ export interface MetricsTrend {
   memory_usage: number
   cpu_usage: number
   load_time: number
+  cache_size: number
   screen_name: string
   route_path?: string
   route_pattern?: string

@@ -13,6 +13,7 @@ export interface SessionDetails extends PerformanceSession {
     avgMemory: number
     avgCpu: number
     avgLoadTime: number
+    avgCacheSize: number
   }
 }
 
@@ -22,6 +23,7 @@ export interface SessionMetricsTimeline {
   memory_usage: number
   cpu_usage: number
   load_time: number
+  cache_size: number | null
   screen_name: string
   metric_count: number
 }
