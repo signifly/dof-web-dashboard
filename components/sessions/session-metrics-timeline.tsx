@@ -8,7 +8,7 @@ import { MetricsTrend } from "@/lib/performance-data"
 import { MultiSeriesChart } from "@/components/charts"
 import { format } from "date-fns"
 import { useState } from "react"
-import { Activity, Zap, HardDrive, Cpu } from "lucide-react"
+import { Activity, Zap, HardDrive, Cpu, Database } from "lucide-react"
 
 interface SessionMetricsTimelineProps {
   metrics: SessionMetricsTimeline[]
@@ -54,6 +54,7 @@ export function SessionMetricsTimelineComponent({
       memory_usage: metric.memory_usage,
       cpu_usage: metric.cpu_usage,
       load_time: 0, // Not used anymore but required by MetricsTrend type
+      cache_size: metric.cache_size || 0,
       screen_name: metric.screen_name,
     }))
   }
@@ -67,29 +68,47 @@ export function SessionMetricsTimelineComponent({
     const avgCpu =
       metrics.reduce((sum, m) => sum + m.cpu_usage, 0) / metrics.length
 
+    const cacheMetrics = metrics.filter(m => m.cache_size !== null)
+    const avgCacheSize =
+      cacheMetrics.length > 0
+        ? cacheMetrics.reduce((sum, m) => sum + (m.cache_size || 0), 0) /
+          cacheMetrics.length
+        : 0
+
     const maxFps = Math.max(...metrics.map(m => m.fps))
     const maxMemory = Math.max(...metrics.map(m => m.memory_usage))
     const maxCpu = Math.max(...metrics.map(m => m.cpu_usage))
+    const maxCacheSize =
+      cacheMetrics.length > 0
+        ? Math.max(...cacheMetrics.map(m => m.cache_size || 0))
+        : 0
 
     const minFps = Math.min(...metrics.map(m => m.fps))
     const minMemory = Math.min(...metrics.map(m => m.memory_usage))
     const minCpu = Math.min(...metrics.map(m => m.cpu_usage))
+    const minCacheSize =
+      cacheMetrics.length > 0
+        ? Math.min(...cacheMetrics.map(m => m.cache_size || 0))
+        : 0
 
     return {
       avg: {
         fps: avgFps,
         memory: avgMemory,
         cpu: avgCpu,
+        cacheSize: avgCacheSize,
       },
       max: {
         fps: maxFps,
         memory: maxMemory,
         cpu: maxCpu,
+        cacheSize: maxCacheSize,
       },
       min: {
         fps: minFps,
         memory: minMemory,
         cpu: minCpu,
+        cacheSize: minCacheSize,
       },
     }
   }
@@ -293,7 +312,7 @@ export function SessionMetricsTimelineComponent({
             <CardTitle>Performance Statistics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-4 gap-6">
               {/* FPS Stats */}
               <div className="space-y-2">
                 <h4 className="text-sm font-medium flex items-center space-x-2">
@@ -388,6 +407,33 @@ export function SessionMetricsTimelineComponent({
                       {stats.min.cpu.toFixed(0)} - {stats.max.cpu.toFixed(0)}%
                     </span>
                   </div>
+                </div>
+              </div>
+
+              {/* Cache Size Stats */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium flex items-center space-x-2">
+                  <Database className="h-4 w-4" />
+                  <span>Cache</span>
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Average:</span>
+                    <span>
+                      {stats.avg.cacheSize === 0
+                        ? "No data"
+                        : `${(stats.avg.cacheSize / 1024 / 1024).toFixed(1)}MB`}
+                    </span>
+                  </div>
+                  {stats.avg.cacheSize > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Range:</span>
+                      <span>
+                        {(stats.min.cacheSize / 1024 / 1024).toFixed(1)} -{" "}
+                        {(stats.max.cacheSize / 1024 / 1024).toFixed(1)}MB
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
