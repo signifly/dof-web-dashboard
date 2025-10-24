@@ -41,6 +41,13 @@ export function PerformanceOverviewChart({
         name: "Load Time",
         color: "#ff7300",
         unit: " ms",
+      },
+      {
+        key: "cache_size",
+        name: "Cache Size",
+        color: "#a78bfa",
+        unit: " MB",
+        formatValue: (val: number) => (val / 1024 / 1024).toFixed(1),
       }
     )
   } else {
