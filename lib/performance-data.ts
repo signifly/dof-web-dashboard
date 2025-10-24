@@ -89,10 +89,13 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
 
   try {
     // Get session summary data
+    // IMPORTANT: Supabase .in() clause has limits (~100-200 parameters max)
+    // We limit to recent 200 sessions to keep queries performant
     const { data: sessions, error: sessionsError } = await supabase
       .from("performance_sessions")
       .select("*")
       .order("created_at", { ascending: false })
+      .limit(200) // Limit to recent sessions to avoid .in() clause size limits
 
     if (sessionsError) {
       console.warn(`Sessions table error: ${sessionsError.message}`)
@@ -114,10 +117,18 @@ export async function getPerformanceSummary(): Promise<PerformanceSummary> {
       }
     }
 
-    // Get all performance metrics for calculations
-    const { data: metrics, error: metricsError } = await supabase
-      .from("performance_metrics")
-      .select("*")
+    // Get all performance metrics for these sessions
+    // IMPORTANT: Supabase has a 1000-row hard limit per query AND .in() clause has parameter limits
+    // We filter by session_id and order by timestamp DESC to get most recent metrics
+    const sessionIds = sessions?.map(s => s.id) || []
+    const { data: metrics, error: metricsError } = sessionIds.length > 0
+      ? await supabase
+          .from("performance_metrics")
+          .select("*")
+          .in("session_id", sessionIds)
+          .order("timestamp", { ascending: false })
+          .limit(5000) // Request more than 1000 to try to get all metrics
+      : { data: null, error: null }
 
     if (metricsError) {
       console.warn(`Metrics table error: ${metricsError.message}`)
@@ -596,20 +607,27 @@ export async function getBuildPerformanceData(): Promise<any[]> {
   const supabase = createClient()
 
   try {
-    // Get all sessions with their app versions
+    // Get recent sessions with their app versions
+    // Limit to avoid .in() clause size limits (~100-200 parameters max)
     const { data: sessions, error: sessionsError } = await supabase
       .from("performance_sessions")
       .select("*")
       .order("created_at", { ascending: false })
+      .limit(200)
 
     if (sessionsError || !sessions?.length) {
       return []
     }
 
-    // Get all metrics for calculating averages
+    // Get all metrics for these sessions
+    // IMPORTANT: Filter by session_id and order by timestamp to get most recent metrics
+    // Supabase has a 1000-row hard limit, so ordering ensures we get the newest data
+    const sessionIds = sessions.map(s => s.id)
     const { data: metrics, error: metricsError } = await supabase
       .from("performance_metrics")
       .select("*")
+      .in("session_id", sessionIds)
+      .order("timestamp", { ascending: false })
 
     if (metricsError || !metrics) {
       return []
@@ -761,9 +779,24 @@ export async function getScreenNames(): Promise<string[]> {
   const supabase = createClient()
 
   try {
+    // First get recent sessions to bypass Supabase's 1000-row limit
+    const { data: sessions, error: sessionsError } = await supabase
+      .from("performance_sessions")
+      .select("id")
+      .order("created_at", { ascending: false })
+      .limit(1000)
+
+    if (sessionsError || !sessions?.length) {
+      return []
+    }
+
+    // Get metrics for these sessions
+    const sessionIds = sessions.map(s => s.id)
     const { data, error } = await supabase
       .from("performance_metrics")
       .select("context")
+      .in("session_id", sessionIds)
+      .order("timestamp", { ascending: false })
 
     if (error) {
       console.warn(`Screen names error: ${error.message}`)
