@@ -49,6 +49,7 @@ describe("/api/performance/trends", () => {
         cpu_usage: 45,
         memory_usage: 256,
         load_time: 1200,
+        cache_size: 100,
         screen_name: "HomeScreen",
       },
       {
@@ -57,6 +58,7 @@ describe("/api/performance/trends", () => {
         cpu_usage: 48,
         memory_usage: 260,
         load_time: 1150,
+        cache_size: 110,
         screen_name: "ProfileScreen",
       },
     ]
@@ -80,6 +82,7 @@ describe("/api/performance/trends", () => {
         cpu_usage: 45,
         memory_usage: 256,
         load_time: 1200,
+        cache_size: 100,
         screen_name: "HomeScreen",
       },
     ]

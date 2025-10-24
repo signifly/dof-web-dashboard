@@ -32,6 +32,7 @@ describe("PerformanceScoringEngine", () => {
     avgMemory: 350,
     avgCpu: 35,
     avgLoadTime: 1500,
+    avgCacheSize: 150,
     platformBreakdown: [
       { platform: "android", count: 15 },
       { platform: "ios", count: 10 },
@@ -62,6 +63,7 @@ describe("PerformanceScoringEngine", () => {
       memory_usage: 350 + Math.random() * 50,
       cpu_usage: 35 + Math.random() * 10,
       load_time: 1500 + Math.random() * 500,
+      cache_size: 150 + Math.random() * 50,
     }))
   }
 

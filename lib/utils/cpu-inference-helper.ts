@@ -66,6 +66,7 @@ export const METRIC_TYPE_FILTERS = {
   MEMORY: "memory_usage",
   LOAD_TIME: ["navigation_time", "screen_load", "load_time"],
   CPU: "cpu_usage",
+  CACHE_SIZE: "cache_size",
 } as const
 
 /**
@@ -99,6 +100,11 @@ export function extractMetricsByType(
     case "CPU":
       filteredMetrics = metrics.filter(
         m => m.metric_type === METRIC_TYPE_FILTERS.CPU
+      )
+      break
+    case "CACHE_SIZE":
+      filteredMetrics = metrics.filter(
+        m => m.metric_type === METRIC_TYPE_FILTERS.CACHE_SIZE
       )
       break
   }

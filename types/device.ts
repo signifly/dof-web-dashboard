@@ -50,6 +50,7 @@ export interface DeviceMetricPoint {
   fps: number
   memory: number
   loadTime: number
+  cacheSize: number
   screenName: string
   sessionId: string
   // Enhanced route information

@@ -152,6 +152,9 @@ export async function getSessionMetrics(
         m =>
           m.metric_type === "navigation_time" || m.metric_type === "screen_load"
       )
+      const cacheMetrics = metricsGroup.filter(
+        m => m.metric_type === "cache_size"
+      )
 
       // Get screen name from any metric in this group
       const screenName =
@@ -175,6 +178,10 @@ export async function getSessionMetrics(
           loadTimeMetrics.length > 0
             ? average(loadTimeMetrics.map(m => m.metric_value))
             : 0,
+        cache_size:
+          cacheMetrics.length > 0
+            ? average(cacheMetrics.map(m => m.metric_value))
+            : null,
         screen_name: screenName,
         metric_count: metricsGroup.length,
       }
@@ -260,6 +267,7 @@ function calculateHealthIndicators(metrics: PerformanceMetric[]) {
   const loadTimeMetrics = metrics.filter(
     m => m.metric_type === "navigation_time" || m.metric_type === "screen_load"
   )
+  const cacheMetrics = metrics.filter(m => m.metric_type === "cache_size")
 
   return {
     avgFps:
@@ -274,6 +282,10 @@ function calculateHealthIndicators(metrics: PerformanceMetric[]) {
       loadTimeMetrics.length > 0
         ? average(loadTimeMetrics.map(m => m.metric_value))
         : 0,
+    avgCacheSize:
+      cacheMetrics.length > 0
+        ? average(cacheMetrics.map(m => m.metric_value))
+        : 0,
   }
 }
 
@@ -282,6 +294,7 @@ function calculatePerformanceScore(healthIndicators: {
   avgMemory: number
   avgCpu: number
   avgLoadTime: number
+  avgCacheSize: number
 }): number {
   const { avgFps, avgMemory, avgCpu, avgLoadTime } = healthIndicators
 
@@ -291,7 +304,7 @@ function calculatePerformanceScore(healthIndicators: {
   const cpuScore = Math.max(0, 100 - avgCpu)
   const loadTimeScore = Math.max(0, 100 - (avgLoadTime / 5000) * 100)
 
-  // Weighted average
+  // Weighted average (cache_size not included in score calculation for now)
   const score =
     fpsScore * 0.3 + memoryScore * 0.25 + cpuScore * 0.25 + loadTimeScore * 0.2
 
@@ -304,6 +317,7 @@ function calculateRiskLevel(
     avgMemory: number
     avgCpu: number
     avgLoadTime: number
+    avgCacheSize: number
   }
   // isActive parameter removed - not used in risk calculation
 ): "low" | "medium" | "high" {

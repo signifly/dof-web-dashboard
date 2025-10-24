@@ -111,6 +111,10 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
                       metric.metric_type === "load_time"
                         ? metric.metric_value
                         : 0,
+                    cache_size:
+                      metric.metric_type === "cache_size"
+                        ? metric.metric_value
+                        : 0,
                     screen_name:
                       (metric.context as any)?.screen_name || "Unknown",
                   }

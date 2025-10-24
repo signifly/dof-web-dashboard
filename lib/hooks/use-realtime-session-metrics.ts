@@ -105,6 +105,7 @@ export function useRealtimeSessionMetrics(
           memory_usage: pendingMetric.memory_usage || 0,
           cpu_usage: pendingMetric.cpu_usage || 0,
           load_time: pendingMetric.load_time || 0,
+          cache_size: pendingMetric.cache_size || null,
           screen_name: pendingMetric.screen_name || "Unknown",
           metric_count: pendingMetric.metric_count || 1,
         }

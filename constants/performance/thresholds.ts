@@ -25,6 +25,12 @@ export const PERFORMANCE_THRESHOLDS = {
     fair: 2000,
     poor: 3000,
   },
+  cacheSize: {
+    excellent: 50 * 1024 * 1024, // 50 MB in bytes - minimal cache usage
+    good: 100 * 1024 * 1024, // 100 MB - reasonable cache size
+    fair: 200 * 1024 * 1024, // 200 MB - getting large
+    poor: 500 * 1024 * 1024, // 500 MB - excessive cache, needs cleanup
+  },
 } as const
 
 // Early warning system thresholds
