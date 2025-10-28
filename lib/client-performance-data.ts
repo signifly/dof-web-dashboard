@@ -15,27 +15,35 @@ export async function getBuildPerformanceDataClient(): Promise<any[]> {
   const supabase = createClient()
 
   try {
-    // Get all sessions with their app versions
+    // Get recent sessions with their app versions
+    // IMPORTANT: Limit to 200 sessions to avoid .in() clause size limits
     const { data: sessions, error: sessionsError } = await supabase
       .from("performance_sessions")
       .select("*")
       .order("created_at", { ascending: false })
+      .limit(200)
 
     if (sessionsError || !sessions?.length) {
       return []
     }
 
-    // Get all metrics for calculating averages
+    // Type assert the data to help TypeScript
+    const typedSessions = sessions as PerformanceSession[]
+
+    // Get metrics for these sessions
+    // IMPORTANT: Filter by session_id and order by timestamp to get most recent metrics
+    // Supabase has a 1000-row hard limit, so ordering ensures we get the newest data
+    const sessionIds = typedSessions.map(s => s.id)
     const { data: metrics, error: metricsError } = await supabase
       .from("performance_metrics")
       .select("*")
+      .in("session_id", sessionIds)
+      .order("timestamp", { ascending: false })
 
     if (metricsError || !metrics || metrics.length === 0) {
       return []
     }
 
-    // Type assert the data to help TypeScript
-    const typedSessions = sessions as PerformanceSession[]
     const typedMetrics = metrics as PerformanceMetric[]
 
     // Available metric types: fps, memory_usage, navigation_time, screen_load

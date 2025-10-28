@@ -61,7 +61,11 @@ export function VersionMetricsCharts({ metrics }: VersionMetricsChartsProps) {
               />
               <span className="text-sm">
                 {entry.name}: {entry.value}
-                {entry.name === "FPS" ? "" : entry.name === "Memory" ? " MB" : "%"}
+                {entry.name === "FPS"
+                  ? ""
+                  : entry.name === "Memory"
+                    ? " MB"
+                    : "%"}
               </span>
             </div>
           ))}

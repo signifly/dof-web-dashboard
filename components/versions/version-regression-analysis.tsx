@@ -109,9 +109,7 @@ export function VersionRegressionAnalysis({
                 </div>
                 <div className="flex justify-between text-sm font-medium pt-2 border-t">
                   <span>Change:</span>
-                  <span
-                    className={getChangeColor(changes.memory.delta, true)}
-                  >
+                  <span className={getChangeColor(changes.memory.delta, true)}>
                     {formatChange(
                       changes.memory.delta,
                       changes.memory.percentChange

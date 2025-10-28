@@ -144,14 +144,18 @@ export async function getPlatformDetails(
       device => {
         const deviceAvgFps =
           device.fpsMetrics.length > 0
-            ? device.fpsMetrics.reduce((sum: number, fps: number) => sum + fps, 0) /
-              device.fpsMetrics.length
+            ? device.fpsMetrics.reduce(
+                (sum: number, fps: number) => sum + fps,
+                0
+              ) / device.fpsMetrics.length
             : 0
 
         const deviceAvgMemory =
           device.memoryMetrics.length > 0
-            ? device.memoryMetrics.reduce((sum: number, mem: number) => sum + mem, 0) /
-              device.memoryMetrics.length
+            ? device.memoryMetrics.reduce(
+                (sum: number, mem: number) => sum + mem,
+                0
+              ) / device.memoryMetrics.length
             : 0
 
         const deviceAvgCpu = calculateInferredCPU(
@@ -213,14 +217,27 @@ export async function getPlatformDetails(
       deviceSessionCounts.set(deviceId, sessionNumber)
 
       // Get metrics for this session
-      const sessionMetrics = metrics?.filter(m => m.session_id === session.id) || []
+      const sessionMetrics =
+        metrics?.filter(m => m.session_id === session.id) || []
 
       // Only include sessions that have metrics
       if (sessionMetrics.length > 0) {
         // Calculate averages for this session
-        const { average: avgFps } = extractMetricsByType(sessionMetrics, "FPS", 0)
-        const { average: avgMemory } = extractMetricsByType(sessionMetrics, "MEMORY", 0)
-        const { average: avgLoadTime } = extractMetricsByType(sessionMetrics, "LOAD_TIME", 0)
+        const { average: avgFps } = extractMetricsByType(
+          sessionMetrics,
+          "FPS",
+          0
+        )
+        const { average: avgMemory } = extractMetricsByType(
+          sessionMetrics,
+          "MEMORY",
+          0
+        )
+        const { average: avgLoadTime } = extractMetricsByType(
+          sessionMetrics,
+          "LOAD_TIME",
+          0
+        )
         const avgCpu = calculateInferredCPU(sessionMetrics, platform)
 
         deviceMetrics.push({
@@ -237,10 +254,14 @@ export async function getPlatformDetails(
     })
 
     // Sort by timestamp (oldest to newest)
-    deviceMetrics.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    deviceMetrics.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
 
     // 7. Calculate health score
-    const fpsScore = avgFps >= 50 ? 90 : avgFps >= 30 ? 70 : avgFps >= 20 ? 50 : 30
+    const fpsScore =
+      avgFps >= 50 ? 90 : avgFps >= 30 ? 70 : avgFps >= 20 ? 50 : 30
     const memoryScore =
       avgMemory <= 200 ? 90 : avgMemory <= 400 ? 70 : avgMemory <= 600 ? 50 : 30
     const loadTimeScore =

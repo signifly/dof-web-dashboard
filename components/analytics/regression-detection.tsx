@@ -369,7 +369,9 @@ export function RegressionDetection({}: RegressionDetectionProps) {
 
                     <div className="flex items-center space-x-6 text-sm">
                       <div className="text-center">
-                        <div className="font-medium">{build.regressionScore}</div>
+                        <div className="font-medium">
+                          {build.regressionScore}
+                        </div>
                         <div className="text-muted-foreground">Score</div>
                       </div>
                       <div className="text-center">

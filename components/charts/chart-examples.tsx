@@ -75,10 +75,7 @@ function generateSampleData(hours = 24, intervalMinutes = 5): MetricsTrend[] {
         200,
         basePerformance.load_time * peakHourMultiplier * (isSpike ? 1.8 : 1)
       ),
-      cache_size: Math.max(
-        50,
-        200 * peakHourMultiplier * (isSpike ? 1.3 : 1)
-      ),
+      cache_size: Math.max(50, 200 * peakHourMultiplier * (isSpike ? 1.3 : 1)),
       screen_name: screenName,
     })
   }

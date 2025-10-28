@@ -121,7 +121,8 @@ export async function loginAction(
       })
       return {
         success: false,
-        error: "Authentication is temporarily unavailable. Please contact support.",
+        error:
+          "Authentication is temporarily unavailable. Please contact support.",
       }
     }
 
@@ -153,13 +154,17 @@ export async function loginAction(
     } catch (sessionError) {
       console.error("Session creation failed:", {
         timestamp: new Date().toISOString(),
-        errorType: sessionError instanceof Error ? sessionError.name : "Unknown",
+        errorType:
+          sessionError instanceof Error ? sessionError.name : "Unknown",
         message:
-          sessionError instanceof Error ? sessionError.message : "Unknown error",
+          sessionError instanceof Error
+            ? sessionError.message
+            : "Unknown error",
       })
       return {
         success: false,
-        error: "Authentication is temporarily unavailable. Please contact support.",
+        error:
+          "Authentication is temporarily unavailable. Please contact support.",
       }
     }
 

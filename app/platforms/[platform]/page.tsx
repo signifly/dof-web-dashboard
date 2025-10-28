@@ -44,7 +44,8 @@ export default async function PlatformDetailPage({
                   {platformData.platform} Platform
                 </h1>
                 <p className="text-muted-foreground">
-                  Comprehensive performance analysis across all {platformData.platform} devices
+                  Comprehensive performance analysis across all{" "}
+                  {platformData.platform} devices
                 </p>
               </div>
               <div className="flex items-center space-x-2">
@@ -104,7 +105,8 @@ export default async function PlatformDetailPage({
                 Performance Metrics
               </h2>
               <p className="text-muted-foreground">
-                Aggregated performance trends across all {platformData.platform} devices
+                Aggregated performance trends across all {platformData.platform}{" "}
+                devices
               </p>
             </div>
             <PlatformMetrics metrics={platformData.deviceMetrics} />

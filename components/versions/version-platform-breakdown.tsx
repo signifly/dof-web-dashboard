@@ -35,9 +35,7 @@ export function VersionPlatformBreakdown({
               <div className="space-y-4">
                 {/* Platform Header */}
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">
-                    {platform.platform}
-                  </h3>
+                  <h3 className="text-lg font-semibold">{platform.platform}</h3>
                   <div
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       platform.healthScore >= 80

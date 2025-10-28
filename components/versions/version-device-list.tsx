@@ -8,7 +8,13 @@ interface VersionDeviceListProps {
   devices: VersionDevice[]
 }
 
-type SortKey = "deviceId" | "platform" | "totalSessions" | "avgFps" | "avgMemory" | "avgCpu"
+type SortKey =
+  | "deviceId"
+  | "platform"
+  | "totalSessions"
+  | "avgFps"
+  | "avgMemory"
+  | "avgCpu"
 type SortDirection = "asc" | "desc"
 
 export function VersionDeviceList({ devices }: VersionDeviceListProps) {
@@ -123,7 +129,10 @@ export function VersionDeviceList({ devices }: VersionDeviceListProps) {
             </thead>
             <tbody>
               {sortedDevices.map(device => (
-                <tr key={device.deviceId} className="border-b hover:bg-accent/50">
+                <tr
+                  key={device.deviceId}
+                  className="border-b hover:bg-accent/50"
+                >
                   <td className="p-3">
                     <div className="font-mono text-sm">
                       {device.deviceId.substring(0, 8)}...

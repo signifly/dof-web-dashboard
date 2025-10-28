@@ -71,9 +71,7 @@ export function PlatformMetrics({ metrics }: PlatformMetricsProps) {
           <p className="text-sm text-muted-foreground">
             Device: {data.deviceId}
           </p>
-          <p className="text-sm text-muted-foreground">
-            {data.dateFormatted}
-          </p>
+          <p className="text-sm text-muted-foreground">{data.dateFormatted}</p>
           <p className="text-sm">
             <span className="font-medium">Value:</span>{" "}
             {payload[0].value.toFixed(1)}
@@ -99,8 +97,8 @@ export function PlatformMetrics({ metrics }: PlatformMetricsProps) {
       <Card className="bg-muted/50">
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">
-            Showing {metrics.length} session data points across all devices. Each
-            point represents the average performance for one session.
+            Showing {metrics.length} session data points across all devices.
+            Each point represents the average performance for one session.
           </p>
         </CardContent>
       </Card>

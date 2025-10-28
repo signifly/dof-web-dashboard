@@ -97,15 +97,18 @@ export async function getVersionDetails(
     }
 
     // 4. Group by platform
-    const platformMap = new Map<string, {
-      platform: string
-      sessions: PerformanceSession[]
-      sessionCount: number
-      deviceCount: number
-      fpsValues: number[]
-      memoryValues: number[]
-      cpuValues: number[]
-    }>()
+    const platformMap = new Map<
+      string,
+      {
+        platform: string
+        sessions: PerformanceSession[]
+        sessionCount: number
+        deviceCount: number
+        fpsValues: number[]
+        memoryValues: number[]
+        cpuValues: number[]
+      }
+    >()
 
     typedSessions.forEach(session => {
       const platform = session.device_type || "Unknown"
@@ -171,7 +174,13 @@ export async function getVersionDetails(
 
         // Calculate health score for platform
         const fpsScore =
-          platformFps >= 50 ? 90 : platformFps >= 30 ? 70 : platformFps >= 20 ? 50 : 30
+          platformFps >= 50
+            ? 90
+            : platformFps >= 30
+              ? 70
+              : platformFps >= 20
+                ? 50
+                : 30
         const memoryScore =
           platformMemory <= 200
             ? 90
@@ -195,15 +204,18 @@ export async function getVersionDetails(
     )
 
     // 5. Group by device (follow pattern from platform-actions.ts)
-    const deviceMap = new Map<string, {
-      deviceId: string
-      platform: string
-      sessions: PerformanceSession[]
-      totalSessions: number
-      fpsMetrics: number[]
-      memoryMetrics: number[]
-      lastSeen: string
-    }>()
+    const deviceMap = new Map<
+      string,
+      {
+        deviceId: string
+        platform: string
+        sessions: PerformanceSession[]
+        totalSessions: number
+        fpsMetrics: number[]
+        memoryMetrics: number[]
+        lastSeen: string
+      }
+    >()
 
     typedSessions.forEach(session => {
       const deviceId = session.anonymous_user_id
@@ -264,15 +276,9 @@ export async function getVersionDetails(
         // Calculate risk level based primarily on performance metrics
         // Session count has lower weight
         let riskLevel: "low" | "medium" | "high" = "low"
-        if (
-          deviceAvgFps < 20 ||
-          deviceAvgMemory > 800
-        ) {
+        if (deviceAvgFps < 20 || deviceAvgMemory > 800) {
           riskLevel = "high"
-        } else if (
-          deviceAvgFps < 45 ||
-          deviceAvgMemory > 400
-        ) {
+        } else if (deviceAvgFps < 45 || deviceAvgMemory > 400) {
           riskLevel = "medium"
         } else if (device.totalSessions < 3) {
           // Low sample size - mark as medium risk for statistical reliability
@@ -329,20 +335,15 @@ export async function getVersionDetails(
 
     // Sort by timestamp (oldest to newest for charts)
     sessionMetrics.sort(
-      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     )
 
     // 7. Calculate health score and risk level
     const fpsScore =
       avgFps >= 50 ? 90 : avgFps >= 30 ? 70 : avgFps >= 20 ? 50 : 30
     const memoryScore =
-      avgMemory <= 200
-        ? 90
-        : avgMemory <= 400
-          ? 70
-          : avgMemory <= 600
-            ? 50
-            : 30
+      avgMemory <= 200 ? 90 : avgMemory <= 400 ? 70 : avgMemory <= 600 ? 50 : 30
     const loadTimeScore =
       avgLoadTime <= 500
         ? 90
@@ -351,9 +352,7 @@ export async function getVersionDetails(
           : avgLoadTime <= 2000
             ? 50
             : 30
-    const healthScore = Math.round(
-      (fpsScore + memoryScore + loadTimeScore) / 3
-    )
+    const healthScore = Math.round((fpsScore + memoryScore + loadTimeScore) / 3)
 
     // Calculate regression score
     const regressionScore = Math.round(
@@ -528,7 +527,8 @@ async function getPreviousVersion(
           }
         })
         if (cpuValues.length > 0) {
-          prevCpu = cpuValues.reduce((sum, cpu) => sum + cpu, 0) / cpuValues.length
+          prevCpu =
+            cpuValues.reduce((sum, cpu) => sum + cpu, 0) / cpuValues.length
         }
       }
     }

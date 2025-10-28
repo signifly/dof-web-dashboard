@@ -141,7 +141,9 @@ if (shouldSkipValidation) {
       process.env.VERCEL_ENV === "preview"
 
     if (isProduction) {
-      console.error("⚠️ Using fallback env values in production to prevent crashes")
+      console.error(
+        "⚠️ Using fallback env values in production to prevent crashes"
+      )
 
       // Try to parse ALLOWED_USERS if it exists, otherwise use empty array
       let allowedUsers: AuthUser[] = []
